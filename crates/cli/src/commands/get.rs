@@ -1,30 +1,28 @@
 use crate::ResourceType;
 use aghub_core::manager::ConfigManager;
 use anyhow::{Context, Result};
-use colored::Colorize;
-use tabled::{Table, Tabled};
+use serde::Serialize;
 
-#[derive(Tabled)]
-struct SkillRow {
+#[derive(Serialize)]
+struct SkillView {
     name: String,
-    status: String,
-    #[tabled(rename = "source")]
-    source: String,
+    enabled: bool,
+    source: Option<String>,
 }
 
-#[derive(Tabled)]
-struct McpRow {
+#[derive(Serialize)]
+struct McpView {
     name: String,
-    status: String,
-    #[tabled(rename = "type")]
+    enabled: bool,
+    #[serde(rename = "type")]
     transport_type: String,
 }
 
-#[derive(Tabled)]
-struct SubAgentRow {
+#[derive(Serialize)]
+struct SubAgentView {
     name: String,
-    status: String,
-    model: String,
+    enabled: bool,
+    model: Option<String>,
 }
 
 pub fn execute(manager: &ConfigManager, resource: ResourceType) -> Result<()> {
@@ -32,73 +30,43 @@ pub fn execute(manager: &ConfigManager, resource: ResourceType) -> Result<()> {
 
     match resource {
         ResourceType::Skills => {
-            if config.skills.is_empty() {
-                println!("{}", "No skills configured".yellow());
-                return Ok(());
-            }
-
-            let rows: Vec<_> = config
+            let views: Vec<SkillView> = config
                 .skills
                 .iter()
-                .map(|s| SkillRow {
+                .map(|s| SkillView {
                     name: s.name.clone(),
-                    status: if s.enabled {
-                        "enabled".green().to_string()
-                    } else {
-                        "disabled".red().to_string()
-                    },
-                    source: s.source.clone().unwrap_or_default(),
+                    enabled: s.enabled,
+                    source: s.source.clone(),
                 })
                 .collect();
-
-            println!("{}", Table::new(rows));
+            println!("{}", serde_json::to_string(&views)?);
         }
         ResourceType::Mcps => {
-            if config.mcps.is_empty() {
-                println!("{}", "No MCP servers configured".yellow());
-                return Ok(());
-            }
-
-            let rows: Vec<_> = config
+            let views: Vec<McpView> = config
                 .mcps
                 .iter()
-                .map(|m| McpRow {
+                .map(|m| McpView {
                     name: m.name.clone(),
-                    status: if m.enabled {
-                        "enabled".green().to_string()
-                    } else {
-                        "disabled".red().to_string()
-                    },
+                    enabled: m.enabled,
                     transport_type: match &m.transport {
                         aghub_core::models::McpTransport::Command { .. } => "command".to_string(),
                         aghub_core::models::McpTransport::Url { .. } => "url".to_string(),
                     },
                 })
                 .collect();
-
-            println!("{}", Table::new(rows));
+            println!("{}", serde_json::to_string(&views)?);
         }
         ResourceType::SubAgents => {
-            if config.sub_agents.is_empty() {
-                println!("{}", "No sub-agents configured".yellow());
-                return Ok(());
-            }
-
-            let rows: Vec<_> = config
+            let views: Vec<SubAgentView> = config
                 .sub_agents
                 .iter()
-                .map(|a| SubAgentRow {
+                .map(|a| SubAgentView {
                     name: a.name.clone(),
-                    status: if a.enabled {
-                        "enabled".green().to_string()
-                    } else {
-                        "disabled".red().to_string()
-                    },
-                    model: a.model.clone().unwrap_or_default(),
+                    enabled: a.enabled,
+                    model: a.model.clone(),
                 })
                 .collect();
-
-            println!("{}", Table::new(rows));
+            println!("{}", serde_json::to_string(&views)?);
         }
     }
 

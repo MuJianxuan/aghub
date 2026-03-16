@@ -1,7 +1,6 @@
 use crate::ResourceType;
 use aghub_core::{errors::ConfigError, manager::ConfigManager, models::McpTransport};
 use anyhow::{bail, Result};
-use colored::Colorize;
 use std::collections::HashMap;
 
 #[allow(clippy::too_many_arguments)]
@@ -47,12 +46,8 @@ pub fn execute(
                 skill.tools = tools;
             }
 
-            manager.update_skill(&name, skill)?;
-            println!(
-                "{} {}",
-                "✓".green().bold(),
-                format!("Updated skill '{}'", name)
-            );
+            manager.update_skill(&name, skill.clone())?;
+            println!("{}", serde_json::to_string(&skill)?);
         }
         ResourceType::Mcps => {
             // Get existing MCP
@@ -105,12 +100,8 @@ pub fn execute(
                 };
             }
 
-            manager.update_mcp(&name, mcp)?;
-            println!(
-                "{} {}",
-                "✓".green().bold(),
-                format!("Updated MCP server '{}'", name)
-            );
+            manager.update_mcp(&name, mcp.clone())?;
+            println!("{}", serde_json::to_string(&mcp)?);
         }
         ResourceType::SubAgents => {
             // Get existing sub-agent
@@ -130,12 +121,8 @@ pub fn execute(
                 agent.instructions = Some(instr);
             }
 
-            manager.update_sub_agent(&name, agent)?;
-            println!(
-                "{} {}",
-                "✓".green().bold(),
-                format!("Updated sub-agent '{}'", name)
-            );
+            manager.update_sub_agent(&name, agent.clone())?;
+            println!("{}", serde_json::to_string(&agent)?);
         }
     }
 

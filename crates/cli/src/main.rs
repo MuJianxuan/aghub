@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
-use colored::Colorize;
 
 use aghub_core::{
     adapters::create_adapter, manager::ConfigManager, models::AgentType, paths::find_project_root,
@@ -176,15 +175,6 @@ enum ResourceType {
     SubAgents,
 }
 
-impl ResourceType {
-    fn as_str(&self) -> &'static str {
-        match self {
-            ResourceType::Skills => "skill",
-            ResourceType::Mcps => "MCP server",
-            ResourceType::SubAgents => "sub-agent",
-        }
-    }
-}
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -297,7 +287,7 @@ fn main() -> Result<()> {
     }
 }
 
-// Stub module for describe command
+// Describe command - outputs JSON
 mod describe {
     use super::*;
 
@@ -311,30 +301,7 @@ mod describe {
                     .iter()
                     .find(|s| s.name == name)
                     .with_context(|| format!("Skill '{}' not found", name))?;
-                println!("{}", format!("Skill: {}", skill.name).bold().underline());
-                println!(
-                    "  Enabled: {}",
-                    if skill.enabled {
-                        "yes".green()
-                    } else {
-                        "no".red()
-                    }
-                );
-                if let Some(ref source) = skill.source {
-                    println!("  Source: {}", source);
-                }
-                if let Some(ref desc) = skill.description {
-                    println!("  Description: {}", desc);
-                }
-                if let Some(ref author) = skill.author {
-                    println!("  Author: {}", author);
-                }
-                if let Some(ref version) = skill.version {
-                    println!("  Version: {}", version);
-                }
-                if !skill.tools.is_empty() {
-                    println!("  Tools: {}", skill.tools.join(", "));
-                }
+                println!("{}", serde_json::to_string(skill)?);
             }
             ResourceType::Mcps => {
                 let mcp = config
@@ -342,40 +309,7 @@ mod describe {
                     .iter()
                     .find(|m| m.name == name)
                     .with_context(|| format!("MCP server '{}' not found", name))?;
-                println!("{}", format!("MCP Server: {}", mcp.name).bold().underline());
-                println!(
-                    "  Enabled: {}",
-                    if mcp.enabled {
-                        "yes".green()
-                    } else {
-                        "no".red()
-                    }
-                );
-                match &mcp.transport {
-                    aghub_core::models::McpTransport::Command { command, args, env } => {
-                        println!("  Type: command (stdio)");
-                        println!("  Command: {}", command);
-                        if !args.is_empty() {
-                            println!("  Args: {}", args.join(" "));
-                        }
-                        if let Some(ref env) = env {
-                            println!("  Environment:");
-                            for (k, v) in env {
-                                println!("    {}={}", k, v);
-                            }
-                        }
-                    }
-                    aghub_core::models::McpTransport::Url { url, headers } => {
-                        println!("  Type: URL (SSE)");
-                        println!("  URL: {}", url);
-                        if let Some(ref headers) = headers {
-                            println!("  Headers:");
-                            for (k, v) in headers {
-                                println!("    {}: {}", k, v);
-                            }
-                        }
-                    }
-                }
+                println!("{}", serde_json::to_string(mcp)?);
             }
             ResourceType::SubAgents => {
                 let agent = config
@@ -383,27 +317,7 @@ mod describe {
                     .iter()
                     .find(|a| a.name == name)
                     .with_context(|| format!("Sub-agent '{}' not found", name))?;
-                println!(
-                    "{}",
-                    format!("Sub-agent: {}", agent.name).bold().underline()
-                );
-                println!(
-                    "  Enabled: {}",
-                    if agent.enabled {
-                        "yes".green()
-                    } else {
-                        "no".red()
-                    }
-                );
-                if let Some(ref desc) = agent.description {
-                    println!("  Description: {}", desc);
-                }
-                if let Some(ref model) = agent.model {
-                    println!("  Model: {}", model);
-                }
-                if let Some(ref instructions) = agent.instructions {
-                    println!("  Instructions: {}", instructions);
-                }
+                println!("{}", serde_json::to_string(agent)?);
             }
         }
 

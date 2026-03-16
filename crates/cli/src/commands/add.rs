@@ -4,7 +4,6 @@ use aghub_core::{
     models::{McpServer, McpTransport, Skill, SubAgent},
 };
 use anyhow::{bail, Result};
-use colored::Colorize;
 use std::collections::HashMap;
 
 #[allow(clippy::too_many_arguments)]
@@ -35,12 +34,8 @@ pub fn execute(
                 version,
                 tools,
             };
-            manager.add_skill(skill)?;
-            println!(
-                "{} {}",
-                "✓".green().bold(),
-                format!("Added skill '{}'", name)
-            );
+            manager.add_skill(skill.clone())?;
+            println!("{}", serde_json::to_string(&skill)?);
         }
         ResourceType::Mcps => {
             let transport = if let Some(cmd_str) = command {
@@ -91,12 +86,8 @@ pub fn execute(
             };
 
             let mcp = McpServer::new(name.clone(), transport);
-            manager.add_mcp(mcp)?;
-            println!(
-                "{} {}",
-                "✓".green().bold(),
-                format!("Added MCP server '{}'", name)
-            );
+            manager.add_mcp(mcp.clone())?;
+            println!("{}", serde_json::to_string(&mcp)?);
         }
         ResourceType::SubAgents => {
             let agent = SubAgent {
@@ -106,12 +97,8 @@ pub fn execute(
                 model,
                 instructions,
             };
-            manager.add_sub_agent(agent)?;
-            println!(
-                "{} {}",
-                "✓".green().bold(),
-                format!("Added sub-agent '{}'", name)
-            );
+            manager.add_sub_agent(agent.clone())?;
+            println!("{}", serde_json::to_string(&agent)?);
         }
     }
 

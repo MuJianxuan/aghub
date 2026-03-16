@@ -59,3 +59,14 @@ fn test_client_from_env_with_var() {
     // Clean up
     std::env::remove_var("SKILLS_API_URL");
 }
+
+#[tokio::test]
+async fn test_live_search() {
+    let client = Client::new().unwrap();
+    let results = client.find("github").await.unwrap();
+    assert!(!results.is_empty());
+    let first = &results[0];
+    assert!(!first.name.is_empty());
+    assert!(!first.slug.is_empty());
+    assert!(first.installs > 0);
+}

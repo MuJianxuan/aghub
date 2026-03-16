@@ -2,7 +2,7 @@ use crate::types::{SearchParams, SearchResponse, SearchResult};
 use reqwest::{Client as HttpClient, Url};
 use std::time::Duration;
 
-const DEFAULT_API_URL: &str = "https://skills.sh/api";
+const DEFAULT_API_URL: &str = "https://skills.sh/api/";
 const DEFAULT_TIMEOUT: Duration = Duration::from_secs(30);
 
 /// skills.sh API client
@@ -160,7 +160,7 @@ mod tests {
             .unwrap();
 
         // Timeout is internal to reqwest, we just verify it builds
-        assert_eq!(client.base_url.as_str(), "https://skills.sh/api");
+        assert_eq!(client.base_url.as_str(), "https://skills.sh/api/");
     }
 
     #[test]

@@ -2,8 +2,11 @@ use serde::{Deserialize, Serialize};
 
 /// Raw response structure for a single skill
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Skill {
     pub id: String,
+    #[serde(default)]
+    pub skill_id: String,
     pub name: String,
     #[serde(default)]
     pub installs: u64,
@@ -28,9 +31,14 @@ pub struct SearchResult {
 
 impl From<Skill> for SearchResult {
     fn from(skill: Skill) -> Self {
+        let slug = if skill.skill_id.is_empty() {
+            skill.id.clone()
+        } else {
+            skill.skill_id
+        };
         Self {
             name: skill.name,
-            slug: skill.id,
+            slug,
             source: skill.source,
             installs: skill.installs,
         }
@@ -86,7 +94,8 @@ mod tests {
     #[test]
     fn test_skill_to_search_result() {
         let skill = Skill {
-            id: "git-skill".to_string(),
+            id: "github/awesome-copilot/git-skill".to_string(),
+            skill_id: "git-skill".to_string(),
             name: "Git".to_string(),
             installs: 1000,
             source: "github".to_string(),
@@ -114,15 +123,20 @@ mod tests {
     #[test]
     fn test_search_response_deserialization() {
         let json = r#"{
+            "query": "test",
+            "searchType": "fuzzy",
             "skills": [
-                {"id": "skill1", "name": "Skill 1", "installs": 100, "source": "github"},
-                {"id": "skill2", "name": "Skill 2", "installs": 50, "source": "gitlab"}
-            ]
+                {"id": "github/org/skill1", "skillId": "skill1", "name": "Skill 1", "installs": 100, "source": "github/org"},
+                {"id": "github/org/skill2", "skillId": "skill2", "name": "Skill 2", "installs": 50, "source": "github/org"}
+            ],
+            "count": 2,
+            "duration_ms": 10
         }"#;
 
         let response: SearchResponse = serde_json::from_str(json).unwrap();
         assert_eq!(response.skills.len(), 2);
         assert_eq!(response.skills[0].name, "Skill 1");
+        assert_eq!(response.skills[0].skill_id, "skill1");
         assert_eq!(response.skills[1].installs, 50);
     }
 }

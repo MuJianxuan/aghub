@@ -4,9 +4,11 @@ use std::process::Command;
 
 pub mod list;
 pub mod map;
+pub mod toml;
 
 pub use list::ListAdapter;
 pub use map::MapAdapter;
+pub use self::toml::TomlAdapter;
 
 /// Trait for adapting different agent configuration formats
 pub trait AgentAdapter: Send + Sync {
@@ -58,7 +60,11 @@ pub fn create_adapter(agent_type: crate::AgentType) -> Box<dyn AgentAdapter> {
 			paths::copilot_global_path,
 			paths::copilot_project_path,
 		)),
-		crate::AgentType::Claude => Box::new(MapAdapter::new()),
+		crate::AgentType::Claude => Box::new(MapAdapter::with_paths(
+			"claude",
+			paths::claude_global_path,
+			paths::claude_project_path,
+		)),
 		crate::AgentType::RooCode => Box::new(MapAdapter::with_paths(
 			"roocode",
 			paths::roocode_global_path,
@@ -79,8 +85,7 @@ pub fn create_adapter(agent_type: crate::AgentType) -> Box<dyn AgentAdapter> {
 			paths::gemini_global_path,
 			paths::gemini_project_path,
 		)),
-		crate::AgentType::Codex => Box::new(MapAdapter::with_paths(
-			// Need TOML support later
+		crate::AgentType::Codex => Box::new(TomlAdapter::with_paths(
 			"codex",
 			paths::codex_global_path,
 			paths::codex_project_path,
@@ -95,7 +100,11 @@ pub fn create_adapter(agent_type: crate::AgentType) -> Box<dyn AgentAdapter> {
 			paths::openclaw_global_path,
 			paths::openclaw_project_path,
 		)),
-		crate::AgentType::OpenCode => Box::new(ListAdapter::new()),
+		crate::AgentType::OpenCode => Box::new(ListAdapter::with_paths(
+			"opencode",
+			paths::opencode_global_path,
+			paths::opencode_project_path,
+		)),
 	}
 }
 

@@ -364,9 +364,10 @@ fn test_missing_resource_detection() {
 
 // ==================== Agent Validation Tests ====================
 
-/// These tests validate configurations using the actual agent CLIs.
-/// They will be skipped gracefully if the CLIs are not installed.
+// These tests require actual CLI binaries in PATH
+// Run with: cargo test --features agent-validation
 
+#[cfg(feature = "agent-validation")]
 #[test]
 fn test_claude_config_validation() {
 	let test = TestConfig::new(AgentType::Claude).unwrap();
@@ -384,6 +385,7 @@ fn test_claude_config_validation() {
 		.expect("Claude should accept the configuration");
 }
 
+#[cfg(feature = "agent-validation")]
 #[test]
 fn test_opencode_config_validation() {
 	let test = TestConfig::new(AgentType::OpenCode).unwrap();

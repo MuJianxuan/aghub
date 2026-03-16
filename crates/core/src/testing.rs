@@ -31,13 +31,18 @@ impl TestConfig {
 	/// ```
 	pub fn new(agent_type: AgentType) -> Result<Self> {
 		let temp_dir = TempDir::new().map_err(ConfigError::Io)?;
-		let config_path = temp_dir.path().join("settings.json");
+		let config_path = if agent_type == AgentType::Codex {
+			temp_dir.path().join("config.toml")
+		} else {
+			temp_dir.path().join("settings.json")
+		};
 
 		// Create minimal valid config for the agent type
 		let initial_config = match agent_type {
 			AgentType::OpenCode => {
 				r#"{"mcp_servers": [], "skills": [], "sub_agents": []}"#
 			}
+			AgentType::Codex => "",
 			_ => r#"{"mcpServers": {}, "skills": {}}"#,
 		};
 
@@ -45,7 +50,7 @@ impl TestConfig {
 
 		// Create isolated skills directory for Claude
 		let skills_dir = temp_dir.path().join("skills");
-		if agent_type != AgentType::OpenCode {
+		if agent_type != AgentType::OpenCode && agent_type != AgentType::Codex {
 			fs::create_dir(&skills_dir).map_err(ConfigError::Io)?;
 			// Set thread-local skills path for isolation
 			crate::adapters::map::set_thread_local_skills_path(Some(
@@ -87,7 +92,9 @@ impl TestConfig {
 		name: &str,
 		description: Option<&str>,
 	) -> Result<()> {
-		if self.agent_type == AgentType::OpenCode {
+		if self.agent_type == AgentType::OpenCode
+			|| self.agent_type == AgentType::Codex
+		{
 			return Ok(());
 		}
 
@@ -151,7 +158,9 @@ impl TestConfig {
 impl Drop for TestConfig {
 	fn drop(&mut self) {
 		// Clear thread-local skills path override
-		if self.agent_type != AgentType::OpenCode {
+		if self.agent_type != AgentType::OpenCode
+			&& self.agent_type != AgentType::Codex
+		{
 			crate::adapters::map::set_thread_local_skills_path(None);
 		}
 	}
@@ -181,7 +190,11 @@ impl TestConfigBuilder {
 	/// Build the test configuration
 	pub fn build(self) -> Result<TestConfig> {
 		let temp_dir = TempDir::new().map_err(ConfigError::Io)?;
-		let config_path = temp_dir.path().join("settings.json");
+		let config_path = if self.agent_type == AgentType::Codex {
+			temp_dir.path().join("config.toml")
+		} else {
+			temp_dir.path().join("settings.json")
+		};
 
 		let content =
 			self.initial_content
@@ -190,6 +203,7 @@ impl TestConfigBuilder {
 						r#"{"mcp_servers": [], "skills": [], "sub_agents": []}"#
 							.to_string()
 					}
+					AgentType::Codex => String::new(),
 					_ => r#"{"mcpServers": {}, "skills": {}}"#.to_string(),
 				});
 
@@ -197,7 +211,9 @@ impl TestConfigBuilder {
 
 		// Create isolated skills directory for Claude
 		let skills_dir = temp_dir.path().join("skills");
-		if self.agent_type != AgentType::OpenCode {
+		if self.agent_type != AgentType::OpenCode
+			&& self.agent_type != AgentType::Codex
+		{
 			fs::create_dir(&skills_dir).map_err(ConfigError::Io)?;
 			// Set thread-local skills path for isolation
 			crate::adapters::map::set_thread_local_skills_path(Some(

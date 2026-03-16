@@ -27,6 +27,12 @@ pub trait AgentAdapter: Send + Sync {
 
     /// Get the CLI command to validate config (e.g., "claude --settings <path> --version")
     fn validate_command(&self, config_path: &Path) -> Command;
+
+    /// Whether this agent supports MCP enable/disable operations
+    /// (Claude doesn't preserve enabled state, so it returns false)
+    fn supports_mcp_enable_disable(&self) -> bool {
+        true // Default to true for most agents
+    }
 }
 
 /// Create an adapter for the given agent type

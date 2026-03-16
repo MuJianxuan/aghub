@@ -1,7 +1,7 @@
 //! CLI for skills-ref library.
 
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 #[derive(Parser)]
 #[command(name = "skills-ref")]
@@ -53,7 +53,7 @@ enum Commands {
     },
 }
 
-fn is_skill_md_file(path: &PathBuf) -> bool {
+fn is_skill_md_file(path: &Path) -> bool {
     path.is_file()
         && path
             .file_name()

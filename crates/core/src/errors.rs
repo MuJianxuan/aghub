@@ -47,6 +47,19 @@ impl ConfigError {
             name: name.into(),
         }
     }
+
+    pub fn unsupported_operation(
+        operation: impl Into<String>,
+        resource_type: impl Into<String>,
+        agent: impl Into<String>,
+    ) -> Self {
+        Self::UnsupportedOperation(format!(
+            "Cannot {} {} for {} agent",
+            operation.into(),
+            resource_type.into(),
+            agent.into()
+        ))
+    }
 }
 
 pub type Result<T> = std::result::Result<T, ConfigError>;

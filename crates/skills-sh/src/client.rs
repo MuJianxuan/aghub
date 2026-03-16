@@ -114,7 +114,7 @@ impl Client {
             .map(SearchResult::from)
             .collect();
 
-        results.sort_by(|a, b| b.installs.cmp(&a.installs));
+        results.sort_by_key(|b| std::cmp::Reverse(b.installs));
 
         Ok(results)
     }

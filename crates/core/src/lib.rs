@@ -26,7 +26,7 @@
 //!     // Add an MCP server
 //!     let mcp = McpServer::new(
 //!         "filesystem",
-//!         McpTransport::command(
+//!         McpTransport::stdio(
 //!             "npx",
 //!             vec!["-y".to_string(), "@modelcontextprotocol/server-filesystem".to_string(), "/tmp".to_string()],
 //!         ),

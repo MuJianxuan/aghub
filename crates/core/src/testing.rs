@@ -249,7 +249,7 @@ mod tests {
         // Add MCP
         let mcp = McpServer::new(
             "test",
-            McpTransport::command("echo", vec!["hello".to_string()]),
+            McpTransport::stdio("echo", vec!["hello".to_string()]),
         );
         manager.add_mcp(mcp).unwrap();
 
@@ -276,7 +276,7 @@ mod tests {
         manager1
             .add_mcp(McpServer::new(
                 "mcp1",
-                McpTransport::command("echo", vec!["1".to_string()]),
+                McpTransport::stdio("echo", vec!["1".to_string()]),
             ))
             .unwrap();
 

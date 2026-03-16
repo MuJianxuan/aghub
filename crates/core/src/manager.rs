@@ -231,6 +231,14 @@ impl ConfigManager {
 
     /// Disable an MCP server
     pub fn disable_mcp(&mut self, name: &str) -> Result<()> {
+        if !self.adapter.supports_mcp_enable_disable() {
+            return Err(ConfigError::unsupported_operation(
+                "disable",
+                "MCP server",
+                self.adapter.name(),
+            ));
+        }
+
         let config = self.config_mut()?;
 
         let mcp = config
@@ -245,6 +253,14 @@ impl ConfigManager {
 
     /// Enable a previously disabled MCP server
     pub fn enable_mcp(&mut self, name: &str) -> Result<()> {
+        if !self.adapter.supports_mcp_enable_disable() {
+            return Err(ConfigError::unsupported_operation(
+                "enable",
+                "MCP server",
+                self.adapter.name(),
+            ));
+        }
+
         let config = self.config_mut()?;
 
         let mcp = config
@@ -340,7 +356,7 @@ impl ConfigManager {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::adapters::ClaudeAdapter;
+    use crate::adapters::{ClaudeAdapter, OpenCodeAdapter};
     use crate::models::McpTransport;
     use std::io::Write;
     use tempfile::NamedTempFile;
@@ -350,6 +366,19 @@ mod tests {
         writeln!(temp_file, "{{\"mcpServers\": {{}}, \"skills\": {{}}}}").unwrap();
 
         let adapter = Box::new(ClaudeAdapter::new());
+        let manager = ConfigManager::with_path(adapter, temp_file.path().to_path_buf());
+        (manager, temp_file)
+    }
+
+    fn create_test_manager_opencode() -> (ConfigManager, NamedTempFile) {
+        let mut temp_file = NamedTempFile::new().unwrap();
+        writeln!(
+            temp_file,
+            "{{\"mcp_servers\": [], \"skills\": [], \"sub_agents\": []}}"
+        )
+        .unwrap();
+
+        let adapter = Box::new(OpenCodeAdapter::new());
         let manager = ConfigManager::with_path(adapter, temp_file.path().to_path_buf());
         (manager, temp_file)
     }
@@ -401,13 +430,14 @@ mod tests {
 
     #[test]
     fn test_mcp_crud() {
-        let (mut manager, _temp) = create_test_manager();
+        // Use OpenCode adapter since it supports MCP enable/disable
+        let (mut manager, _temp) = create_test_manager_opencode();
         manager.load().unwrap();
 
         // Add
         let mcp = McpServer::new(
             "test-mcp",
-            McpTransport::command("echo", vec!["hello".to_string()]),
+            McpTransport::stdio("echo", vec!["hello".to_string()]),
         );
         manager.add_mcp(mcp.clone()).unwrap();
         assert!(manager.get_mcp("test-mcp").is_some());
@@ -415,7 +445,7 @@ mod tests {
         // Update
         let updated = McpServer::new(
             "test-mcp",
-            McpTransport::command("echo", vec!["updated".to_string()]),
+            McpTransport::stdio("echo", vec!["updated".to_string()]),
         );
         manager.update_mcp("test-mcp", updated).unwrap();
 

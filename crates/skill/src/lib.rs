@@ -1,0 +1,39 @@
+//! Skill packaging and parsing library.
+//!
+//! This library provides functionality to pack, unpack, parse, and validate
+//! skill packages in .skill (zip) format. It extends skills-ref with
+//! packaging capabilities.
+//!
+//! # Example
+//!
+//! ```rust,no_run
+//! use skill::package::{pack, unpack};
+//! use skill::parser::parse;
+//! use std::path::Path;
+//!
+//! // Pack a skill directory
+//! pack(Path::new("/path/to/skill"), Path::new("/output/skill.skill")).unwrap();
+//!
+//! // Unpack a .skill file
+//! unpack(Path::new("/path/to/skill.skill"), Path::new("/output/dir")).unwrap();
+//!
+//! // Parse any skill format (auto-detect)
+//! let skill = parse(Path::new("/path/to/skill.skill")).unwrap();
+//! println!("Skill name: {}", skill.name);
+//! ```
+
+pub mod error;
+pub mod model;
+pub mod package;
+pub mod parser;
+pub mod validator;
+
+// Re-export commonly used items
+pub use error::SkillError;
+pub use model::{Skill, SkillSource};
+pub use package::{pack, unpack, read_skill_md};
+pub use parser::{parse, parse_skill_dir, parse_skill_file, parse_skill_md, parse_zip};
+pub use validator::{validate, validate_skill_dir, validate_skill_file, validate_zip};
+
+// Re-export from skills-ref for convenience
+pub use skills_ref::{SkillProperties, validate as validate_skill_properties};

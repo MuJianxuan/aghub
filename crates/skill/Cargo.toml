@@ -1,0 +1,20 @@
+[package]
+name = "skill"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Skill packaging and parsing library for .skill/.zip files"
+
+[dependencies]
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+thiserror = { workspace = true }
+zip = "2.2"
+tempfile = { workspace = true }
+skills-ref = { path = "../skills-ref" }
+walkdir = "2.5"
+
+[dev-dependencies]
+tempfile = { workspace = true }

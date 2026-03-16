@@ -101,6 +101,13 @@ impl ConfigManager {
         self.config.as_ref()
     }
 
+    /// Initialize an empty configuration if none exists
+    pub fn init_empty_config(&mut self) {
+        if self.config.is_none() {
+            self.config = Some(AgentConfig::new());
+        }
+    }
+
     /// Get mutable reference to loaded configuration
     fn config_mut(&mut self) -> Result<&mut AgentConfig> {
         self.config

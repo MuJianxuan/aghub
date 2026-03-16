@@ -8,7 +8,7 @@ use aghub_core::{
 
 mod commands;
 
-use commands::{add, delete, disable, enable, get, update};
+use commands::{add, delete, disable, enable, get, interactive, update};
 
 /// Global verbose flag used by the eprintln_verbose macro
 static mut VERBOSE: bool = false;
@@ -199,6 +199,8 @@ enum Commands {
         resource: ResourceType,
         name: String,
     },
+    /// Interactive mode - step-by-step wizard
+    Interactive,
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug)]
@@ -258,9 +260,10 @@ fn main() -> Result<()> {
         }
         Err(e) => {
             // If config not found and we're doing a read operation, that's an error
-            // If config not found and we're adding, that's okay - we'll create it
+            // If config not found and we're adding or using interactive mode, that's okay - we'll create it
             let is_add = matches!(cli.command, Commands::Add { .. });
-            if is_add {
+            let is_interactive = matches!(cli.command, Commands::Interactive);
+            if is_add || is_interactive {
                 eprintln_verbose!("No existing config found, will create new configuration");
             } else {
                 return Err(anyhow::anyhow!("Failed to load config: {}", e));
@@ -337,6 +340,7 @@ fn main() -> Result<()> {
         Commands::Disable { resource, name } => disable::execute(&mut manager, resource, name),
         Commands::Enable { resource, name } => enable::execute(&mut manager, resource, name),
         Commands::Describe { resource, name } => describe::execute(&manager, resource, name),
+        Commands::Interactive => interactive::run_interactive(&mut manager),
     }
 }
 

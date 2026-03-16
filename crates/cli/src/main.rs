@@ -6,6 +6,7 @@ use aghub_core::{
     adapters::create_adapter, manager::ConfigManager, models::AgentType, paths::find_project_root,
 };
 
+mod ui;
 mod commands;
 
 use commands::{add, delete, disable, enable, get, interactive, update};

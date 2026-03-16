@@ -41,7 +41,6 @@ impl InteractiveContext {
             ConfigManager::new(adapter, true, None)
         }
     }
-
 }
 
 /// Run the interactive CLI wizard
@@ -146,10 +145,7 @@ fn switch_agent(ctx: &mut InteractiveContext, manager: &mut ConfigManager) -> Re
         manager.init_empty_config();
     }
 
-    println!(
-        "\n[Switched to {}]\n",
-        ctx.agent_name().yellow().bold()
-    );
+    println!("\n[Switched to {}]\n", ctx.agent_name().yellow().bold());
     Ok(())
 }
 
@@ -194,10 +190,15 @@ fn select_resource_type() -> Result<ResourceType> {
 
     let selected = Select::new(
         "Select resource type:",
-        options.iter().map(|(name, _)| *name).collect()
-    ).prompt()?;
+        options.iter().map(|(name, _)| *name).collect(),
+    )
+    .prompt()?;
 
-    Ok(options.iter().find(|(name, _)| *name == selected).unwrap().1)
+    Ok(options
+        .iter()
+        .find(|(name, _)| *name == selected)
+        .unwrap()
+        .1)
 }
 
 fn list_resources(manager: &ConfigManager) -> Result<()> {
@@ -283,73 +284,166 @@ fn add_resource(manager: &mut ConfigManager) -> Result<()> {
 fn add_skill(manager: &mut ConfigManager) -> Result<()> {
     println!("\n{}", "═══ Add Skill ═══".bold().cyan());
 
-    // Ask for import method
     let import_method = Select::new(
         "How would you like to add the skill?",
-        vec!["Import from file/directory", "Create manually"]
-    ).prompt()?;
+        vec![
+            "Search from skills.sh",
+            "Import from file/directory",
+            "Create manually",
+        ],
+    )
+    .prompt()?;
 
-    if import_method == "Import from file/directory" {
-        let path = Text::new("Enter path to skill (directory, .skill file, or SKILL.md):")
-            .prompt()?;
+    match import_method {
+        "Search from skills.sh" => add_skill_from_registry(manager)?,
+        "Import from file/directory" => add_skill_from_path(manager)?,
+        "Create manually" => add_skill_manually(manager)?,
+        _ => {}
+    }
 
-        let path = std::path::PathBuf::from(path);
-        if !path.exists() {
-            println!("[X] Path does not exist.");
-            return Ok(());
-        }
+    Ok(())
+}
 
-        match manager.add_skill_from_path(&path) {
-            Ok(skill) => {
-                println!("\n[OK] Skill added successfully!");
-                println!("{}", serde_json::to_string_pretty(&skill)?);
+struct RegistrySearchProvider {
+    rt: std::sync::Arc<tokio::runtime::Runtime>,
+}
+
+impl crate::ui::search::SearchProvider for RegistrySearchProvider {
+    type Item = skills_sh::SearchResult;
+
+    fn search(&self, query: &str) -> Vec<Self::Item> {
+        self.rt.block_on(async {
+            match skills_sh::ClientBuilder::new().timeout(std::time::Duration::from_secs(5)).build() {
+                Ok(client) => client.find(query).await.unwrap_or_default(),
+                Err(_) => vec![],
             }
-            Err(e) => {
-                println!("[X] Failed to add skill: {}", e);
-            }
-        }
-    } else {
-        // Manual creation
-        let name = Text::new("Skill name:")
-            .with_help_message("e.g., my-custom-skill")
-            .prompt()?;
+        })
+    }
 
-        let description = Text::new("Description (optional):")
-            .with_help_message("What does this skill do?")
-            .prompt()?;
-        let description = if description.is_empty() { None } else { Some(description) };
-
-        let author = Text::new("Author (optional):")
-            .prompt()?;
-        let author = if author.is_empty() { None } else { Some(author) };
-
-        let version = Text::new("Version (optional):")
-            .with_help_message("e.g., 1.0.0")
-            .prompt()?;
-        let version = if version.is_empty() { None } else { Some(version) };
-
-        let tools_input = Text::new("Tools (optional, comma-separated):")
-            .with_help_message("e.g., tool1, tool2, tool3")
-            .prompt()?;
-        let tools: Vec<String> = tools_input
-            .split(',')
-            .map(|s| s.trim().to_string())
-            .filter(|s| !s.is_empty())
-            .collect();
-
-        let skill = Skill {
-            name,
-            enabled: true,
-            description,
-            author,
-            version,
-            tools,
+    fn format_item(&self, item: &Self::Item, is_selected: bool) -> String {
+        let installs = if item.installs >= 1000 {
+            format!("{}k", item.installs / 1000)
+        } else {
+            item.installs.to_string()
         };
 
-        manager.add_skill(skill.clone())?;
-        println!("\n[OK] Skill added successfully!");
-        println!("{}", serde_json::to_string_pretty(&skill)?);
+        if is_selected {
+            format!("\x1b[36m>\x1b[0m \x1b[36m{}\x1b[0m \x1b[90m({installs} installs) — {}\x1b[0m", item.name, item.source)
+        } else {
+            format!("  {} \x1b[90m({installs} installs) — {}\x1b[0m", item.name, item.source)
+        }
     }
+}
+
+fn add_skill_from_registry(manager: &mut ConfigManager) -> Result<()> {
+    let rt = std::sync::Arc::new(tokio::runtime::Builder::new_multi_thread().enable_all().build()?);
+    let provider = RegistrySearchProvider { rt: rt.clone() };
+
+    let search_ui = crate::ui::search::RealtimeSearch::new("Search skills.sh", provider, rt);
+    let skill_result = match search_ui.prompt()? {
+        Some(r) => r,
+        None => {
+            println!("{}", "Cancelled.".dimmed());
+            return Ok(());
+        }
+    };
+
+    println!(
+        "\n{} {} ({})",
+        "Selected:".bold(),
+        skill_result.name.cyan(),
+        skill_result.slug.dimmed()
+    );
+
+    // Register skill from registry metadata
+    let skill = Skill {
+        name: skill_result.slug.clone(),
+        enabled: true,
+        description: Some(skill_result.name.clone()),
+        author: Some(skill_result.source.clone()),
+        version: None,
+        tools: Vec::new(),
+    };
+
+    manager.add_skill(skill.clone())?;
+    println!("\n{} Skill added: {}", "[OK]".green().bold(), skill_result.slug.cyan());
+    println!("{}", serde_json::to_string_pretty(&skill)?);
+    Ok(())
+}
+
+fn add_skill_from_path(manager: &mut ConfigManager) -> Result<()> {
+    let path = Text::new("Enter path to skill (directory, .skill file, or SKILL.md):").prompt()?;
+
+    let path = std::path::PathBuf::from(path);
+    if !path.exists() {
+        println!("{} Path does not exist.", "[X]".red());
+        return Ok(());
+    }
+
+    match manager.add_skill_from_path(&path) {
+        Ok(skill) => {
+            println!("\n{} Skill added successfully!", "[OK]".green());
+            println!("{}", serde_json::to_string_pretty(&skill)?);
+        }
+        Err(e) => {
+            println!("{} Failed to add skill: {}", "[X]".red(), e);
+        }
+    }
+
+    Ok(())
+}
+
+fn add_skill_manually(manager: &mut ConfigManager) -> Result<()> {
+    let name = Text::new("Skill name:")
+        .with_help_message("e.g., my-custom-skill")
+        .prompt()?;
+
+    let description = Text::new("Description (optional):")
+        .with_help_message("What does this skill do?")
+        .prompt()?;
+    let description = if description.is_empty() {
+        None
+    } else {
+        Some(description)
+    };
+
+    let author = Text::new("Author (optional):").prompt()?;
+    let author = if author.is_empty() {
+        None
+    } else {
+        Some(author)
+    };
+
+    let version = Text::new("Version (optional):")
+        .with_help_message("e.g., 1.0.0")
+        .prompt()?;
+    let version = if version.is_empty() {
+        None
+    } else {
+        Some(version)
+    };
+
+    let tools_input = Text::new("Tools (optional, comma-separated):")
+        .with_help_message("e.g., tool1, tool2, tool3")
+        .prompt()?;
+    let tools: Vec<String> = tools_input
+        .split(',')
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    let skill = Skill {
+        name,
+        enabled: true,
+        description,
+        author,
+        version,
+        tools,
+    };
+
+    manager.add_skill(skill.clone())?;
+    println!("\n{} Skill added successfully!", "[OK]".green());
+    println!("{}", serde_json::to_string_pretty(&skill)?);
 
     Ok(())
 }
@@ -363,8 +457,13 @@ fn add_mcp(manager: &mut ConfigManager) -> Result<()> {
 
     let transport_type = Select::new(
         "Transport type:",
-        vec!["stdio (command)", "streamable-http (URL)", "sse (URL, legacy)"]
-    ).prompt()?;
+        vec![
+            "stdio (command)",
+            "streamable-http (URL)",
+            "sse (URL, legacy)",
+        ],
+    )
+    .prompt()?;
 
     let transport = if transport_type.starts_with("stdio") {
         let command = Text::new("Command:")
@@ -387,20 +486,29 @@ fn add_mcp(manager: &mut ConfigManager) -> Result<()> {
         let env = if add_env {
             let mut env_map = HashMap::new();
             loop {
-                let key = Text::new("Environment variable name (or press Enter to finish):")
-                    .prompt()?;
+                let key =
+                    Text::new("Environment variable name (or press Enter to finish):").prompt()?;
                 if key.is_empty() {
                     break;
                 }
                 let value = Text::new(&format!("Value for {}:", key)).prompt()?;
                 env_map.insert(key, value);
             }
-            if env_map.is_empty() { None } else { Some(env_map) }
+            if env_map.is_empty() {
+                None
+            } else {
+                Some(env_map)
+            }
         } else {
             None
         };
 
-        McpTransport::Stdio { command: cmd, args, env, timeout: None }
+        McpTransport::Stdio {
+            command: cmd,
+            args,
+            env,
+            timeout: None,
+        }
     } else {
         let url = Text::new("URL:")
             .with_help_message("e.g., http://localhost:3000")
@@ -414,8 +522,8 @@ fn add_mcp(manager: &mut ConfigManager) -> Result<()> {
         let headers = if add_headers {
             let mut headers_map = HashMap::new();
             loop {
-                let header = Text::new("Header (format: Key: Value, or press Enter to finish):")
-                    .prompt()?;
+                let header =
+                    Text::new("Header (format: Key: Value, or press Enter to finish):").prompt()?;
                 if header.is_empty() {
                     break;
                 }
@@ -424,15 +532,27 @@ fn add_mcp(manager: &mut ConfigManager) -> Result<()> {
                     headers_map.insert(parts[0].trim().to_string(), parts[1].trim().to_string());
                 }
             }
-            if headers_map.is_empty() { None } else { Some(headers_map) }
+            if headers_map.is_empty() {
+                None
+            } else {
+                Some(headers_map)
+            }
         } else {
             None
         };
 
         if transport_type.starts_with("streamable") {
-            McpTransport::StreamableHttp { url, headers, timeout: None }
+            McpTransport::StreamableHttp {
+                url,
+                headers,
+                timeout: None,
+            }
         } else {
-            McpTransport::Sse { url, headers, timeout: None }
+            McpTransport::Sse {
+                url,
+                headers,
+                timeout: None,
+            }
         }
     };
 
@@ -452,9 +572,12 @@ fn add_sub_agent(manager: &mut ConfigManager) -> Result<()> {
         .with_help_message("e.g., code-reviewer, test-writer")
         .prompt()?;
 
-    let description = Text::new("Description (optional):")
-        .prompt()?;
-    let description = if description.is_empty() { None } else { Some(description) };
+    let description = Text::new("Description (optional):").prompt()?;
+    let description = if description.is_empty() {
+        None
+    } else {
+        Some(description)
+    };
 
     let model = Text::new("Model (optional):")
         .with_help_message("e.g., claude-sonnet-4-6, gpt-4")
@@ -464,7 +587,11 @@ fn add_sub_agent(manager: &mut ConfigManager) -> Result<()> {
     let instructions = Text::new("Instructions/system prompt (optional):")
         .with_help_message("Describe the sub-agent's role and behavior")
         .prompt()?;
-    let instructions = if instructions.is_empty() { None } else { Some(instructions) };
+    let instructions = if instructions.is_empty() {
+        None
+    } else {
+        Some(instructions)
+    };
 
     let agent = SubAgent {
         name,
@@ -485,7 +612,7 @@ fn add_sub_agent(manager: &mut ConfigManager) -> Result<()> {
 fn select_existing_resource(
     manager: &ConfigManager,
     resource_type: ResourceType,
-    action: &str
+    action: &str,
 ) -> Result<Option<String>> {
     let config = match manager.config() {
         Some(c) => c,
@@ -502,14 +629,14 @@ fn select_existing_resource(
     };
 
     if items.is_empty() {
-        println!("{}", format!("No {:?} configured yet.", resource_type).yellow());
+        println!(
+            "{}",
+            format!("No {:?} configured yet.", resource_type).yellow()
+        );
         return Ok(None);
     }
 
-    let selected = Select::new(
-        &format!("Select resource to {}", action),
-        items
-    ).prompt()?;
+    let selected = Select::new(&format!("Select resource to {}", action), items).prompt()?;
 
     Ok(Some(selected))
 }
@@ -532,7 +659,10 @@ fn update_resource(manager: &mut ConfigManager) -> Result<()> {
 }
 
 fn update_skill(manager: &mut ConfigManager, name: &str) -> Result<()> {
-    println!("\n{}", format!("═══ Update Skill: {} ═══", name).bold().cyan());
+    println!(
+        "\n{}",
+        format!("═══ Update Skill: {} ═══", name).bold().cyan()
+    );
 
     let existing = manager
         .get_skill(name)
@@ -542,12 +672,7 @@ fn update_skill(manager: &mut ConfigManager, name: &str) -> Result<()> {
     let mut skill = existing.clone();
 
     // Select fields to update
-    let options = vec![
-        "Description",
-        "Author",
-        "Version",
-        "Tools",
-    ];
+    let options = vec!["Description", "Author", "Version", "Tools"];
 
     let selected = MultiSelect::new("Select fields to update:", options).prompt()?;
 
@@ -555,23 +680,17 @@ fn update_skill(manager: &mut ConfigManager, name: &str) -> Result<()> {
         match field {
             "Description" => {
                 let current = skill.description.as_deref().unwrap_or("");
-                let value = Text::new("Description:")
-                    .with_default(current)
-                    .prompt()?;
+                let value = Text::new("Description:").with_default(current).prompt()?;
                 skill.description = if value.is_empty() { None } else { Some(value) };
             }
             "Author" => {
                 let current = skill.author.as_deref().unwrap_or("");
-                let value = Text::new("Author:")
-                    .with_default(current)
-                    .prompt()?;
+                let value = Text::new("Author:").with_default(current).prompt()?;
                 skill.author = if value.is_empty() { None } else { Some(value) };
             }
             "Version" => {
                 let current = skill.version.as_deref().unwrap_or("");
-                let value = Text::new("Version:")
-                    .with_default(current)
-                    .prompt()?;
+                let value = Text::new("Version:").with_default(current).prompt()?;
                 skill.version = if value.is_empty() { None } else { Some(value) };
             }
             "Tools" => {
@@ -597,14 +716,20 @@ fn update_skill(manager: &mut ConfigManager, name: &str) -> Result<()> {
 }
 
 fn update_mcp(manager: &mut ConfigManager, name: &str) -> Result<()> {
-    println!("\n{}", format!("═══ Update MCP: {} ═══", name).bold().cyan());
+    println!(
+        "\n{}",
+        format!("═══ Update MCP: {} ═══", name).bold().cyan()
+    );
 
     let existing = manager
         .get_mcp(name)
         .ok_or_else(|| anyhow::anyhow!("MCP not found"))?
         .clone();
 
-    println!("Current transport: {}", format!("{:?}", existing.transport).dimmed());
+    println!(
+        "Current transport: {}",
+        format!("{:?}", existing.transport).dimmed()
+    );
 
     let update_transport = Confirm::new("Update transport configuration?")
         .with_default(false)
@@ -616,25 +741,42 @@ fn update_mcp(manager: &mut ConfigManager, name: &str) -> Result<()> {
         // Re-use add_mcp logic for transport
         let transport_type = Select::new(
             "New transport type:",
-            vec!["stdio (command)", "streamable-http (URL)", "sse (URL, legacy)"]
-        ).prompt()?;
+            vec![
+                "stdio (command)",
+                "streamable-http (URL)",
+                "sse (URL, legacy)",
+            ],
+        )
+        .prompt()?;
 
         mcp.transport = if transport_type.starts_with("stdio") {
-            let command = Text::new("Command:")
-                .prompt()?;
+            let command = Text::new("Command:").prompt()?;
             let parts: Vec<String> = command.split_whitespace().map(String::from).collect();
             if parts.is_empty() {
                 bail!("Command cannot be empty");
             }
             let cmd = parts[0].clone();
             let args = parts.into_iter().skip(1).collect();
-            McpTransport::Stdio { command: cmd, args, env: None, timeout: None }
+            McpTransport::Stdio {
+                command: cmd,
+                args,
+                env: None,
+                timeout: None,
+            }
         } else {
             let url = Text::new("URL:").prompt()?;
             if transport_type.starts_with("streamable") {
-                McpTransport::StreamableHttp { url, headers: None, timeout: None }
+                McpTransport::StreamableHttp {
+                    url,
+                    headers: None,
+                    timeout: None,
+                }
             } else {
-                McpTransport::Sse { url, headers: None, timeout: None }
+                McpTransport::Sse {
+                    url,
+                    headers: None,
+                    timeout: None,
+                }
             }
         };
     }
@@ -647,7 +789,10 @@ fn update_mcp(manager: &mut ConfigManager, name: &str) -> Result<()> {
 }
 
 fn update_sub_agent(manager: &mut ConfigManager, name: &str) -> Result<()> {
-    println!("\n{}", format!("═══ Update Sub-agent: {} ═══", name).bold().cyan());
+    println!(
+        "\n{}",
+        format!("═══ Update Sub-agent: {} ═══", name).bold().cyan()
+    );
 
     let existing = manager
         .get_sub_agent(name)
@@ -695,9 +840,12 @@ fn delete_resource(manager: &mut ConfigManager) -> Result<()> {
         None => return Ok(()),
     };
 
-    let confirm = Confirm::new(&format!("Are you sure you want to delete '{}' permanently?", name))
-        .with_default(false)
-        .prompt()?;
+    let confirm = Confirm::new(&format!(
+        "Are you sure you want to delete '{}' permanently?",
+        name
+    ))
+    .with_default(false)
+    .prompt()?;
 
     if !confirm {
         println!("{}", "Cancelled.".dimmed());
@@ -780,7 +928,8 @@ fn toggle_resource(manager: &mut ConfigManager) -> Result<()> {
         }
     }
 
-    println!("[OK] '{}' is now {}.",
+    println!(
+        "[OK] '{}' is now {}.",
         name,
         if is_enabled { "disabled" } else { "enabled" }
     );
@@ -806,7 +955,10 @@ fn describe_resource(manager: &ConfigManager) -> Result<()> {
         }
         ResourceType::Mcps => {
             let mcp = config.mcps.iter().find(|m| m.name == name).unwrap();
-            println!("\n{}", format!("═══ MCP Server: {} ═══", name).bold().cyan());
+            println!(
+                "\n{}",
+                format!("═══ MCP Server: {} ═══", name).bold().cyan()
+            );
             println!("{}", serde_json::to_string_pretty(mcp)?);
         }
         ResourceType::SubAgents => {

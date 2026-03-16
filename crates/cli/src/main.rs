@@ -77,9 +77,13 @@ enum Commands {
         #[arg(short, long, group = "mcp_config")]
         command: Option<String>,
 
-        /// For MCP: URL for SSE transport (e.g., "http://localhost:3000")
+        /// For MCP: URL for HTTP/SSE transport (e.g., "http://localhost:3000")
         #[arg(short, long, group = "mcp_config")]
         url: Option<String>,
+
+        /// For MCP with URL: Transport type (streamable-http, sse)
+        #[arg(short, long, value_name = "TYPE", default_value = "streamable-http")]
+        transport: String,
 
         /// For MCP with URL: HTTP headers (e.g., "Authorization:Bearer token")
         #[arg(long = "header", value_name = "KEY:VALUE")]
@@ -123,9 +127,13 @@ enum Commands {
         #[arg(short, long, group = "mcp_config")]
         command: Option<String>,
 
-        /// For MCP: URL for SSE transport
+        /// For MCP: URL for HTTP/SSE transport
         #[arg(short, long, group = "mcp_config")]
         url: Option<String>,
+
+        /// For MCP with URL: Transport type (streamable-http, sse)
+        #[arg(short, long, value_name = "TYPE", default_value = "streamable-http")]
+        transport: String,
 
         /// For MCP with URL: HTTP headers
         #[arg(long = "header", value_name = "KEY:VALUE")]
@@ -214,7 +222,7 @@ fn main() -> Result<()> {
     let (global, project_root) = if cli.project {
         let current_dir = std::env::current_dir()?;
         let root = find_project_root(&current_dir)
-            .or_else(|| Some(current_dir))
+            .or(Some(current_dir))
             .context("Could not determine project root. Use -g for global config or run from within a project.")?;
         (false, Some(root))
     } else {
@@ -260,6 +268,7 @@ fn main() -> Result<()> {
             name,
             command,
             url,
+            transport,
             headers,
             env_vars,
             description,
@@ -274,6 +283,7 @@ fn main() -> Result<()> {
             name,
             command,
             url,
+            transport,
             headers,
             env_vars,
             description,
@@ -288,6 +298,7 @@ fn main() -> Result<()> {
             name,
             command,
             url,
+            transport,
             headers,
             env_vars,
             description,
@@ -302,6 +313,7 @@ fn main() -> Result<()> {
             name,
             command,
             url,
+            transport,
             headers,
             env_vars,
             description,

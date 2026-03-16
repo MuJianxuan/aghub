@@ -48,8 +48,11 @@ pub fn execute(manager: &ConfigManager, resource: ResourceType) -> Result<()> {
                     name: m.name.clone(),
                     enabled: m.enabled,
                     transport_type: match &m.transport {
-                        aghub_core::models::McpTransport::Command { .. } => "command".to_string(),
-                        aghub_core::models::McpTransport::Url { .. } => "url".to_string(),
+                        aghub_core::models::McpTransport::Stdio { .. } => "stdio".to_string(),
+                        aghub_core::models::McpTransport::Sse { .. } => "sse".to_string(),
+                        aghub_core::models::McpTransport::StreamableHttp { .. } => {
+                            "streamable-http".to_string()
+                        }
                     },
                 })
                 .collect();

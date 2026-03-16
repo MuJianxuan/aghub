@@ -10,6 +10,7 @@ pub fn execute(
     name: String,
     command: Option<String>,
     url: Option<String>,
+    transport: String,
     headers: Vec<String>,
     env_vars: Vec<String>,
     description: Option<String>,
@@ -78,7 +79,14 @@ pub fn execute(
                     Some(env_map)
                 };
 
-                mcp.transport = McpTransport::Command { command, args, env };
+                // Preserve existing timeout or use None
+                let timeout = match &mcp.transport {
+                    McpTransport::Stdio { timeout, .. } => *timeout,
+                    McpTransport::Sse { timeout, .. } => *timeout,
+                    McpTransport::StreamableHttp { timeout, .. } => *timeout,
+                };
+
+                mcp.transport = McpTransport::Stdio { command, args, env, timeout };
             } else if let Some(url_str) = url {
                 let headers_map = if headers.is_empty() {
                     None
@@ -93,9 +101,27 @@ pub fn execute(
                     Some(map)
                 };
 
-                mcp.transport = McpTransport::Url {
-                    url: url_str,
-                    headers: headers_map,
+                // Preserve existing timeout or use None
+                let timeout = match &mcp.transport {
+                    McpTransport::Stdio { timeout, .. } => *timeout,
+                    McpTransport::Sse { timeout, .. } => *timeout,
+                    McpTransport::StreamableHttp { timeout, .. } => *timeout,
+                };
+
+                // Determine transport type based on the transport argument
+                mcp.transport = if transport == "sse" {
+                    McpTransport::Sse {
+                        url: url_str,
+                        headers: headers_map,
+                        timeout,
+                    }
+                } else {
+                    // Default to streamable-http
+                    McpTransport::StreamableHttp {
+                        url: url_str,
+                        headers: headers_map,
+                        timeout,
+                    }
                 };
             }
 

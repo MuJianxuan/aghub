@@ -62,6 +62,8 @@ pub struct McpServer {
     #[serde(default = "default_true")]
     pub enabled: bool,
     pub transport: McpTransport,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub timeout: Option<u64>, // Timeout in seconds
 }
 
 impl McpServer {
@@ -70,6 +72,7 @@ impl McpServer {
             name: name.into(),
             enabled: true,
             transport,
+            timeout: None,
         }
     }
 }
@@ -78,56 +81,94 @@ impl McpServer {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum McpTransport {
-    /// stdio-based MCP transport with command execution
-    Command {
+    /// stdio-based MCP transport (command execution)
+    Stdio {
         command: String,
         #[serde(default)]
         args: Vec<String>,
         /// Environment variables (only for stdio transport)
         #[serde(default)]
         env: Option<HashMap<String, String>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout: Option<u64>,
     },
-    /// HTTP/SSE-based MCP transport
-    Url {
+    /// Legacy SSE-based MCP transport (HTTP server-sent events)
+    /// Deprecated in favor of StreamableHttp
+    Sse {
         url: String,
-        /// HTTP headers as KV pairs (for URL-based MCPs)
+        /// HTTP headers as KV pairs (for SSE-based MCPs)
         #[serde(default)]
         headers: Option<HashMap<String, String>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout: Option<u64>,
+    },
+    /// Streamable HTTP transport (successor to SSE)
+    /// Uses HTTP POST for client->server, streaming responses for server->client
+    StreamableHttp {
+        url: String,
+        /// HTTP headers as KV pairs
+        #[serde(default)]
+        headers: Option<HashMap<String, String>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout: Option<u64>,
     },
 }
 
 impl McpTransport {
-    pub fn command(command: impl Into<String>, args: Vec<String>) -> Self {
-        Self::Command {
+    pub fn stdio(command: impl Into<String>, args: Vec<String>) -> Self {
+        Self::Stdio {
             command: command.into(),
             args,
             env: None,
+            timeout: None,
         }
     }
 
-    pub fn command_with_env(
+    pub fn stdio_with_env(
         command: impl Into<String>,
         args: Vec<String>,
         env: HashMap<String, String>,
     ) -> Self {
-        Self::Command {
+        Self::Stdio {
             command: command.into(),
             args,
             env: Some(env),
+            timeout: None,
         }
     }
 
-    pub fn url(url: impl Into<String>) -> Self {
-        Self::Url {
+    pub fn sse(url: impl Into<String>) -> Self {
+        Self::Sse {
             url: url.into(),
             headers: None,
+            timeout: None,
         }
     }
 
-    pub fn url_with_headers(url: impl Into<String>, headers: HashMap<String, String>) -> Self {
-        Self::Url {
+    pub fn sse_with_headers(url: impl Into<String>, headers: HashMap<String, String>) -> Self {
+        Self::Sse {
             url: url.into(),
             headers: Some(headers),
+            timeout: None,
+        }
+    }
+
+    pub fn streamable_http(url: impl Into<String>) -> Self {
+        Self::StreamableHttp {
+            url: url.into(),
+            headers: None,
+            timeout: None,
+        }
+    }
+
+    pub fn streamable_http_with_headers(
+        url: impl Into<String>,
+        headers: HashMap<String, String>,
+    ) -> Self {
+        Self::StreamableHttp {
+            url: url.into(),
+            headers: Some(headers),
+            timeout: None,
         }
     }
 }
@@ -210,10 +251,10 @@ mod tests {
     }
 
     #[test]
-    fn test_mcp_server_command() {
+    fn test_mcp_server_stdio() {
         let mcp = McpServer::new(
             "filesystem",
-            McpTransport::command(
+            McpTransport::stdio(
                 "npx",
                 vec![
                     "-y".to_string(),
@@ -224,24 +265,92 @@ mod tests {
         );
 
         let json = serde_json::to_string(&mcp).unwrap();
-        assert!(json.contains("\"type\":\"command\""));
+        assert!(json.contains("\"type\":\"stdio\""));
         assert!(json.contains("\"command\":\"npx\""));
     }
 
     #[test]
-    fn test_mcp_server_url_with_headers() {
+    fn test_mcp_server_stdio_with_env() {
+        let mut env = HashMap::new();
+        env.insert("API_KEY".to_string(), "secret".to_string());
+
+        let mcp = McpServer::new(
+            "custom-server",
+            McpTransport::stdio_with_env("my-server", vec!["--port".to_string()], env),
+        );
+
+        let json = serde_json::to_string(&mcp).unwrap();
+        assert!(json.contains("\"type\":\"stdio\""));
+        assert!(json.contains("\"API_KEY\""));
+    }
+
+    #[test]
+    fn test_mcp_server_sse_with_headers() {
         let mut headers = HashMap::new();
         headers.insert("Authorization".to_string(), "Bearer token".to_string());
 
         let mcp = McpServer::new(
             "custom-server",
-            McpTransport::url_with_headers("http://localhost:3000", headers),
+            McpTransport::sse_with_headers("http://localhost:3000", headers),
         );
 
         let json = serde_json::to_string(&mcp).unwrap();
-        assert!(json.contains("\"type\":\"url\""));
+        assert!(json.contains("\"type\":\"sse\""));
         assert!(json.contains("\"url\":\"http://localhost:3000\""));
         assert!(json.contains("\"Authorization\""));
+    }
+
+    #[test]
+    fn test_mcp_server_streamable_http_with_headers() {
+        let mut headers = HashMap::new();
+        headers.insert("Authorization".to_string(), "Bearer token".to_string());
+        headers.insert("X-API-Key".to_string(), "secret-key".to_string());
+
+        let mcp = McpServer::new(
+            "streamable-server",
+            McpTransport::streamable_http_with_headers("http://localhost:3000/mcp", headers),
+        );
+
+        let json = serde_json::to_string(&mcp).unwrap();
+        assert!(json.contains("\"type\":\"streamable_http\""));
+        assert!(json.contains("\"url\":\"http://localhost:3000/mcp\""));
+        assert!(json.contains("\"Authorization\""));
+        assert!(json.contains("\"X-API-Key\""));
+
+        // Test round-trip
+        let deserialized: McpServer = serde_json::from_str(&json).unwrap();
+        assert_eq!(mcp, deserialized);
+    }
+
+    #[test]
+    fn test_mcp_server_streamable_http_basic() {
+        let mcp = McpServer::new(
+            "basic-http",
+            McpTransport::streamable_http("http://localhost:8080/mcp"),
+        );
+
+        let json = serde_json::to_string(&mcp).unwrap();
+        assert!(json.contains("\"type\":\"streamable_http\""));
+        assert!(json.contains("\"url\":\"http://localhost:8080/mcp\""));
+    }
+
+    #[test]
+    fn test_mcp_server_with_timeout() {
+        let transport = McpTransport::Stdio {
+            command: "npx".to_string(),
+            args: vec!["-y".to_string()],
+            env: None,
+            timeout: Some(30),
+        };
+        let mcp = McpServer {
+            name: "test".to_string(),
+            enabled: true,
+            transport,
+            timeout: Some(60),
+        };
+
+        let json = serde_json::to_string(&mcp).unwrap();
+        assert!(json.contains("\"timeout\":60"));
     }
 
     #[test]

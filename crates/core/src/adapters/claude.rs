@@ -24,11 +24,20 @@ struct ClaudeConfig {
 /// Claude MCP server configuration
 #[derive(Debug, Serialize, Deserialize)]
 struct ClaudeMcpServer {
-    command: String,
-    #[serde(default)]
+    #[serde(rename = "type", default)]
+    server_type: Option<String>, // "stdio", "sse", or "http"
+    // For stdio type:
+    #[serde(skip_serializing_if = "Option::is_none")]
+    command: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     args: Vec<String>,
-    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     env: Option<HashMap<String, String>>,
+    // For sse/http type:
+    #[serde(skip_serializing_if = "Option::is_none")]
+    url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    headers: Option<HashMap<String, String>>,
 }
 
 struct SkillMetadata {
@@ -51,7 +60,6 @@ fn parse_skill_md(content: &str) -> Option<SkillMetadata> {
     let mut description = None;
     let mut author = None;
     let mut version = None;
-    let mut source = None;
     let mut in_frontmatter = false;
     let mut current_key: Option<&str> = None;
 
@@ -91,9 +99,6 @@ fn parse_skill_md(content: &str) -> Option<SkillMetadata> {
             } else if key == "version" {
                 version = Some(value.to_string());
                 current_key = Some("version");
-            } else if key == "source" {
-                source = Some(value.to_string());
-                current_key = Some("source");
             } else if key == "description" {
                 // Description might be a folded scalar (>)
                 if value.is_empty() || value == ">" {
@@ -234,14 +239,58 @@ impl AgentAdapter for ClaudeAdapter {
 
         // Parse MCP servers from settings.json
         for (name, mcp) in claude_config.mcp_servers {
+            let transport = match mcp.server_type.as_deref() {
+                Some("stdio") => McpTransport::Stdio {
+                    command: mcp.command.unwrap_or_default(),
+                    args: mcp.args,
+                    env: mcp.env,
+                    timeout: None,
+                },
+                Some("sse") => McpTransport::Sse {
+                    url: mcp.url.unwrap_or_default(),
+                    headers: mcp.headers,
+                    timeout: None,
+                },
+                Some("http") => McpTransport::StreamableHttp {
+                    url: mcp.url.unwrap_or_default(),
+                    headers: mcp.headers,
+                    timeout: None,
+                },
+                None | Some(_) => {
+                    // Try to infer from field presence for backward compatibility
+                    if let Some(command) = mcp.command {
+                        McpTransport::Stdio {
+                            command,
+                            args: mcp.args,
+                            env: mcp.env,
+                            timeout: None,
+                        }
+                    } else if let Some(url) = mcp.url {
+                        // Infer transport type from URL pattern
+                        // URLs containing "/sse" or "stream" are legacy SSE
+                        if url.contains("/sse") || url.contains("stream") {
+                            McpTransport::Sse {
+                                url,
+                                headers: mcp.headers,
+                                timeout: None,
+                            }
+                        } else {
+                            McpTransport::StreamableHttp {
+                                url,
+                                headers: mcp.headers,
+                                timeout: None,
+                            }
+                        }
+                    } else {
+                        continue; // Skip malformed entries
+                    }
+                }
+            };
             config.mcps.push(McpServer {
                 name,
                 enabled: true, // Claude doesn't have explicit enabled field
-                transport: McpTransport::Command {
-                    command: mcp.command,
-                    args: mcp.args,
-                    env: mcp.env,
-                },
+                transport,
+                timeout: None,
             });
         }
 
@@ -262,21 +311,41 @@ impl AgentAdapter for ClaudeAdapter {
 
         // Serialize MCP servers
         for mcp in &config.mcps {
-            if let McpTransport::Command { command, args, env } = &mcp.transport {
-                // Only include enabled MCPs in the output
-                if mcp.enabled {
-                    claude_config.mcp_servers.insert(
-                        mcp.name.clone(),
-                        ClaudeMcpServer {
-                            command: command.clone(),
-                            args: args.clone(),
-                            env: env.clone(),
-                        },
-                    );
-                }
+            // Skip disabled MCPs
+            if !mcp.enabled {
+                continue;
             }
-            // Note: URL-based MCPs are not supported by Claude Code
-            // They're silently skipped during serialization
+
+            let claude_mcp = match &mcp.transport {
+                McpTransport::Stdio { command, args, env, .. } => Some(ClaudeMcpServer {
+                    server_type: Some("stdio".to_string()),
+                    command: Some(command.clone()),
+                    args: args.clone(),
+                    env: env.clone(),
+                    url: None,
+                    headers: None,
+                }),
+                McpTransport::Sse { url, headers, .. } => Some(ClaudeMcpServer {
+                    server_type: Some("sse".to_string()),
+                    command: None,
+                    args: vec![],
+                    env: None,
+                    url: Some(url.clone()),
+                    headers: headers.clone(),
+                }),
+                McpTransport::StreamableHttp { url, headers, .. } => Some(ClaudeMcpServer {
+                    server_type: Some("http".to_string()),
+                    command: None,
+                    args: vec![],
+                    env: None,
+                    url: Some(url.clone()),
+                    headers: headers.clone(),
+                }),
+            };
+
+            if let Some(mcp_server) = claude_mcp {
+                claude_config.mcp_servers.insert(mcp.name.clone(), mcp_server);
+            }
         }
 
         // Note: Skills are NOT serialized to settings.json
@@ -295,6 +364,12 @@ impl AgentAdapter for ClaudeAdapter {
         cmd.arg("--version");
         cmd
     }
+
+    fn supports_mcp_enable_disable(&self) -> bool {
+        // Claude doesn't preserve MCP enabled state in config
+        // Disabled MCPs are simply removed from the config
+        false
+    }
 }
 
 #[cfg(test)]
@@ -303,14 +378,16 @@ mod tests {
     use crate::models::SubAgent;
 
     #[test]
-    fn test_parse_claude_config() {
+    fn test_parse_claude_config_stdio() {
         let json = r#"{
             "mcpServers": {
                 "filesystem": {
+                    "type": "stdio",
                     "command": "npx",
                     "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
                 },
                 "github": {
+                    "type": "stdio",
                     "command": "npx",
                     "args": ["-y", "@modelcontextprotocol/server-github"],
                     "env": {
@@ -327,19 +404,116 @@ mod tests {
 
         // Find filesystem MCP (HashMap iteration order is not deterministic)
         let filesystem = config.mcps.iter().find(|m| m.name == "filesystem").unwrap();
-        assert!(matches!(filesystem.transport, McpTransport::Command { .. }));
+        assert!(matches!(filesystem.transport, McpTransport::Stdio { .. }));
 
         // Find github MCP and check env
         let github = config.mcps.iter().find(|m| m.name == "github").unwrap();
-        assert!(matches!(github.transport, McpTransport::Command { .. }));
+        assert!(matches!(github.transport, McpTransport::Stdio { .. }));
     }
 
     #[test]
-    fn test_serialize_claude_config() {
+    fn test_parse_claude_config_sse() {
+        let json = r#"{
+            "mcpServers": {
+                "remote-server": {
+                    "type": "sse",
+                    "url": "http://localhost:3000/sse",
+                    "headers": {
+                        "Authorization": "Bearer token"
+                    }
+                }
+            }
+        }"#;
+
+        let adapter = ClaudeAdapter::new();
+        let config = adapter.parse_config(json).unwrap();
+
+        assert_eq!(config.mcps.len(), 1);
+        let mcp = &config.mcps[0];
+        assert_eq!(mcp.name, "remote-server");
+        assert!(matches!(mcp.transport, McpTransport::Sse { .. }));
+    }
+
+    #[test]
+    fn test_parse_claude_config_streamable_http() {
+        let json = r#"{
+            "mcpServers": {
+                "http-server": {
+                    "type": "http",
+                    "url": "http://localhost:3000/mcp",
+                    "headers": {
+                        "Authorization": "Bearer token"
+                    }
+                }
+            }
+        }"#;
+
+        let adapter = ClaudeAdapter::new();
+        let config = adapter.parse_config(json).unwrap();
+
+        assert_eq!(config.mcps.len(), 1);
+        let mcp = &config.mcps[0];
+        assert_eq!(mcp.name, "http-server");
+        assert!(matches!(mcp.transport, McpTransport::StreamableHttp { .. }));
+    }
+
+    #[test]
+    fn test_parse_claude_config_infers_transport_from_url() {
+        // Test that URLs without "/sse" or "stream" are inferred as StreamableHttp
+        let json = r#"{
+            "mcpServers": {
+                "inferred-http": {
+                    "url": "http://localhost:3000/mcp"
+                },
+                "inferred-sse": {
+                    "url": "http://localhost:3001/sse"
+                },
+                "inferred-stream": {
+                    "url": "http://localhost:3002/stream/events"
+                }
+            }
+        }"#;
+
+        let adapter = ClaudeAdapter::new();
+        let config = adapter.parse_config(json).unwrap();
+
+        assert_eq!(config.mcps.len(), 3);
+
+        let http_mcp = config.mcps.iter().find(|m| m.name == "inferred-http").unwrap();
+        assert!(matches!(http_mcp.transport, McpTransport::StreamableHttp { .. }));
+
+        let sse_mcp = config.mcps.iter().find(|m| m.name == "inferred-sse").unwrap();
+        assert!(matches!(sse_mcp.transport, McpTransport::Sse { .. }));
+
+        let stream_mcp = config.mcps.iter().find(|m| m.name == "inferred-stream").unwrap();
+        assert!(matches!(stream_mcp.transport, McpTransport::Sse { .. }));
+    }
+
+    #[test]
+    fn test_parse_claude_config_backward_compatible() {
+        // Test parsing old format without type field (backward compatibility)
+        let json = r#"{
+            "mcpServers": {
+                "filesystem": {
+                    "command": "npx",
+                    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+                }
+            }
+        }"#;
+
+        let adapter = ClaudeAdapter::new();
+        let config = adapter.parse_config(json).unwrap();
+
+        assert_eq!(config.mcps.len(), 1);
+        assert!(matches!(config.mcps[0].transport, McpTransport::Stdio { .. }));
+    }
+
+    #[test]
+    fn test_serialize_claude_config_stdio() {
         let config = AgentConfig {
             mcps: vec![McpServer::new(
                 "test",
-                McpTransport::command("echo", vec!["hello".to_string()]),
+                McpTransport::stdio("echo", vec!["hello".to_string()]),
             )],
             skills: vec![Skill {
                 name: "my-skill".to_string(),
@@ -357,9 +531,68 @@ mod tests {
 
         assert!(json.contains("mcpServers"));
         assert!(json.contains("test"));
+        assert!(json.contains("\"type\": \"stdio\""));
         // Skills should NOT be in the serialized output (they're in directory)
         assert!(!json.contains("my-skill"));
         assert!(!json.contains("sub_agents")); // Claude doesn't support this
+    }
+
+    #[test]
+    fn test_serialize_claude_config_sse() {
+        let config = AgentConfig {
+            mcps: vec![McpServer::new(
+                "remote-server",
+                McpTransport::sse("http://localhost:3000/sse"),
+            )],
+            skills: vec![],
+            sub_agents: vec![],
+        };
+
+        let adapter = ClaudeAdapter::new();
+        let json = adapter.serialize_config(&config).unwrap();
+
+        assert!(json.contains("mcpServers"));
+        assert!(json.contains("remote-server"));
+        assert!(json.contains("\"type\": \"sse\""));
+        assert!(json.contains("\"url\": \"http://localhost:3000/sse\""));
+    }
+
+    #[test]
+    fn test_serialize_claude_config_streamable_http() {
+        // Test that StreamableHttp serializes to type "http"
+        let config = AgentConfig {
+            mcps: vec![McpServer::new(
+                "http-server",
+                McpTransport::streamable_http("http://localhost:3000/mcp"),
+            )],
+            skills: vec![],
+            sub_agents: vec![],
+        };
+
+        let adapter = ClaudeAdapter::new();
+        let json = adapter.serialize_config(&config).unwrap();
+
+        assert!(json.contains("\"type\": \"http\""));
+        assert!(json.contains("\"url\": \"http://localhost:3000/mcp\""));
+    }
+
+    #[test]
+    fn test_serialize_claude_config_sse_legacy() {
+        // Test that legacy Sse still serializes to type "sse"
+        let config = AgentConfig {
+            mcps: vec![McpServer::new(
+                "sse-server",
+                McpTransport::sse("http://localhost:3000/sse"),
+            )],
+            skills: vec![],
+            sub_agents: vec![],
+        };
+
+        let adapter = ClaudeAdapter::new();
+        let json = adapter.serialize_config(&config).unwrap();
+
+        assert!(json.contains("\"type\": \"sse\""));
+        assert!(json.contains("\"url\": \"http://localhost:3000/sse\""));
     }
 
     #[test]
@@ -369,12 +602,14 @@ mod tests {
                 McpServer {
                     name: "enabled".to_string(),
                     enabled: true,
-                    transport: McpTransport::command("echo", vec!["hello".to_string()]),
+                    transport: McpTransport::stdio("echo", vec!["hello".to_string()]),
+                    timeout: None,
                 },
                 McpServer {
                     name: "disabled".to_string(),
                     enabled: false,
-                    transport: McpTransport::command("echo", vec!["world".to_string()]),
+                    transport: McpTransport::stdio("echo", vec!["world".to_string()]),
+                    timeout: None,
                 },
             ],
             skills: vec![],
@@ -386,27 +621,6 @@ mod tests {
 
         assert!(json.contains("enabled"));
         assert!(!json.contains("disabled"));
-    }
-
-    #[test]
-    fn test_url_mcp_silently_skipped() {
-        // Claude doesn't support URL-based MCPs
-        let config = AgentConfig {
-            mcps: vec![McpServer::new(
-                "url-mcp",
-                McpTransport::url("http://localhost:3000"),
-            )],
-            skills: vec![],
-            sub_agents: vec![],
-        };
-
-        let adapter = ClaudeAdapter::new();
-        let json = adapter.serialize_config(&config).unwrap();
-
-        // Should serialize successfully but with empty mcpServers
-        let parsed: serde_json::Value = serde_json::from_str(&json).unwrap();
-        let mcp_servers = parsed.get("mcpServers").unwrap().as_object().unwrap();
-        assert!(mcp_servers.is_empty());
     }
 
     #[test]

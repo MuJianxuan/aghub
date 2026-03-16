@@ -6,26 +6,25 @@
 use aghub_core::{
     models::{AgentType, McpServer, McpTransport, Skill, SubAgent},
     testing::{TestConfig, TestConfigBuilder},
-    ConfigManager,
 };
 use std::collections::HashMap;
 
 // ==================== Helper Functions ====================
 
-fn create_test_mcp_command(name: &str) -> McpServer {
+fn create_test_mcp_stdio(name: &str) -> McpServer {
     McpServer::new(
         name,
-        McpTransport::command("echo", vec!["test".to_string(), "args".to_string()]),
+        McpTransport::stdio("echo", vec!["test".to_string(), "args".to_string()]),
     )
 }
 
-fn create_test_mcp_url(name: &str) -> McpServer {
+fn create_test_mcp_sse(name: &str) -> McpServer {
     let mut headers = HashMap::new();
     headers.insert("Authorization".to_string(), "Bearer test-token".to_string());
 
     McpServer::new(
         name,
-        McpTransport::url_with_headers("http://localhost:3000", headers),
+        McpTransport::sse_with_headers("http://localhost:3000", headers),
     )
 }
 
@@ -63,7 +62,7 @@ fn test_claude_full_mcp_workflow() {
     assert!(config.mcps.is_empty());
 
     // Add MCP server
-    let mcp1 = create_test_mcp_command("mcp1");
+    let mcp1 = create_test_mcp_stdio("mcp1");
     manager.add_mcp(mcp1.clone()).unwrap();
 
     // Verify it was added
@@ -74,7 +73,7 @@ fn test_claude_full_mcp_workflow() {
     assert!(config.mcps[0].enabled);
 
     // Add second MCP
-    let mcp2 = create_test_mcp_command("mcp2");
+    let mcp2 = create_test_mcp_stdio("mcp2");
     manager.add_mcp(mcp2.clone()).unwrap();
 
     manager.load().unwrap();
@@ -83,15 +82,15 @@ fn test_claude_full_mcp_workflow() {
 
     // Update MCP
     let mut updated_mcp = mcp1.clone();
-    updated_mcp.transport = McpTransport::command("updated", vec!["new".to_string()]);
+    updated_mcp.transport = McpTransport::stdio("updated", vec!["new".to_string()]);
     manager.update_mcp("mcp1", updated_mcp).unwrap();
 
     manager.load().unwrap();
     let config = manager.config().unwrap();
     let mcp1_ref = config.mcps.iter().find(|m| m.name == "mcp1").unwrap();
     match &mcp1_ref.transport {
-        McpTransport::Command { command, .. } => assert_eq!(command, "updated"),
-        _ => panic!("Expected command transport"),
+        McpTransport::Stdio { command, .. } => assert_eq!(command, "updated"),
+        _ => panic!("Expected stdio transport"),
     }
 
     // Note: Claude doesn't preserve disabled state - disabled MCPs are removed from config
@@ -133,23 +132,36 @@ fn test_claude_skill_workflow() {
 }
 
 #[test]
-fn test_claude_url_mcp_silently_ignored() {
+fn test_claude_sse_mcp_supported() {
     let test = TestConfig::new(AgentType::Claude).unwrap();
     let mut manager = test.create_manager();
 
     manager.load().unwrap();
 
-    // Add URL-based MCP (not supported by Claude)
-    let url_mcp = create_test_mcp_url("url-mcp");
+    // Add SSE-based MCP (now supported by Claude)
+    let mut headers = HashMap::new();
+    headers.insert("Authorization".to_string(), "Bearer token".to_string());
+    let url_mcp = McpServer::new(
+        "sse-mcp",
+        McpTransport::Sse {
+            url: "http://localhost:3000/sse".to_string(),
+            headers: Some(headers),
+            timeout: None,
+        },
+    );
     manager.add_mcp(url_mcp).unwrap();
 
-    // Serialize and check - URL MCP should be silently skipped
+    // Serialize and check - SSE MCP should now be included
     let content = test.read_config().unwrap();
     let json: serde_json::Value = serde_json::from_str(&content).unwrap();
     let mcp_servers = json.get("mcpServers").unwrap().as_object().unwrap();
 
-    // URL MCPs are not serialized for Claude
-    assert!(mcp_servers.is_empty() || !mcp_servers.contains_key("url-mcp"));
+    // SSE MCPs are now serialized for Claude with type "sse"
+    assert!(mcp_servers.contains_key("sse-mcp"));
+    assert_eq!(
+        mcp_servers.get("sse-mcp").unwrap().get("type").unwrap(),
+        "sse"
+    );
 }
 
 #[test]
@@ -184,8 +196,8 @@ fn test_opencode_full_mcp_workflow() {
     manager.load().unwrap();
 
     // Add both command and URL MCPs
-    let cmd_mcp = create_test_mcp_command("cmd-mcp");
-    let url_mcp = create_test_mcp_url("url-mcp");
+    let cmd_mcp = create_test_mcp_stdio("cmd-mcp");
+    let url_mcp = create_test_mcp_sse("url-mcp");
 
     manager.add_mcp(cmd_mcp).unwrap();
     manager.add_mcp(url_mcp).unwrap();
@@ -198,12 +210,12 @@ fn test_opencode_full_mcp_workflow() {
     let cmd_ref = config.mcps.iter().find(|m| m.name == "cmd-mcp").unwrap();
     let url_ref = config.mcps.iter().find(|m| m.name == "url-mcp").unwrap();
 
-    assert!(matches!(cmd_ref.transport, McpTransport::Command { .. }));
-    assert!(matches!(url_ref.transport, McpTransport::Url { .. }));
+    assert!(matches!(cmd_ref.transport, McpTransport::Stdio { .. }));
+    assert!(matches!(url_ref.transport, McpTransport::Sse { .. }));
 
     // Verify URL headers preserved
     match &url_ref.transport {
-        McpTransport::Url { headers, .. } => {
+        McpTransport::Sse { headers, .. } => {
             assert!(headers.is_some());
             let headers = headers.as_ref().unwrap();
             assert_eq!(
@@ -211,7 +223,7 @@ fn test_opencode_full_mcp_workflow() {
                 Some(&"Bearer test-token".to_string())
             );
         }
-        _ => panic!("Expected URL transport"),
+        _ => panic!("Expected SSE transport"),
     }
 }
 
@@ -280,12 +292,14 @@ fn test_config_round_trip_preserves_enabled_state() {
     let enabled_mcp = McpServer {
         name: "enabled-mcp".to_string(),
         enabled: true,
-        transport: McpTransport::command("echo", vec!["test".to_string()]),
+        transport: McpTransport::stdio("echo", vec!["test".to_string()]),
+        timeout: None,
     };
     let disabled_mcp = McpServer {
         name: "disabled-mcp".to_string(),
         enabled: false,
-        transport: McpTransport::command("echo", vec!["test".to_string()]),
+        transport: McpTransport::stdio("echo", vec!["test".to_string()]),
+        timeout: None,
     };
 
     manager.add_mcp(enabled_mcp).unwrap();
@@ -318,7 +332,7 @@ fn test_duplicate_resource_detection() {
 
     manager.load().unwrap();
 
-    let mcp = create_test_mcp_command("duplicate");
+    let mcp = create_test_mcp_stdio("duplicate");
     manager.add_mcp(mcp.clone()).unwrap();
 
     // Adding duplicate should fail
@@ -356,7 +370,7 @@ fn test_claude_config_validation() {
     manager.load().unwrap();
 
     // Add a valid MCP
-    let mcp = create_test_mcp_command("test");
+    let mcp = create_test_mcp_stdio("test");
     manager.add_mcp(mcp).unwrap();
 
     // Validate with Claude CLI
@@ -372,7 +386,7 @@ fn test_opencode_config_validation() {
     manager.load().unwrap();
 
     // Add valid resources
-    let mcp = create_test_mcp_command("test");
+    let mcp = create_test_mcp_stdio("test");
     let skill = create_test_skill("test-skill");
     let agent = create_test_sub_agent("test-agent");
 
@@ -431,11 +445,13 @@ fn test_mcp_with_env_vars() {
     let mcp = McpServer {
         name: "env-mcp".to_string(),
         enabled: true,
-        transport: McpTransport::Command {
+        transport: McpTransport::Stdio {
             command: "my-server".to_string(),
             args: vec!["--port".to_string(), "8080".to_string()],
             env: Some(env),
+            timeout: None,
         },
+        timeout: None,
     };
 
     manager.add_mcp(mcp).unwrap();
@@ -445,13 +461,13 @@ fn test_mcp_with_env_vars() {
     let saved_mcp = config.mcps.iter().find(|m| m.name == "env-mcp").unwrap();
 
     match &saved_mcp.transport {
-        McpTransport::Command { env, .. } => {
+        McpTransport::Stdio { env, .. } => {
             assert!(env.is_some());
             let env = env.as_ref().unwrap();
             assert_eq!(env.get("API_KEY"), Some(&"secret123".to_string()));
             assert_eq!(env.get("DEBUG"), Some(&"true".to_string()));
         }
-        _ => panic!("Expected command transport with env"),
+        _ => panic!("Expected stdio transport with env"),
     }
 }
 
@@ -466,7 +482,7 @@ fn test_special_characters_in_names() {
     let names = vec!["my-mcp-server", "my_mcp_server", "mcp.server", "mcp123"];
 
     for name in &names {
-        let mcp = create_test_mcp_command(name);
+        let mcp = create_test_mcp_stdio(name);
         manager.add_mcp(mcp).unwrap();
         manager.load().unwrap();
     }
@@ -485,7 +501,7 @@ fn test_concurrent_modifications_preserve_state() {
 
     // Add multiple resources
     for i in 0..5 {
-        let mcp = create_test_mcp_command(&format!("mcp{}", i));
+        let mcp = create_test_mcp_stdio(&format!("mcp{}", i));
         manager.add_mcp(mcp).unwrap();
     }
 
@@ -495,7 +511,7 @@ fn test_concurrent_modifications_preserve_state() {
 
     // Add more after disabling
     for i in 5..10 {
-        let mcp = create_test_mcp_command(&format!("mcp{}", i));
+        let mcp = create_test_mcp_stdio(&format!("mcp{}", i));
         manager.add_mcp(mcp).unwrap();
     }
 
@@ -513,4 +529,160 @@ fn test_concurrent_modifications_preserve_state() {
     assert!(!mcp1.enabled);
     assert!(mcp2.enabled);
     assert!(!mcp3.enabled);
+}
+
+// ==================== Streamable HTTP Transport Tests ====================
+
+fn create_test_mcp_streamable_http(name: &str) -> McpServer {
+    let mut headers = HashMap::new();
+    headers.insert("Authorization".to_string(), "Bearer test-token".to_string());
+    headers.insert("X-API-Version".to_string(), "v1".to_string());
+
+    McpServer::new(
+        name,
+        McpTransport::streamable_http_with_headers("http://localhost:3000/mcp", headers),
+    )
+}
+
+#[test]
+fn test_claude_streamable_http_mcp_workflow() {
+    let test = TestConfig::new(AgentType::Claude).unwrap();
+    let mut manager = test.create_manager();
+
+    manager.load().unwrap();
+
+    // Add Streamable HTTP MCP
+    let http_mcp = create_test_mcp_streamable_http("http-mcp");
+    manager.add_mcp(http_mcp.clone()).unwrap();
+
+    // Serialize and check - Streamable HTTP MCP should be included with type "http"
+    let content = test.read_config().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&content).unwrap();
+    let mcp_servers = json.get("mcpServers").unwrap().as_object().unwrap();
+
+    assert!(mcp_servers.contains_key("http-mcp"));
+    assert_eq!(
+        mcp_servers.get("http-mcp").unwrap().get("type").unwrap(),
+        "http"
+    );
+
+    // Load and verify type is preserved
+    manager.load().unwrap();
+    let config = manager.config().unwrap();
+    assert_eq!(config.mcps.len(), 1);
+
+    let saved_mcp = &config.mcps[0];
+    assert!(matches!(saved_mcp.transport, McpTransport::StreamableHttp { .. }));
+
+    match &saved_mcp.transport {
+        McpTransport::StreamableHttp { url, headers, .. } => {
+            assert_eq!(url, "http://localhost:3000/mcp");
+            assert!(headers.is_some());
+            let headers = headers.as_ref().unwrap();
+            assert_eq!(headers.get("Authorization"), Some(&"Bearer test-token".to_string()));
+            assert_eq!(headers.get("X-API-Version"), Some(&"v1".to_string()));
+        }
+        _ => panic!("Expected StreamableHttp transport"),
+    }
+
+    // Update the MCP
+    let mut updated_mcp = http_mcp.clone();
+    let mut new_headers = HashMap::new();
+    new_headers.insert("Authorization".to_string(), "Bearer new-token".to_string());
+    updated_mcp.transport = McpTransport::streamable_http_with_headers("http://localhost:4000/mcp", new_headers);
+
+    manager.update_mcp("http-mcp", updated_mcp).unwrap();
+
+    manager.load().unwrap();
+    let config = manager.config().unwrap();
+    let mcp_ref = config.mcps.iter().find(|m| m.name == "http-mcp").unwrap();
+
+    match &mcp_ref.transport {
+        McpTransport::StreamableHttp { url, headers, .. } => {
+            assert_eq!(url, "http://localhost:4000/mcp");
+            assert_eq!(
+                headers.as_ref().unwrap().get("Authorization"),
+                Some(&"Bearer new-token".to_string())
+            );
+        }
+        _ => panic!("Expected StreamableHttp transport"),
+    }
+
+    // Delete MCP
+    manager.remove_mcp("http-mcp").unwrap();
+    manager.load().unwrap();
+    let config = manager.config().unwrap();
+    assert!(config.mcps.is_empty());
+}
+
+#[test]
+fn test_opencode_streamable_http_roundtrip() {
+    let test = TestConfig::new(AgentType::OpenCode).unwrap();
+    let mut manager = test.create_manager();
+
+    manager.load().unwrap();
+
+    // Add Streamable HTTP MCP
+    let http_mcp = create_test_mcp_streamable_http("streamable-mcp");
+    manager.add_mcp(http_mcp.clone()).unwrap();
+
+    // Load and verify
+    manager.load().unwrap();
+    let config = manager.config().unwrap();
+    assert_eq!(config.mcps.len(), 1);
+
+    let saved_mcp = &config.mcps[0];
+    assert!(matches!(saved_mcp.transport, McpTransport::StreamableHttp { .. }));
+
+    // Serialize and verify JSON structure
+    let content = test.read_config().unwrap();
+    let json: serde_json::Value = serde_json::from_str(&content).unwrap();
+    let mcp_servers = json.get("mcp_servers").unwrap().as_array().unwrap();
+
+    assert_eq!(mcp_servers.len(), 1);
+    let mcp = &mcp_servers[0];
+    assert_eq!(mcp.get("name").unwrap(), "streamable-mcp");
+    assert_eq!(mcp.get("type").unwrap(), "streamable_http");
+}
+
+#[test]
+fn test_legacy_sse_backward_compatibility() {
+    // Test that legacy SSE configs still work
+    let test = TestConfig::new(AgentType::Claude).unwrap();
+
+    // Write a legacy SSE config directly
+    let legacy_config = r#"{
+        "mcpServers": {
+            "legacy-sse": {
+                "type": "sse",
+                "url": "http://localhost:3000/sse",
+                "headers": {
+                    "Authorization": "Bearer legacy-token"
+                }
+            }
+        }
+    }"#;
+
+    test.write_config(legacy_config).unwrap();
+
+    let mut manager = test.create_manager();
+    manager.load().unwrap();
+
+    let config = manager.config().unwrap();
+    assert_eq!(config.mcps.len(), 1);
+
+    let mcp = &config.mcps[0];
+    assert_eq!(mcp.name, "legacy-sse");
+    assert!(matches!(mcp.transport, McpTransport::Sse { .. }));
+
+    match &mcp.transport {
+        McpTransport::Sse { url, headers, .. } => {
+            assert_eq!(url, "http://localhost:3000/sse");
+            assert_eq!(
+                headers.as_ref().unwrap().get("Authorization"),
+                Some(&"Bearer legacy-token".to_string())
+            );
+        }
+        _ => panic!("Expected SSE transport"),
+    }
 }

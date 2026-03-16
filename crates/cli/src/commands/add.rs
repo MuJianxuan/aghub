@@ -13,6 +13,7 @@ pub fn execute(
     name: String,
     command: Option<String>,
     url: Option<String>,
+    transport: String,
     headers: Vec<String>,
     env_vars: Vec<String>,
     description: Option<String>,
@@ -61,7 +62,7 @@ pub fn execute(
                     Some(env_map)
                 };
 
-                McpTransport::Command { command, args, env }
+                McpTransport::Stdio { command, args, env, timeout: None }
             } else if let Some(url_str) = url {
                 // Parse headers
                 let headers_map = if headers.is_empty() {
@@ -77,9 +78,20 @@ pub fn execute(
                     Some(map)
                 };
 
-                McpTransport::Url {
-                    url: url_str,
-                    headers: headers_map,
+                // Determine transport type based on the transport argument
+                if transport == "sse" {
+                    McpTransport::Sse {
+                        url: url_str,
+                        headers: headers_map,
+                        timeout: None,
+                    }
+                } else {
+                    // Default to streamable-http
+                    McpTransport::StreamableHttp {
+                        url: url_str,
+                        headers: headers_map,
+                        timeout: None,
+                    }
                 }
             } else {
                 bail!("Either --command or --url must be specified for MCP servers");

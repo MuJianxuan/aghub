@@ -30,7 +30,7 @@ struct OpenCodeMcpServer {
     enabled: bool,
 }
 
-/// OpenCode MCP transport (supports both command and URL)
+/// OpenCode MCP transport (supports stdio, SSE, and Streamable HTTP)
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 enum OpenCodeMcpTransport {
@@ -38,13 +38,26 @@ enum OpenCodeMcpTransport {
         command: String,
         #[serde(default)]
         args: Vec<String>,
-        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         env: Option<HashMap<String, String>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout: Option<u64>,
     },
+    /// Legacy SSE-based transport (deprecated in favor of StreamableHttp)
     Sse {
         url: String,
-        #[serde(default)]
+        #[serde(skip_serializing_if = "Option::is_none")]
         headers: Option<HashMap<String, String>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout: Option<u64>,
+    },
+    /// Streamable HTTP transport (successor to SSE)
+    StreamableHttp {
+        url: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        headers: Option<HashMap<String, String>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        timeout: Option<u64>,
     },
 }
 
@@ -106,16 +119,51 @@ impl AgentAdapter for OpenCodeAdapter {
 
         // Parse MCP servers
         for mcp in opencode_config.mcp_servers {
-            let transport = match mcp.transport {
-                OpenCodeMcpTransport::Stdio { command, args, env } => {
-                    McpTransport::Command { command, args, env }
-                }
-                OpenCodeMcpTransport::Sse { url, headers } => McpTransport::Url { url, headers },
+            let (transport, timeout) = match mcp.transport {
+                OpenCodeMcpTransport::Stdio {
+                    command,
+                    args,
+                    env,
+                    timeout,
+                } => (
+                    McpTransport::Stdio {
+                        command,
+                        args,
+                        env,
+                        timeout,
+                    },
+                    timeout,
+                ),
+                OpenCodeMcpTransport::Sse {
+                    url,
+                    headers,
+                    timeout,
+                } => (
+                    McpTransport::Sse {
+                        url,
+                        headers,
+                        timeout,
+                    },
+                    timeout,
+                ),
+                OpenCodeMcpTransport::StreamableHttp {
+                    url,
+                    headers,
+                    timeout,
+                } => (
+                    McpTransport::StreamableHttp {
+                        url,
+                        headers,
+                        timeout,
+                    },
+                    timeout,
+                ),
             };
             config.mcps.push(McpServer {
                 name: mcp.name,
                 enabled: mcp.enabled,
                 transport,
+                timeout,
             });
         }
 
@@ -151,15 +199,26 @@ impl AgentAdapter for OpenCodeAdapter {
         // Serialize MCP servers
         for mcp in &config.mcps {
             let transport = match &mcp.transport {
-                McpTransport::Command { command, args, env } => OpenCodeMcpTransport::Stdio {
-                    command: command.clone(),
-                    args: args.clone(),
-                    env: env.clone(),
-                },
-                McpTransport::Url { url, headers } => OpenCodeMcpTransport::Sse {
+                McpTransport::Stdio { command, args, env, timeout } => {
+                    OpenCodeMcpTransport::Stdio {
+                        command: command.clone(),
+                        args: args.clone(),
+                        env: env.clone(),
+                        timeout: *timeout,
+                    }
+                }
+                McpTransport::Sse { url, headers, timeout } => OpenCodeMcpTransport::Sse {
                     url: url.clone(),
                     headers: headers.clone(),
+                    timeout: *timeout,
                 },
+                McpTransport::StreamableHttp { url, headers, timeout } => {
+                    OpenCodeMcpTransport::StreamableHttp {
+                        url: url.clone(),
+                        headers: headers.clone(),
+                        timeout: *timeout,
+                    }
+                }
             };
             opencode_config.mcp_servers.push(OpenCodeMcpServer {
                 name: mcp.name.clone(),
@@ -253,11 +312,10 @@ mod tests {
 
         assert_eq!(config.mcps.len(), 2);
         assert_eq!(config.mcps[0].name, "filesystem");
-        assert!(matches!(
-            config.mcps[0].transport,
-            McpTransport::Command { .. }
-        ));
-        assert!(matches!(config.mcps[1].transport, McpTransport::Url { .. }));
+        assert!(
+            matches!(config.mcps[0].transport, McpTransport::Stdio { .. })
+        );
+        assert!(matches!(config.mcps[1].transport, McpTransport::Sse { .. }));
 
         assert_eq!(config.skills.len(), 1);
         assert_eq!(config.skills[0].name, "rust-dev");
@@ -273,11 +331,11 @@ mod tests {
             mcps: vec![
                 McpServer::new(
                     "test-cmd",
-                    McpTransport::command("echo", vec!["hello".to_string()]),
+                    McpTransport::stdio("echo", vec!["hello".to_string()]),
                 ),
                 McpServer::new(
-                    "test-url",
-                    McpTransport::url_with_headers(
+                    "test-sse",
+                    McpTransport::sse_with_headers(
                         "http://localhost:3000",
                         [("Authorization".to_string(), "token".to_string())]
                             .into_iter()
@@ -318,7 +376,8 @@ mod tests {
             mcps: vec![McpServer {
                 name: "disabled-mcp".to_string(),
                 enabled: false,
-                transport: McpTransport::command("echo", vec!["test".to_string()]),
+                transport: McpTransport::stdio("echo", vec!["test".to_string()]),
+                timeout: None,
             }],
             skills: vec![Skill {
                 name: "disabled-skill".to_string(),
@@ -345,5 +404,122 @@ mod tests {
         assert!(!reparsed.mcps[0].enabled);
         assert!(!reparsed.skills[0].enabled);
         assert!(!reparsed.sub_agents[0].enabled);
+    }
+
+    #[test]
+    fn test_preserves_timeout() {
+        let config = AgentConfig {
+            mcps: vec![
+                McpServer {
+                    name: "stdio-mcp".to_string(),
+                    enabled: true,
+                    transport: McpTransport::Stdio {
+                        command: "echo".to_string(),
+                        args: vec!["hello".to_string()],
+                        env: None,
+                        timeout: Some(30),
+                    },
+                    timeout: Some(60),
+                },
+                McpServer {
+                    name: "sse-mcp".to_string(),
+                    enabled: true,
+                    transport: McpTransport::Sse {
+                        url: "http://localhost:3000".to_string(),
+                        headers: None,
+                        timeout: Some(45),
+                    },
+                    timeout: Some(90),
+                },
+            ],
+            skills: vec![],
+            sub_agents: vec![],
+        };
+
+        let adapter = OpenCodeAdapter::new();
+        let json = adapter.serialize_config(&config).unwrap();
+
+        // Parse back and verify timeout is preserved
+        let reparsed = adapter.parse_config(&json).unwrap();
+
+        match &reparsed.mcps[0].transport {
+            McpTransport::Stdio { timeout, .. } => assert_eq!(*timeout, Some(30)),
+            _ => panic!("Expected Stdio transport"),
+        }
+
+        match &reparsed.mcps[1].transport {
+            McpTransport::Sse { timeout, .. } => assert_eq!(*timeout, Some(45)),
+            _ => panic!("Expected Sse transport"),
+        }
+    }
+
+    #[test]
+    fn test_streamable_http_roundtrip() {
+        let config = AgentConfig {
+            mcps: vec![McpServer {
+                name: "streamable-http-mcp".to_string(),
+                enabled: true,
+                transport: McpTransport::StreamableHttp {
+                    url: "http://localhost:3000/mcp".to_string(),
+                    headers: Some([("Authorization".to_string(), "Bearer token".to_string())]
+                        .into_iter()
+                        .collect()),
+                    timeout: Some(60),
+                },
+                timeout: Some(120),
+            }],
+            skills: vec![],
+            sub_agents: vec![],
+        };
+
+        let adapter = OpenCodeAdapter::new();
+        let json = adapter.serialize_config(&config).unwrap();
+
+        // Verify serialized JSON contains streamable_http type
+        assert!(json.contains("\"type\": \"streamable_http\""));
+        assert!(json.contains("\"url\": \"http://localhost:3000/mcp\""));
+
+        // Parse back and verify
+        let reparsed = adapter.parse_config(&json).unwrap();
+        assert_eq!(reparsed.mcps.len(), 1);
+
+        match &reparsed.mcps[0].transport {
+            McpTransport::StreamableHttp { url, headers, timeout } => {
+                assert_eq!(url, "http://localhost:3000/mcp");
+                assert!(headers.is_some());
+                assert_eq!(
+                    headers.as_ref().unwrap().get("Authorization"),
+                    Some(&"Bearer token".to_string())
+                );
+                assert_eq!(*timeout, Some(60));
+            }
+            _ => panic!("Expected StreamableHttp transport"),
+        }
+    }
+
+    #[test]
+    fn test_parse_opencode_config_streamable_http() {
+        let json = r#"{
+            "mcp_servers": [
+                {
+                    "name": "http-server",
+                    "type": "streamable_http",
+                    "url": "http://localhost:3000/mcp",
+                    "headers": {
+                        "Authorization": "Bearer token"
+                    },
+                    "enabled": true
+                }
+            ],
+            "skills": [],
+            "sub_agents": []
+        }"#;
+
+        let adapter = OpenCodeAdapter::new();
+        let config = adapter.parse_config(json).unwrap();
+
+        assert_eq!(config.mcps.len(), 1);
+        assert_eq!(config.mcps[0].name, "http-server");
+        assert!(matches!(config.mcps[0].transport, McpTransport::StreamableHttp { .. }));
     }
 }

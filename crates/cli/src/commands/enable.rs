@@ -1,4 +1,4 @@
-use crate::ResourceType;
+use crate::{eprintln_verbose, ResourceType};
 use aghub_core::manager::ConfigManager;
 use anyhow::Result;
 use serde_json::json;
@@ -6,15 +6,21 @@ use serde_json::json;
 pub fn execute(manager: &mut ConfigManager, resource: ResourceType, name: String) -> Result<()> {
     match resource {
         ResourceType::Skills => {
+            eprintln_verbose!("Enabling skill: {}", name);
             manager.enable_skill(&name)?;
+            eprintln_verbose!("Skill enabled successfully");
             println!("{}", json!({"enabled": true, "name": name, "type": "skill" }));
         }
         ResourceType::Mcps => {
+            eprintln_verbose!("Enabling MCP server: {}", name);
             manager.enable_mcp(&name)?;
+            eprintln_verbose!("MCP server enabled successfully");
             println!("{}", json!({"enabled": true, "name": name, "type": "mcp" }));
         }
         ResourceType::SubAgents => {
+            eprintln_verbose!("Enabling sub-agent: {}", name);
             manager.enable_sub_agent(&name)?;
+            eprintln_verbose!("Sub-agent enabled successfully");
             println!("{}", json!({"enabled": true, "name": name, "type": "sub-agent" }));
         }
     }

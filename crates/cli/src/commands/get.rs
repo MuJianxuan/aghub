@@ -1,4 +1,4 @@
-use crate::ResourceType;
+use crate::{eprintln_verbose, ResourceType};
 use aghub_core::manager::ConfigManager;
 use anyhow::{Context, Result};
 use serde::Serialize;
@@ -39,6 +39,7 @@ pub fn execute(manager: &ConfigManager, resource: ResourceType) -> Result<()> {
                     source: s.source.clone(),
                 })
                 .collect();
+            eprintln_verbose!("Found {} skills", views.len());
             println!("{}", serde_json::to_string(&views)?);
         }
         ResourceType::Mcps => {
@@ -54,6 +55,7 @@ pub fn execute(manager: &ConfigManager, resource: ResourceType) -> Result<()> {
                     },
                 })
                 .collect();
+            eprintln_verbose!("Found {} MCP servers", views.len());
             println!("{}", serde_json::to_string(&views)?);
         }
         ResourceType::SubAgents => {
@@ -66,6 +68,7 @@ pub fn execute(manager: &ConfigManager, resource: ResourceType) -> Result<()> {
                     model: a.model.clone(),
                 })
                 .collect();
+            eprintln_verbose!("Found {} sub-agents", views.len());
             println!("{}", serde_json::to_string(&views)?);
         }
     }

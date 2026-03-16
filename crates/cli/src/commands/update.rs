@@ -1,4 +1,4 @@
-use crate::ResourceType;
+use crate::{eprintln_verbose, ResourceType};
 use aghub_core::{errors::ConfigError, manager::ConfigManager, models::McpTransport};
 use anyhow::{bail, Result};
 use std::collections::HashMap;
@@ -22,6 +22,7 @@ pub fn execute(
 ) -> Result<()> {
     match resource {
         ResourceType::Skills => {
+            eprintln_verbose!("Updating skill: {}", name);
             // Get existing skill
             let existing = manager
                 .get_skill(&name)
@@ -47,9 +48,11 @@ pub fn execute(
             }
 
             manager.update_skill(&name, skill.clone())?;
+            eprintln_verbose!("Skill updated successfully");
             println!("{}", serde_json::to_string(&skill)?);
         }
         ResourceType::Mcps => {
+            eprintln_verbose!("Updating MCP server: {}", name);
             // Get existing MCP
             let existing = manager
                 .get_mcp(&name)
@@ -101,9 +104,11 @@ pub fn execute(
             }
 
             manager.update_mcp(&name, mcp.clone())?;
+            eprintln_verbose!("MCP server updated successfully");
             println!("{}", serde_json::to_string(&mcp)?);
         }
         ResourceType::SubAgents => {
+            eprintln_verbose!("Updating sub-agent: {}", name);
             // Get existing sub-agent
             let existing = manager
                 .get_sub_agent(&name)
@@ -122,6 +127,7 @@ pub fn execute(
             }
 
             manager.update_sub_agent(&name, agent.clone())?;
+            eprintln_verbose!("Sub-agent updated successfully");
             println!("{}", serde_json::to_string(&agent)?);
         }
     }

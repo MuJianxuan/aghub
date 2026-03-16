@@ -1,4 +1,4 @@
-use crate::ResourceType;
+use crate::{eprintln_verbose, ResourceType};
 use aghub_core::{
     manager::ConfigManager,
     models::{McpServer, McpTransport, Skill, SubAgent},
@@ -25,6 +25,7 @@ pub fn execute(
 ) -> Result<()> {
     match resource {
         ResourceType::Skills => {
+            eprintln_verbose!("Adding skill: {}", name);
             let skill = Skill {
                 name: name.clone(),
                 enabled: true,
@@ -35,6 +36,7 @@ pub fn execute(
                 tools,
             };
             manager.add_skill(skill.clone())?;
+            eprintln_verbose!("Skill added successfully");
             println!("{}", serde_json::to_string(&skill)?);
         }
         ResourceType::Mcps => {
@@ -85,11 +87,14 @@ pub fn execute(
                 bail!("Either --command or --url must be specified for MCP servers");
             };
 
+            eprintln_verbose!("Adding MCP server: {}", name);
             let mcp = McpServer::new(name.clone(), transport);
             manager.add_mcp(mcp.clone())?;
+            eprintln_verbose!("MCP server added successfully");
             println!("{}", serde_json::to_string(&mcp)?);
         }
         ResourceType::SubAgents => {
+            eprintln_verbose!("Adding sub-agent: {}", name);
             let agent = SubAgent {
                 name: name.clone(),
                 enabled: true,
@@ -98,6 +103,7 @@ pub fn execute(
                 instructions,
             };
             manager.add_sub_agent(agent.clone())?;
+            eprintln_verbose!("Sub-agent added successfully");
             println!("{}", serde_json::to_string(&agent)?);
         }
     }

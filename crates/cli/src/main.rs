@@ -9,6 +9,31 @@ mod commands;
 
 use commands::{add, delete, disable, enable, get, update};
 
+/// Global verbose flag used by the eprintln_verbose macro
+static mut VERBOSE: bool = false;
+
+/// Set the verbose flag
+pub fn set_verbose(verbose: bool) {
+    unsafe {
+        VERBOSE = verbose;
+    }
+}
+
+/// Check if verbose mode is enabled
+pub fn is_verbose() -> bool {
+    unsafe { VERBOSE }
+}
+
+/// Print verbose message to stderr (prefixed with "# ")
+#[macro_export]
+macro_rules! eprintln_verbose {
+    ($($arg:tt)*) => {
+        if $crate::is_verbose() {
+            eprintln!("# {}", format!($($arg)*));
+        }
+    };
+}
+
 /// CLI tool for managing Code Agent configurations (Claude Code, OpenCode)
 #[derive(Parser)]
 #[command(name = "agentctl")]
@@ -26,6 +51,10 @@ struct Cli {
     /// Use project config (auto-detects .claude/ or .opencode/)
     #[arg(short, long, group = "config_scope")]
     project: bool,
+
+    /// Enable verbose output (to stderr)
+    #[arg(short, long)]
+    verbose: bool,
 
     #[command(subcommand)]
     command: Commands,
@@ -179,11 +208,15 @@ enum ResourceType {
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
+    // Set global verbose flag
+    set_verbose(cli.verbose);
+
     // Parse agent type
     let agent_type = cli
         .agent
         .parse::<AgentType>()
         .map_err(|e| anyhow::anyhow!("Unknown agent type: {} (valid: claude, opencode)", e))?;
+    eprintln_verbose!("Agent type: {}", cli.agent);
 
     // Determine config scope
     let (global, project_root) = if cli.project {
@@ -196,6 +229,9 @@ fn main() -> Result<()> {
         (cli.global || !cli.project, None)
     };
 
+    let scope = if global { "global" } else { "project" };
+    eprintln_verbose!("Config scope: {}", scope);
+
     // Create adapter and manager
     let adapter = create_adapter(agent_type);
     let mut manager = if let Some(ref root) = project_root {
@@ -203,15 +239,21 @@ fn main() -> Result<()> {
     } else {
         ConfigManager::new(adapter, global, None)
     };
+    eprintln_verbose!("Config manager created");
 
     // Load existing config (or fail if not found)
+    eprintln_verbose!("Loading configuration...");
     match manager.load() {
-        Ok(_) => {}
+        Ok(_) => {
+            eprintln_verbose!("Configuration loaded successfully");
+        }
         Err(e) => {
             // If config not found and we're doing a read operation, that's an error
             // If config not found and we're adding, that's okay - we'll create it
             let is_add = matches!(cli.command, Commands::Add { .. });
-            if !is_add {
+            if is_add {
+                eprintln_verbose!("No existing config found, will create new configuration");
+            } else {
                 return Err(anyhow::anyhow!("Failed to load config: {}", e));
             }
         }
@@ -294,6 +336,13 @@ mod describe {
     pub fn execute(manager: &ConfigManager, resource: ResourceType, name: String) -> Result<()> {
         let config = manager.config().context("No configuration loaded")?;
 
+        let resource_type_str = match resource {
+            ResourceType::Skills => "skill",
+            ResourceType::Mcps => "mcp",
+            ResourceType::SubAgents => "sub-agent",
+        };
+        eprintln_verbose!("Describing {}: {}", resource_type_str, name);
+
         match resource {
             ResourceType::Skills => {
                 let skill = config
@@ -301,6 +350,7 @@ mod describe {
                     .iter()
                     .find(|s| s.name == name)
                     .with_context(|| format!("Skill '{}' not found", name))?;
+                eprintln_verbose!("Found skill: {}", skill.name);
                 println!("{}", serde_json::to_string(skill)?);
             }
             ResourceType::Mcps => {
@@ -309,6 +359,7 @@ mod describe {
                     .iter()
                     .find(|m| m.name == name)
                     .with_context(|| format!("MCP server '{}' not found", name))?;
+                eprintln_verbose!("Found MCP server: {}", mcp.name);
                 println!("{}", serde_json::to_string(mcp)?);
             }
             ResourceType::SubAgents => {
@@ -317,6 +368,7 @@ mod describe {
                     .iter()
                     .find(|a| a.name == name)
                     .with_context(|| format!("Sub-agent '{}' not found", name))?;
+                eprintln_verbose!("Found sub-agent: {}", agent.name);
                 println!("{}", serde_json::to_string(agent)?);
             }
         }

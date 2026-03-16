@@ -130,3 +130,65 @@ impl Default for Client {
         Self::new().expect("Failed to create default client")
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_client_builder_default() {
+        let builder = ClientBuilder::new();
+        assert!(builder.api_url.is_none());
+        assert_eq!(builder.timeout, DEFAULT_TIMEOUT);
+    }
+
+    #[test]
+    fn test_client_builder_with_api_url() {
+        let client = ClientBuilder::new()
+            .api_url("https://custom.api.com/api")
+            .build()
+            .unwrap();
+
+        assert_eq!(client.base_url.as_str(), "https://custom.api.com/api");
+    }
+
+    #[test]
+    fn test_client_builder_with_timeout() {
+        let client = ClientBuilder::new()
+            .timeout(Duration::from_secs(10))
+            .build()
+            .unwrap();
+
+        // Timeout is internal to reqwest, we just verify it builds
+        assert_eq!(client.base_url.as_str(), "https://skills.sh/api");
+    }
+
+    #[test]
+    fn test_client_new() {
+        let client = Client::new().unwrap();
+        // reqwest's Url adds trailing slash to the path
+        assert!(client.base_url.as_str().starts_with("https://skills.sh/api"));
+    }
+
+    #[test]
+    fn test_client_builder_invalid_url() {
+        let result = ClientBuilder::new().api_url("not a valid url").build();
+        assert!(matches!(result, Err(ClientError::Url(_))));
+    }
+
+    #[test]
+    fn test_client_error_display() {
+        let url_error = "invalid".parse::<Url>().unwrap_err();
+        let error = ClientError::Url(url_error);
+        assert!(format!("{}", error).contains("Invalid URL"));
+    }
+
+    #[test]
+    fn test_client_error_api_display() {
+        let error = ClientError::Api {
+            status: 404,
+            message: "Not found".to_string(),
+        };
+        assert_eq!(format!("{}", error), "API error: 404 - Not found");
+    }
+}

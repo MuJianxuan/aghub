@@ -57,3 +57,72 @@ impl SearchParams {
         self
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_search_params_new() {
+        let params = SearchParams::new("git");
+        assert_eq!(params.query, "git");
+        assert_eq!(params.limit, None);
+    }
+
+    #[test]
+    fn test_search_params_with_limit() {
+        let params = SearchParams::new("docker").with_limit(5);
+        assert_eq!(params.query, "docker");
+        assert_eq!(params.limit, Some(5));
+    }
+
+    #[test]
+    fn test_search_params_default() {
+        let params = SearchParams::default();
+        assert_eq!(params.query, "");
+        assert_eq!(params.limit, None);
+    }
+
+    #[test]
+    fn test_skill_to_search_result() {
+        let skill = Skill {
+            id: "git-skill".to_string(),
+            name: "Git".to_string(),
+            installs: 1000,
+            source: "github".to_string(),
+        };
+
+        let result: SearchResult = skill.into();
+
+        assert_eq!(result.name, "Git");
+        assert_eq!(result.slug, "git-skill");
+        assert_eq!(result.source, "github");
+        assert_eq!(result.installs, 1000);
+    }
+
+    #[test]
+    fn test_skill_deserialization_with_defaults() {
+        let json = r#"{"id": "test", "name": "Test Skill"}"#;
+        let skill: Skill = serde_json::from_str(json).unwrap();
+
+        assert_eq!(skill.id, "test");
+        assert_eq!(skill.name, "Test Skill");
+        assert_eq!(skill.installs, 0);
+        assert_eq!(skill.source, "");
+    }
+
+    #[test]
+    fn test_search_response_deserialization() {
+        let json = r#"{
+            "skills": [
+                {"id": "skill1", "name": "Skill 1", "installs": 100, "source": "github"},
+                {"id": "skill2", "name": "Skill 2", "installs": 50, "source": "gitlab"}
+            ]
+        }"#;
+
+        let response: SearchResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(response.skills.len(), 2);
+        assert_eq!(response.skills[0].name, "Skill 1");
+        assert_eq!(response.skills[1].installs, 50);
+    }
+}

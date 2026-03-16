@@ -1,53 +1,124 @@
 use crate::ResourceType;
 use aghub_core::{
+    adapters::create_adapter,
     manager::ConfigManager,
-    models::{McpServer, McpTransport, Skill, SubAgent},
+    models::{AgentType, McpServer, McpTransport, Skill, SubAgent},
+    paths::find_project_root,
 };
 use anyhow::{bail, Result};
 use colored::*;
 use inquire::{Confirm, MultiSelect, Select, Text};
 use std::collections::HashMap;
+use std::path::PathBuf;
+
+/// Current interactive context (agent type and scope)
+struct InteractiveContext {
+    agent_type: AgentType,
+    is_global: bool,
+    project_root: Option<PathBuf>,
+}
+
+impl InteractiveContext {
+    fn agent_name(&self) -> &'static str {
+        self.agent_type.as_str()
+    }
+
+    fn scope_name(&self) -> String {
+        if self.is_global {
+            "global".to_string()
+        } else {
+            "project".to_string()
+        }
+    }
+
+    fn create_manager(&self) -> ConfigManager {
+        let adapter = create_adapter(self.agent_type);
+        if self.is_global {
+            ConfigManager::new(adapter, true, None)
+        } else if let Some(ref root) = self.project_root {
+            ConfigManager::new(adapter, false, Some(root))
+        } else {
+            ConfigManager::new(adapter, true, None)
+        }
+    }
+
+}
 
 /// Run the interactive CLI wizard
 pub fn run_interactive(manager: &mut ConfigManager) -> Result<()> {
-    // Initialize empty config if none exists
-    manager.init_empty_config();
+    // Detect initial context from the provided manager
+    let current_path = manager.config_path().to_path_buf();
+    let is_global = current_path.to_string_lossy().contains(".claude.json")
+        || current_path.to_string_lossy().contains("opencode.json");
 
-    println!("\n{}", "═══ AgentCtl Interactive Mode ═══".bold().cyan());
-    println!("{}", format!("Agent: {} | Scope: {}",
-        manager.agent_name().yellow(),
-        if manager.config_path().to_string_lossy().contains(".claude.json") ||
-           manager.config_path().to_string_lossy().contains("opencode.json") {
-            "global".yellow()
-        } else {
-            "project".yellow()
-        }
-    ).dimmed());
-    println!("{}", format!("Config: {}", manager.config_path().display()).dimmed());
-    println!();
+    let agent_type = match manager.agent_name() {
+        "opencode" => AgentType::OpenCode,
+        _ => AgentType::Claude,
+    };
+
+    let project_root = if is_global {
+        find_project_root(&std::env::current_dir()?)
+    } else {
+        Some(current_path.parent().unwrap_or(&current_path).to_path_buf())
+    };
+
+    let mut ctx = InteractiveContext {
+        agent_type,
+        is_global,
+        project_root,
+    };
+
+    // Recreate manager with proper context
+    *manager = ctx.create_manager();
+
+    // Try to load existing config, or initialize empty if not found
+    if manager.load().is_err() {
+        manager.init_empty_config();
+    }
 
     loop {
+        print_header(&ctx);
+
         let choices = vec![
-            "📋 List resources",
-            "➕ Add resource",
-            "✏️  Update resource",
-            "🗑️  Delete resource",
-            "🔘 Enable/Disable resource",
-            "👀 View resource details",
-            "💾 Save & Exit",
+            "List resources",
+            "Add resource",
+            "Update resource",
+            "Delete resource",
+            "Enable/Disable resource",
+            "View resource details",
+            "",
+            "Switch Agent (Tab)",
+            "Switch Scope (<-/->)",
+            "",
+            "Save & Exit",
         ];
 
-        let choice = Select::new("What would you like to do?", choices)
-            .prompt()?;
+        let choice = Select::new(
+            &format!(
+                "What would you like to do? [{} | {}]",
+                ctx.agent_name().cyan(),
+                ctx.scope_name().cyan()
+            ),
+            choices,
+        )
+        .prompt()?;
 
         match choice {
-            "📋 List resources" => list_resources(manager)?,
-            "➕ Add resource" => add_resource(manager)?,
-            "✏️  Update resource" => update_resource(manager)?,
-            "🗑️  Delete resource" => delete_resource(manager)?,
-            "🔘 Enable/Disable resource" => toggle_resource(manager)?,
-            "👀 View resource details" => describe_resource(manager)?,
-            "💾 Save & Exit" => {
+            "List resources" => list_resources(manager)?,
+            "Add resource" => add_resource(manager)?,
+            "Update resource" => update_resource(manager)?,
+            "Delete resource" => delete_resource(manager)?,
+            "Enable/Disable resource" => toggle_resource(manager)?,
+            "View resource details" => describe_resource(manager)?,
+            "Switch Agent (Tab)" => {
+                switch_agent(&mut ctx, manager)?;
+                continue;
+            }
+            "Switch Scope (<-/->)" => {
+                switch_scope(&mut ctx, manager)?;
+                continue;
+            }
+            "Save & Exit" => {
                 println!("\n{}", "Goodbye!".green().bold());
                 break;
             }
@@ -60,11 +131,65 @@ pub fn run_interactive(manager: &mut ConfigManager) -> Result<()> {
     Ok(())
 }
 
+fn print_header(_ctx: &InteractiveContext) {
+    println!();
+}
+
+fn switch_agent(ctx: &mut InteractiveContext, manager: &mut ConfigManager) -> Result<()> {
+    ctx.agent_type = match ctx.agent_type {
+        AgentType::Claude => AgentType::OpenCode,
+        AgentType::OpenCode => AgentType::Claude,
+    };
+
+    *manager = ctx.create_manager();
+    if manager.load().is_err() {
+        manager.init_empty_config();
+    }
+
+    println!(
+        "\n[Switched to {}]\n",
+        ctx.agent_name().yellow().bold()
+    );
+    Ok(())
+}
+
+fn switch_scope(ctx: &mut InteractiveContext, manager: &mut ConfigManager) -> Result<()> {
+    if ctx.is_global {
+        // Switch to project scope
+        if ctx.project_root.is_some() {
+            ctx.is_global = false;
+        } else {
+            // Try to detect project root
+            if let Some(root) = find_project_root(&std::env::current_dir()?) {
+                ctx.project_root = Some(root);
+                ctx.is_global = false;
+            } else {
+                println!("\n[!] No project root found. Staying in global scope.\n");
+                return Ok(());
+            }
+        }
+    } else {
+        // Switch to global scope
+        ctx.is_global = true;
+    }
+
+    *manager = ctx.create_manager();
+    if manager.load().is_err() {
+        manager.init_empty_config();
+    }
+
+    println!(
+        "\n[Switched to {} scope]\n",
+        ctx.scope_name().yellow().bold()
+    );
+    Ok(())
+}
+
 fn select_resource_type() -> Result<ResourceType> {
     let options = [
-        ("🛠️  Skill", ResourceType::Skills),
-        ("🔌 MCP Server", ResourceType::Mcps),
-        ("🤖 Sub-agent", ResourceType::SubAgents),
+        ("Skill", ResourceType::Skills),
+        ("MCP Server", ResourceType::Mcps),
+        ("Sub-agent", ResourceType::SubAgents),
     ];
 
     let selected = Select::new(
@@ -88,7 +213,7 @@ fn list_resources(manager: &ConfigManager) -> Result<()> {
 
     // Skills
     if !config.skills.is_empty() {
-        println!("\n{}", "🛠️  Skills:".bold());
+        println!("\n{}", "Skills:".bold());
         for skill in &config.skills {
             let status = if skill.enabled {
                 "●".green()
@@ -104,7 +229,7 @@ fn list_resources(manager: &ConfigManager) -> Result<()> {
 
     // MCPs
     if !config.mcps.is_empty() {
-        println!("\n{}", "🔌 MCP Servers:".bold());
+        println!("\n{}", "MCP Servers:".bold());
         for mcp in &config.mcps {
             let status = if mcp.enabled {
                 "●".green()
@@ -122,7 +247,7 @@ fn list_resources(manager: &ConfigManager) -> Result<()> {
 
     // Sub-agents
     if !config.sub_agents.is_empty() {
-        println!("\n{}", "🤖 Sub-agents:".bold());
+        println!("\n{}", "Sub-agents:".bold());
         for agent in &config.sub_agents {
             let status = if agent.enabled {
                 "●".green()
@@ -170,17 +295,17 @@ fn add_skill(manager: &mut ConfigManager) -> Result<()> {
 
         let path = std::path::PathBuf::from(path);
         if !path.exists() {
-            println!("{}", "❌ Path does not exist.".red());
+            println!("[X] Path does not exist.");
             return Ok(());
         }
 
         match manager.add_skill_from_path(&path) {
             Ok(skill) => {
-                println!("\n{}", "✅ Skill added successfully!".green().bold());
+                println!("\n[OK] Skill added successfully!");
                 println!("{}", serde_json::to_string_pretty(&skill)?);
             }
             Err(e) => {
-                println!("{} {}", "❌ Failed to add skill:".red(), e);
+                println!("[X] Failed to add skill: {}", e);
             }
         }
     } else {
@@ -222,7 +347,7 @@ fn add_skill(manager: &mut ConfigManager) -> Result<()> {
         };
 
         manager.add_skill(skill.clone())?;
-        println!("\n{}", "✅ Skill added successfully!".green().bold());
+        println!("\n[OK] Skill added successfully!");
         println!("{}", serde_json::to_string_pretty(&skill)?);
     }
 
@@ -314,7 +439,7 @@ fn add_mcp(manager: &mut ConfigManager) -> Result<()> {
     let mcp = McpServer::new(name, transport);
     manager.add_mcp(mcp.clone())?;
 
-    println!("\n{}", "✅ MCP server added successfully!".green().bold());
+    println!("\n[OK] MCP server added successfully!");
     println!("{}", serde_json::to_string_pretty(&mcp)?);
 
     Ok(())
@@ -351,7 +476,7 @@ fn add_sub_agent(manager: &mut ConfigManager) -> Result<()> {
 
     manager.add_sub_agent(agent.clone())?;
 
-    println!("\n{}", "✅ Sub-agent added successfully!".green().bold());
+    println!("\n[OK] Sub-agent added successfully!");
     println!("{}", serde_json::to_string_pretty(&agent)?);
 
     Ok(())
@@ -465,7 +590,7 @@ fn update_skill(manager: &mut ConfigManager, name: &str) -> Result<()> {
     }
 
     manager.update_skill(name, skill.clone())?;
-    println!("\n{}", "✅ Skill updated successfully!".green().bold());
+    println!("\n[OK] Skill updated successfully!");
     println!("{}", serde_json::to_string_pretty(&skill)?);
 
     Ok(())
@@ -515,7 +640,7 @@ fn update_mcp(manager: &mut ConfigManager, name: &str) -> Result<()> {
     }
 
     manager.update_mcp(name, mcp.clone())?;
-    println!("\n{}", "✅ MCP server updated successfully!".green().bold());
+    println!("\n[OK] MCP server updated successfully!");
     println!("{}", serde_json::to_string_pretty(&mcp)?);
 
     Ok(())
@@ -556,7 +681,7 @@ fn update_sub_agent(manager: &mut ConfigManager, name: &str) -> Result<()> {
     }
 
     manager.update_sub_agent(name, agent.clone())?;
-    println!("\n{}", "✅ Sub-agent updated successfully!".green().bold());
+    println!("\n[OK] Sub-agent updated successfully!");
     println!("{}", serde_json::to_string_pretty(&agent)?);
 
     Ok(())
@@ -585,7 +710,7 @@ fn delete_resource(manager: &mut ConfigManager) -> Result<()> {
         ResourceType::SubAgents => manager.remove_sub_agent(&name)?,
     }
 
-    println!("{} '{}' has been deleted.", "✅".green(), name);
+    println!("[OK] '{}' has been deleted.", name);
 
     Ok(())
 }
@@ -617,7 +742,7 @@ fn toggle_resource(manager: &mut ConfigManager) -> Result<()> {
     };
 
     if !can_toggle {
-        println!("{}", "❌ Claude Code doesn't support enabling/disabling MCP servers.".red());
+        println!("[X] Claude Code doesn't support enabling/disabling MCP servers.");
         return Ok(());
     }
 
@@ -655,10 +780,9 @@ fn toggle_resource(manager: &mut ConfigManager) -> Result<()> {
         }
     }
 
-    println!("{} '{}' is now {}.",
-        "✅".green(),
+    println!("[OK] '{}' is now {}.",
         name,
-        if is_enabled { "disabled".red() } else { "enabled".green() }
+        if is_enabled { "disabled" } else { "enabled" }
     );
 
     Ok(())

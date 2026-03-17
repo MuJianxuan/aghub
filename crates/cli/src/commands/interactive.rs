@@ -47,13 +47,15 @@ impl InteractiveContext {
 pub fn run_interactive(manager: &mut ConfigManager) -> Result<()> {
 	// Detect initial context from the provided manager
 	let current_path = manager.config_path().to_path_buf();
-	let is_global = current_path.to_string_lossy().contains(".claude.json")
-		|| current_path.to_string_lossy().contains("opencode.json");
+	let is_global = !current_path
+		.ancestors()
+		.any(|p| p.file_name().is_some_and(|n| n == ".claude" || n == ".opencode" || n == ".codex" || n == ".gemini" || n == ".windsurf" || n == ".cursor" || n == ".roo" || n == ".cline"));
 
-	let agent_type = match manager.agent_name() {
-		"opencode" => AgentType::OpenCode,
-		_ => AgentType::Claude,
-	};
+	let agent_type = AgentType::ALL
+		.iter()
+		.find(|t| t.as_str() == manager.agent_name())
+		.copied()
+		.unwrap_or(AgentType::Claude);
 
 	let project_root = if is_global {
 		find_project_root(&std::env::current_dir()?)
@@ -953,9 +955,12 @@ fn toggle_resource(manager: &mut ConfigManager) -> Result<()> {
 		}
 		ResourceType::Mcps => {
 			let mcp = manager.get_mcp(&name).unwrap();
-			// Claude doesn't support MCP enable/disable
-			let can = manager.agent_name() != "claude";
-			(mcp.enabled, can)
+			let adapter = create_adapter(AgentType::ALL
+				.iter()
+				.find(|t| t.as_str() == manager.agent_name())
+				.copied()
+				.unwrap_or(AgentType::Claude));
+			(mcp.enabled, adapter.supports_mcp_enable_disable())
 		}
 		ResourceType::SubAgents => {
 			let agent = manager.get_sub_agent(&name).unwrap();
@@ -965,7 +970,7 @@ fn toggle_resource(manager: &mut ConfigManager) -> Result<()> {
 
 	if !can_toggle {
 		println!(
-			"[X] Claude Code doesn't support enabling/disabling MCP servers."
+			"[X] This agent doesn't support enabling/disabling MCP servers."
 		);
 		return Ok(());
 	}

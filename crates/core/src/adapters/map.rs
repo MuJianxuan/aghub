@@ -138,7 +138,7 @@ fn parse_skill_md(content: &str) -> Option<SkillMetadata> {
 }
 
 /// Load skills from the skills directory
-fn load_skills_from_dir(skills_dir: &Path) -> Vec<Skill> {
+pub(crate) fn load_skills_from_dir(skills_dir: &Path) -> Vec<Skill> {
 	let mut skills = Vec::new();
 
 	if !skills_dir.exists() {

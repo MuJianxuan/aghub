@@ -101,6 +101,10 @@ impl AgentAdapter for TomlAdapter {
 			});
 		}
 
+		// Load skills from ~/.codex/skills/
+		let skills_dir = dirs::home_dir().unwrap().join(".codex/skills");
+		config.skills = super::map::load_skills_from_dir(&skills_dir);
+
 		Ok(config)
 	}
 

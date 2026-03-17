@@ -122,6 +122,26 @@ impl Default for ListAdapter {
 	}
 }
 
+// OpenCode config: "mcp" is a map, "command" is an array [cmd, ...args]
+#[derive(Debug, Default, Deserialize)]
+struct OpenCodeConfig {
+	#[serde(default)]
+	mcp: HashMap<String, OpenCodeMcpEntry>,
+}
+
+#[derive(Debug, Deserialize)]
+struct OpenCodeMcpEntry {
+	command: Vec<String>,
+	#[serde(default = "default_true")]
+	enabled: bool,
+	#[serde(default)]
+	env: Option<HashMap<String, String>>,
+}
+
+fn default_true() -> bool {
+	true
+}
+
 impl AgentAdapter for ListAdapter {
 	fn name(&self) -> &'static str {
 		self.name
@@ -136,6 +156,36 @@ impl AgentAdapter for ListAdapter {
 	}
 
 	fn parse_config(&self, content: &str) -> Result<AgentConfig> {
+		// Try OpenCode format first ("mcp" map with command arrays)
+		if let Ok(oc) = serde_json::from_str::<OpenCodeConfig>(content) {
+			if !oc.mcp.is_empty() {
+				let mut config = AgentConfig::new();
+				for (name, entry) in oc.mcp {
+					let (command, args) = if entry.command.is_empty() {
+						(String::new(), vec![])
+					} else {
+						(
+							entry.command[0].clone(),
+							entry.command[1..].to_vec(),
+						)
+					};
+					config.mcps.push(McpServer {
+						name,
+						enabled: entry.enabled,
+						transport: McpTransport::Stdio {
+							command,
+							args,
+							env: entry.env,
+							timeout: None,
+						},
+						timeout: None,
+					});
+				}
+				return Ok(config);
+			}
+		}
+
+		// List-based format (mcp_servers as array)
 		let list_config: ListConfig = serde_json::from_str(content)?;
 
 		let mut config = AgentConfig::new();

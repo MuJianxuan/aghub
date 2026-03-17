@@ -62,10 +62,12 @@ pub fn codex_project_path(root: &Path) -> PathBuf {
 }
 
 pub fn antigravity_global_path() -> PathBuf {
-	dirs::home_dir().unwrap().join(".agent/mcp.json")
+	dirs::home_dir()
+		.unwrap()
+		.join(".gemini/antigravity/mcp_config.json")
 }
 pub fn antigravity_project_path(root: &Path) -> PathBuf {
-	root.join(".agent/mcp.json")
+	root.join(".gemini/antigravity/mcp_config.json")
 }
 
 pub fn openclaw_global_path() -> PathBuf {
@@ -155,7 +157,7 @@ pub fn find_project_root(start_dir: &Path) -> Option<PathBuf> {
 			|| dir.join(".windsurf").is_dir()
 			|| dir.join(".roo").is_dir()
 			|| dir.join(".vscode").is_dir()
-			|| dir.join(".agent").is_dir()
+			|| dir.join(".gemini/antigravity").is_dir()
 			|| dir.join(".gemini").is_dir()
 			|| dir.join(".codex").is_dir()
 			|| dir.join(".mcp.json").is_file()
@@ -282,7 +284,7 @@ mod tests {
 		);
 		assert_eq!(
 			antigravity_project_path(dir).to_str().unwrap(),
-			"/test_project/.agent/mcp.json"
+			"/test_project/.gemini/antigravity/mcp_config.json"
 		);
 		assert_eq!(
 			openclaw_project_path(dir).to_str().unwrap(),

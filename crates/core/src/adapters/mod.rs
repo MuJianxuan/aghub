@@ -12,33 +12,18 @@ pub use map::MapAdapter;
 
 /// Trait for adapting different agent configuration formats
 pub trait AgentAdapter: Send + Sync {
-	/// Get the agent name
 	fn name(&self) -> &'static str;
-
-	/// Get the global configuration path
 	fn global_config_path(&self) -> PathBuf;
-
-	/// Get the project configuration path for a given project root
 	fn project_config_path(&self, project_root: &Path) -> PathBuf;
-
-	/// Parse agent-specific config into normalized AgentConfig
 	fn parse_config(&self, content: &str) -> Result<AgentConfig>;
-
-	/// Serialize normalized AgentConfig into agent-specific format
-	/// The original_content is provided to allow safe merging that preserves unknown fields
 	fn serialize_config(
 		&self,
 		config: &AgentConfig,
 		original_content: Option<&str>,
 	) -> Result<String>;
-
-	// Get the CLI command to validate config
 	fn validate_command(&self, config_path: &Path) -> Command;
-
-	/// Whether this agent supports MCP enable/disable operations
-	// Map-based adapters don't preserve enabled state, returns false
 	fn supports_mcp_enable_disable(&self) -> bool {
-		true // Default to true for most agents
+		true
 	}
 }
 
@@ -106,6 +91,11 @@ pub fn create_adapter(agent_type: crate::AgentType) -> Box<dyn AgentAdapter> {
 			paths::opencode_global_path,
 			paths::opencode_project_path,
 		)),
+		// New agents — delegate to registry-based descriptor adapter
+		other => {
+			let descriptor = crate::registry::get(other);
+			Box::new(descriptor)
+		}
 	}
 }
 
@@ -124,5 +114,17 @@ mod tests {
 	fn test_create_adapter_opencode() {
 		let adapter = create_adapter(AgentType::OpenCode);
 		assert_eq!(adapter.name(), "opencode");
+	}
+
+	#[test]
+	fn test_create_adapter_kiro() {
+		let adapter = create_adapter(AgentType::Kiro);
+		assert_eq!(adapter.name(), "kiro");
+	}
+
+	#[test]
+	fn test_create_adapter_firebase() {
+		let adapter = create_adapter(AgentType::Firebase);
+		assert_eq!(adapter.name(), "firebase");
 	}
 }

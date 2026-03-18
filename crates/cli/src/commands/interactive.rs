@@ -4,6 +4,7 @@ use aghub_core::{
 	manager::ConfigManager,
 	models::{AgentType, McpServer, McpTransport, Skill, SubAgent},
 	paths::find_project_root,
+	registry,
 };
 use anyhow::{bail, Result};
 use colored::*;
@@ -47,17 +48,13 @@ impl InteractiveContext {
 pub fn run_interactive(manager: &mut ConfigManager) -> Result<()> {
 	// Detect initial context from the provided manager
 	let current_path = manager.config_path().to_path_buf();
+	// Collect all project markers from registry
+	let all_markers: Vec<&'static str> = registry::iter_all()
+		.flat_map(|d| d.project_markers.iter().copied())
+		.collect();
 	let is_global = !current_path.ancestors().any(|p| {
-		p.file_name().is_some_and(|n| {
-			n == ".claude"
-				|| n == ".opencode"
-				|| n == ".codex"
-				|| n == ".gemini"
-				|| n == ".windsurf"
-				|| n == ".cursor"
-				|| n == ".roo"
-				|| n == ".cline"
-		})
+		p.file_name()
+			.is_some_and(|n| all_markers.iter().any(|m| n == *m))
 	});
 
 	let agent_type = AgentType::ALL

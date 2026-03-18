@@ -1,0 +1,72 @@
+use super::ConfigManager;
+use crate::{
+	errors::{ConfigError, Result},
+	models::McpServer,
+};
+
+impl ConfigManager {
+	pub fn add_mcp(&mut self, mcp: McpServer) -> Result<()> {
+		let config = self.config_mut()?;
+		if config.mcps.iter().any(|m| m.name == mcp.name) {
+			return Err(ConfigError::resource_exists("MCP server", &mcp.name));
+		}
+		config.mcps.push(mcp);
+		self.save_current()
+	}
+
+	pub fn get_mcp(&self, name: &str) -> Option<&McpServer> {
+		self.config.as_ref()?.mcps.iter().find(|m| m.name == name)
+	}
+
+	pub fn update_mcp(&mut self, name: &str, mcp: McpServer) -> Result<()> {
+		let config = self.config_mut()?;
+		let index =
+			config.mcps.iter().position(|m| m.name == name).ok_or_else(
+				|| ConfigError::resource_not_found("MCP server", name),
+			)?;
+		config.mcps[index] = mcp;
+		self.save_current()
+	}
+
+	pub fn remove_mcp(&mut self, name: &str) -> Result<()> {
+		let config = self.config_mut()?;
+		let index =
+			config.mcps.iter().position(|m| m.name == name).ok_or_else(
+				|| ConfigError::resource_not_found("MCP server", name),
+			)?;
+		config.mcps.remove(index);
+		self.save_current()
+	}
+
+	pub fn disable_mcp(&mut self, name: &str) -> Result<()> {
+		if !self.adapter.supports_mcp_enable_disable() {
+			return Err(ConfigError::unsupported_operation(
+				"disable",
+				"MCP server",
+				self.adapter.name(),
+			));
+		}
+		let config = self.config_mut()?;
+		let mcp = config.mcps.iter_mut().find(|m| m.name == name).ok_or_else(
+			|| ConfigError::resource_not_found("MCP server", name),
+		)?;
+		mcp.enabled = false;
+		self.save_current()
+	}
+
+	pub fn enable_mcp(&mut self, name: &str) -> Result<()> {
+		if !self.adapter.supports_mcp_enable_disable() {
+			return Err(ConfigError::unsupported_operation(
+				"enable",
+				"MCP server",
+				self.adapter.name(),
+			));
+		}
+		let config = self.config_mut()?;
+		let mcp = config.mcps.iter_mut().find(|m| m.name == name).ok_or_else(
+			|| ConfigError::resource_not_found("MCP server", name),
+		)?;
+		mcp.enabled = true;
+		self.save_current()
+	}
+}

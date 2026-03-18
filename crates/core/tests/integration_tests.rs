@@ -799,3 +799,89 @@ fn test_openclaw_mcp_workflow() {
 	assert_eq!(config.mcps.len(), 1);
 	assert_eq!(config.mcps[0].name, "openclaw-sse");
 }
+
+// ==================== New Agent Integration Tests ====================
+
+#[test]
+fn test_kiro_mcp_workflow() {
+	let test = TestConfig::new(AgentType::Kiro).unwrap();
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+	assert!(manager.config().unwrap().mcps.is_empty());
+
+	let mcp = create_test_mcp_stdio("kiro-mcp");
+	manager.add_mcp(mcp).unwrap();
+
+	manager.load().unwrap();
+	let config = manager.config().unwrap();
+	assert_eq!(config.mcps.len(), 1);
+	assert_eq!(config.mcps[0].name, "kiro-mcp");
+
+	manager.remove_mcp("kiro-mcp").unwrap();
+	manager.load().unwrap();
+	assert!(manager.config().unwrap().mcps.is_empty());
+}
+
+#[test]
+fn test_firebase_mcp_workflow() {
+	let test = TestConfig::new(AgentType::Firebase).unwrap();
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+	assert!(manager.config().unwrap().mcps.is_empty());
+
+	let mcp = create_test_mcp_stdio("firebase-mcp");
+	manager.add_mcp(mcp).unwrap();
+
+	manager.load().unwrap();
+	let config = manager.config().unwrap();
+	assert_eq!(config.mcps.len(), 1);
+	assert_eq!(config.mcps[0].name, "firebase-mcp");
+}
+
+#[test]
+fn test_junie_mcp_workflow() {
+	let test = TestConfig::new(AgentType::Junie).unwrap();
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let mcp = create_test_mcp_stdio("junie-mcp");
+	manager.add_mcp(mcp).unwrap();
+
+	manager.load().unwrap();
+	let config = manager.config().unwrap();
+	assert_eq!(config.mcps.len(), 1);
+	assert_eq!(config.mcps[0].name, "junie-mcp");
+}
+
+#[test]
+fn test_zed_mcp_workflow() {
+	let test = TestConfig::new(AgentType::Zed).unwrap();
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	// Zed uses "context_servers" key
+	let mcp = create_test_mcp_stdio("zed-mcp");
+	manager.add_mcp(mcp).unwrap();
+
+	let content = test.read_config().unwrap();
+	let json: serde_json::Value = serde_json::from_str(&content).unwrap();
+	// Zed serializes under "context_servers"
+	assert!(json.get("context_servers").is_some());
+	let servers = json.get("context_servers").unwrap().as_object().unwrap();
+	assert!(servers.contains_key("zed-mcp"));
+}
+
+#[test]
+fn test_crush_mcp_workflow() {
+	let test = TestConfig::new(AgentType::Crush).unwrap();
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let mcp = create_test_mcp_stdio("crush-mcp");
+	manager.add_mcp(mcp).unwrap();
+
+	manager.load().unwrap();
+	let config = manager.config().unwrap();
+	assert_eq!(config.mcps.len(), 1);
+	assert_eq!(config.mcps[0].name, "crush-mcp");
+}

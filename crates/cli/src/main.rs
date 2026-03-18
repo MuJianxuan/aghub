@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use aghub_core::{
 	adapters::create_adapter, manager::ConfigManager, models::AgentType,
@@ -13,18 +14,16 @@ mod ui;
 use commands::{add, delete, disable, enable, get, interactive, update};
 
 /// Global verbose flag used by the eprintln_verbose macro
-static mut VERBOSE: bool = false;
+static VERBOSE: AtomicBool = AtomicBool::new(false);
 
 /// Set the verbose flag
 pub fn set_verbose(verbose: bool) {
-	unsafe {
-		VERBOSE = verbose;
-	}
+	VERBOSE.store(verbose, Ordering::Relaxed);
 }
 
 /// Check if verbose mode is enabled
 pub fn is_verbose() -> bool {
-	unsafe { VERBOSE }
+	VERBOSE.load(Ordering::Relaxed)
 }
 
 /// Print verbose message to stderr (prefixed with "# ")

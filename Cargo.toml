@@ -2,6 +2,7 @@
 members = [
 	"crates/core",
 	"crates/cli",
+	"crates/api",
 	"crates/skills-sh",
 	"crates/skills-ref",
 	"crates/skill",

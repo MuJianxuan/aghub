@@ -56,7 +56,7 @@ fn get_skills_paths(
 			}
 
 			// Add universal project skills path for agents that support it
-			if descriptor.uses_universal_skills {
+			if descriptor.capabilities.universal_skills {
 				paths.push(root.join(".agents/skills"));
 			}
 		}
@@ -70,7 +70,7 @@ fn get_skills_paths(
 		}
 
 		// Add universal global skills path for agents that support it
-		if descriptor.uses_universal_skills {
+		if descriptor.capabilities.universal_skills {
 			if let Some(universal_path) = get_universal_skills_path() {
 				// Only add if not already in paths
 				if !paths.contains(&universal_path) {

@@ -19,7 +19,7 @@ pub mod testing;
 pub use adapters::{create_adapter, AgentAdapter};
 pub use errors::{ConfigError, Result};
 pub use manager::ConfigManager;
-pub use models::AgentType;
+pub use models::{AgentType, ConfigSource};
 
 /// Convert a skill::Skill to core::models::Skill
 pub fn convert_skill(skill_pkg: skill::Skill) -> models::Skill {

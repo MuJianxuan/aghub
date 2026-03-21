@@ -159,10 +159,9 @@ pub fn parse_skill_dir(path: &Path) -> Result<Skill> {
 fn scan_directory_structure(path: &Path, skill: &mut Skill) -> Result<()> {
 	// Scan scripts directory
 	let scripts_dir = path.join("scripts");
-	if scripts_dir.exists() && scripts_dir.is_dir() {
-		for entry in std::fs::read_dir(&scripts_dir)? {
-			let entry = entry?;
-			if entry.file_type()?.is_file() {
+	if let Ok(entries) = std::fs::read_dir(&scripts_dir) {
+		for entry in entries.flatten() {
+			if entry.file_type().is_ok_and(|ft| ft.is_file()) {
 				let name = entry.file_name().to_string_lossy().to_string();
 				skill.scripts.push(format!("scripts/{}", name));
 			}
@@ -171,10 +170,9 @@ fn scan_directory_structure(path: &Path, skill: &mut Skill) -> Result<()> {
 
 	// Scan references directory
 	let refs_dir = path.join("references");
-	if refs_dir.exists() && refs_dir.is_dir() {
-		for entry in std::fs::read_dir(&refs_dir)? {
-			let entry = entry?;
-			if entry.file_type()?.is_file() {
+	if let Ok(entries) = std::fs::read_dir(&refs_dir) {
+		for entry in entries.flatten() {
+			if entry.file_type().is_ok_and(|ft| ft.is_file()) {
 				let name = entry.file_name().to_string_lossy().to_string();
 				skill.references.push(format!("references/{}", name));
 			}
@@ -183,10 +181,9 @@ fn scan_directory_structure(path: &Path, skill: &mut Skill) -> Result<()> {
 
 	// Scan assets directory
 	let assets_dir = path.join("assets");
-	if assets_dir.exists() && assets_dir.is_dir() {
-		for entry in std::fs::read_dir(&assets_dir)? {
-			let entry = entry?;
-			if entry.file_type()?.is_file() {
+	if let Ok(entries) = std::fs::read_dir(&assets_dir) {
+		for entry in entries.flatten() {
+			if entry.file_type().is_ok_and(|ft| ft.is_file()) {
 				let name = entry.file_name().to_string_lossy().to_string();
 				skill.assets.push(format!("assets/{}", name));
 			}

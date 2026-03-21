@@ -21,7 +21,7 @@ struct OpenCodeMcpEntry {
 	server_type: Option<String>,
 	command: Option<Vec<String>>,
 	url: Option<String>,
-	#[serde(default = "default_true")]
+	#[serde(default = "crate::models::default_true")]
 	enabled: bool,
 	#[serde(alias = "env", default)]
 	environment: Option<HashMap<String, String>>,
@@ -53,10 +53,6 @@ struct OpenCodeConfigOutput {
 	mcp: HashMap<String, OpenCodeMcpOutput>,
 	#[serde(flatten)]
 	extra: serde_json::Map<String, serde_json::Value>,
-}
-
-fn default_true() -> bool {
-	true
 }
 
 pub fn parse(content: &str) -> Result<AgentConfig> {

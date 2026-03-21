@@ -31,10 +31,6 @@ pub fn load_skills_from_dirs(dirs: &[PathBuf]) -> Vec<Skill> {
 }
 
 fn collect_skills(dir: &Path, skills: &mut Vec<Skill>) {
-	if !dir.exists() {
-		return;
-	}
-
 	let Ok(entries) = fs::read_dir(dir) else {
 		return;
 	};

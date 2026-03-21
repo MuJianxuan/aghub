@@ -1,4 +1,4 @@
-use aghub_core::models::Skill;
+use aghub_core::models::{ConfigSource, Skill};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize)]

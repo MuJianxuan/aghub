@@ -38,10 +38,10 @@ impl ConfigManager {
 		self.save_current()
 	}
 
-	pub fn disable_mcp(&mut self, name: &str) -> Result<()> {
+	fn set_mcp_enabled(&mut self, name: &str, enabled: bool) -> Result<()> {
 		if !self.adapter.supports_mcp_enable_disable() {
 			return Err(ConfigError::unsupported_operation(
-				"disable",
+				if enabled { "enable" } else { "disable" },
 				"MCP server",
 				self.adapter.name(),
 			));
@@ -50,23 +50,15 @@ impl ConfigManager {
 		let mcp = config.mcps.iter_mut().find(|m| m.name == name).ok_or_else(
 			|| ConfigError::resource_not_found("MCP server", name),
 		)?;
-		mcp.enabled = false;
+		mcp.enabled = enabled;
 		self.save_current()
 	}
 
+	pub fn disable_mcp(&mut self, name: &str) -> Result<()> {
+		self.set_mcp_enabled(name, false)
+	}
+
 	pub fn enable_mcp(&mut self, name: &str) -> Result<()> {
-		if !self.adapter.supports_mcp_enable_disable() {
-			return Err(ConfigError::unsupported_operation(
-				"enable",
-				"MCP server",
-				self.adapter.name(),
-			));
-		}
-		let config = self.config_mut()?;
-		let mcp = config.mcps.iter_mut().find(|m| m.name == name).ok_or_else(
-			|| ConfigError::resource_not_found("MCP server", name),
-		)?;
-		mcp.enabled = true;
-		self.save_current()
+		self.set_mcp_enabled(name, true)
 	}
 }

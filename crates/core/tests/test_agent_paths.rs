@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 #[test]
 fn test_opencode_uses_universal_skills() {
 	assert!(
-		opencode::DESCRIPTOR.uses_universal_skills,
+		opencode::DESCRIPTOR.capabilities.universal_skills,
 		"OpenCode should use universal skills path (~/.config/agents/skills)"
 	);
 }

@@ -1,7 +1,7 @@
 use crate::{
 	adapters::AgentAdapter,
 	errors::{ConfigError, Result},
-	models::{AgentConfig, ResourceScope},
+	models::{AgentConfig, ConfigSource, McpServer, ResourceScope, Skill},
 };
 use std::path::{Path, PathBuf};
 
@@ -23,20 +23,7 @@ impl ConfigManager {
 		global: bool,
 		project_root: Option<&Path>,
 	) -> Self {
-		let config_path = if global {
-			adapter.global_config_path()
-		} else if let Some(root) = project_root {
-			adapter.project_config_path(root)
-		} else {
-			adapter.global_config_path()
-		};
-		Self {
-			adapter,
-			config_path,
-			project_root: project_root.map(|p| p.to_path_buf()),
-			config: None,
-			scope: ResourceScope::GlobalOnly,
-		}
+		Self::with_scope(adapter, global, project_root, ResourceScope::GlobalOnly)
 	}
 
 	/// Create a new ConfigManager with resource scope
@@ -97,6 +84,52 @@ impl ConfigManager {
 		)?;
 		self.config = Some(config);
 		Ok(self.config.as_ref().unwrap())
+	}
+
+	/// Load and merge configs from both project and global, tracking provenance.
+	/// Skills are deduplicated by name (project takes precedence).
+	/// MCPs are not deduplicated — same name can appear from both scopes.
+	pub fn load_both_annotated(
+		&mut self,
+	) -> Result<(Vec<(Skill, ConfigSource)>, Vec<(McpServer, ConfigSource)>)> {
+		let mut skills: Vec<(Skill, ConfigSource)> = Vec::new();
+		let mut mcps: Vec<(McpServer, ConfigSource)> = Vec::new();
+		let mut seen = std::collections::HashSet::new();
+
+		// Project first (takes precedence for skills)
+		if let Some(root) = self.project_root.clone() {
+			let project_path = self.adapter.project_config_path(&root);
+			if let Ok(project) =
+				self.adapter
+					.load_config(&project_path, Some(&root), ResourceScope::ProjectOnly)
+			{
+				for skill in project.skills {
+					seen.insert(skill.name.clone());
+					skills.push((skill, ConfigSource::Project));
+				}
+				for mcp in project.mcps {
+					mcps.push((mcp, ConfigSource::Project));
+				}
+			}
+		}
+
+		// Global second
+		let global_path = self.adapter.global_config_path();
+		if let Ok(global) =
+			self.adapter
+				.load_config(&global_path, None, ResourceScope::GlobalOnly)
+		{
+			for skill in global.skills {
+				if !seen.contains(&skill.name) {
+					skills.push((skill, ConfigSource::Global));
+				}
+			}
+			for mcp in global.mcps {
+				mcps.push((mcp, ConfigSource::Global));
+			}
+		}
+
+		Ok((skills, mcps))
 	}
 
 	/// Load and merge configs from both project and global

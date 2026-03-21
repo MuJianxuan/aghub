@@ -177,8 +177,16 @@ impl McpTransport {
 	}
 }
 
-fn default_true() -> bool {
+pub(crate) fn default_true() -> bool {
 	true
+}
+
+/// Source of a resource (project-level vs global)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ConfigSource {
+	Global,
+	Project,
 }
 
 /// Resource discovery scope

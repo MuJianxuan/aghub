@@ -15,7 +15,7 @@ pub struct Capabilities {
 	pub mcp_remote: bool,
 	pub mcp_enable_disable: bool,
 	pub skills: bool,
-	/// Whether this agent supports the universal .agents/skills directory
+	/// Whether this agent reads from the universal .agents/skills directory
 	pub universal_skills: bool,
 }
 
@@ -30,14 +30,10 @@ pub struct AgentDescriptor {
 	pub global_path: fn() -> PathBuf,
 	pub project_path: fn(&Path) -> PathBuf,
 	pub capabilities: Capabilities,
-	/// Relative path under home dir for skills (e.g. ".claude/skills")
-	pub skills_dir: Option<&'static str>,
 	/// Function returning the global skills path (if skills supported)
 	pub global_skills_path: Option<fn() -> PathBuf>,
 	/// Function returning the project skills path (if skills supported)
 	pub project_skills_path: Option<fn(&Path) -> PathBuf>,
-	/// Whether this agent uses the universal .agents/skills directory
-	pub uses_universal_skills: bool,
 	pub cli_name: &'static str,
 	pub validate_args: &'static [&'static str],
 	/// Directory/file markers that indicate this agent's project root

@@ -60,7 +60,7 @@ Agent behavior is defined entirely in `crates/core/src/agents/<name>.rs` descrip
 - **Claude**: skills are NOT stored in JSON; discovered from `~/.claude/skills/` SKILL.md files. URL-based MCPs silently skipped on serialize.
 - **OpenCode**: uses native format with `mcp` object key (not `mcp_servers` array). SSE and StreamableHttp transports are unified as `"type": "remote"` — SSE transport identity is lost on roundtrip. Reads skills only from the universal path (no agent-specific skills dir).
 - **Codex/Mistral**: TOML config format.
-- **Cursor, Gemini, OpenCode** (`uses_universal_skills: true`): also read from `$XDG_CONFIG_HOME/agents/skills` (default `~/.config/agents/skills`) in addition to any agent-specific skills dir.
+- **Amp, Cline, Codex, Cursor, Gemini, OpenCode, Warp** (`capabilities.universal_skills: true`): also read from `$XDG_CONFIG_HOME/agents/skills` (default `~/.config/agents/skills`) in addition to any agent-specific skills dir.
 - **Copilot**: shares `~/.claude/skills/` as its skills path (same as Claude).
 - **`registry::get()` fallback**: returns Claude's descriptor silently if the requested agent ID is not found.
 

@@ -7,6 +7,16 @@ use serde::Serialize;
 struct SkillView {
 	name: String,
 	enabled: bool,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	source_path: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	description: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	author: Option<String>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	version: Option<String>,
+	#[serde(skip_serializing_if = "Vec::is_empty")]
+	tools: Vec<String>,
 }
 
 #[derive(Serialize)]
@@ -28,6 +38,11 @@ pub fn execute(manager: &ConfigManager, resource: ResourceType) -> Result<()> {
 				.map(|s| SkillView {
 					name: s.name.clone(),
 					enabled: s.enabled,
+					source_path: s.source_path.clone(),
+					description: s.description.clone(),
+					author: s.author.clone(),
+					version: s.version.clone(),
+					tools: s.tools.clone(),
 				})
 				.collect();
 			eprintln_verbose!("Found {} skills", views.len());

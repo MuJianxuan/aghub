@@ -62,6 +62,8 @@ struct ListSkill {
 	version: Option<String>,
 	#[serde(default)]
 	tools: Vec<String>,
+	#[serde(skip_serializing_if = "Option::is_none", default)]
+	source_path: Option<String>,
 }
 
 pub fn parse(content: &str) -> Result<AgentConfig> {
@@ -125,6 +127,7 @@ pub fn parse(content: &str) -> Result<AgentConfig> {
 			author: skill.author,
 			version: skill.version,
 			tools: skill.tools,
+			source_path: skill.source_path,
 		});
 	}
 
@@ -200,6 +203,7 @@ pub fn serialize(
 			author: skill.author.clone(),
 			version: skill.version.clone(),
 			tools: skill.tools.clone(),
+			source_path: skill.source_path.clone(),
 		});
 	}
 
@@ -241,6 +245,7 @@ mod tests {
 				author: None,
 				version: None,
 				tools: vec![],
+				source_path: None,
 			}],
 		};
 		let json = serialize(&config, None).unwrap();

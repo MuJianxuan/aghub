@@ -279,6 +279,7 @@ mod tests {
 				author: Some("test".to_string()),
 				version: Some("1.0.0".to_string()),
 				tools: vec!["tool1".to_string()],
+				source_path: None,
 			}],
 		};
 		let json = serialize(&config, None, "mcpServers").unwrap();

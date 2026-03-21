@@ -19,6 +19,7 @@ impl From<CreateSkillRequest> for Skill {
             author: req.author,
             version: req.version,
             tools: req.tools.unwrap_or_default(),
+            source_path: None,
         }
     }
 }
@@ -42,6 +43,7 @@ impl UpdateSkillRequest {
             author: self.author.or(existing.author),
             version: self.version.or(existing.version),
             tools: self.tools.unwrap_or(existing.tools),
+            source_path: existing.source_path,
         }
     }
 }
@@ -50,6 +52,7 @@ impl UpdateSkillRequest {
 pub struct SkillResponse {
     pub name: String,
     pub enabled: bool,
+    pub source_path: Option<String>,
     pub description: Option<String>,
     pub author: Option<String>,
     pub version: Option<String>,
@@ -61,6 +64,7 @@ impl From<Skill> for SkillResponse {
         SkillResponse {
             name: s.name,
             enabled: s.enabled,
+            source_path: s.source_path,
             description: s.description,
             author: s.author,
             version: s.version,
@@ -74,6 +78,7 @@ impl From<&Skill> for SkillResponse {
         SkillResponse {
             name: s.name.clone(),
             enabled: s.enabled,
+            source_path: s.source_path.clone(),
             description: s.description.clone(),
             author: s.author.clone(),
             version: s.version.clone(),

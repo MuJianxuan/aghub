@@ -23,6 +23,19 @@ pub use models::AgentType;
 
 /// Convert a skill::Skill to core::models::Skill
 pub fn convert_skill(skill_pkg: skill::Skill) -> models::Skill {
+	use skill::SkillSource;
+
+	let source_path = match &skill_pkg.source {
+		SkillSource::SkillMd(p) if !p.as_os_str().is_empty() => format_path_with_tilde(p),
+		SkillSource::Directory(p) if !p.as_os_str().is_empty() => {
+			format_path_with_tilde(&p.join("SKILL.md"))
+		}
+		SkillSource::SkillFile(p) | SkillSource::ZipFile(p) if !p.as_os_str().is_empty() => {
+			format_path_with_tilde(p)
+		}
+		_ => None,
+	};
+
 	models::Skill {
 		name: skill_pkg.name,
 		enabled: true,
@@ -33,6 +46,18 @@ pub fn convert_skill(skill_pkg: skill::Skill) -> models::Skill {
 			.allowed_tools
 			.map(|t| t.split(',').map(|s| s.trim().to_string()).collect())
 			.unwrap_or_default(),
+		source_path,
+	}
+}
+
+/// Format a skill path with ~ prefix for home directory
+fn format_path_with_tilde(path: &std::path::Path) -> Option<String> {
+	let home = dirs::home_dir()?;
+	if path.starts_with(&home) {
+		let relative = path.strip_prefix(&home).ok()?;
+		Some(format!("~/{}", relative.to_string_lossy()))
+	} else {
+		Some(path.to_string_lossy().to_string())
 	}
 }
 

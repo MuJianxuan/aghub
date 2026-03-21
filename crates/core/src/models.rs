@@ -37,6 +37,9 @@ pub struct Skill {
 	/// List of tool names this skill provides
 	#[serde(default)]
 	pub tools: Vec<String>,
+	/// Source path relative to skills directory with ~ prefix (e.g., "~/.claude/skills/my-skill/SKILL.md")
+	#[serde(skip_serializing_if = "Option::is_none", default)]
+	pub source_path: Option<String>,
 }
 
 impl Skill {
@@ -48,6 +51,7 @@ impl Skill {
 			author: None,
 			version: None,
 			tools: Vec::new(),
+			source_path: None,
 		}
 	}
 }

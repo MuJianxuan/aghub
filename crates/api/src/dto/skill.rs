@@ -57,6 +57,8 @@ pub struct SkillResponse {
     pub author: Option<String>,
     pub version: Option<String>,
     pub tools: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<ConfigSource>,
 }
 
 impl From<Skill> for SkillResponse {
@@ -69,6 +71,7 @@ impl From<Skill> for SkillResponse {
             author: s.author,
             version: s.version,
             tools: s.tools,
+            source: None,
         }
     }
 }
@@ -83,6 +86,7 @@ impl From<&Skill> for SkillResponse {
             author: s.author.clone(),
             version: s.version.clone(),
             tools: s.tools.clone(),
+            source: None,
         }
     }
 }

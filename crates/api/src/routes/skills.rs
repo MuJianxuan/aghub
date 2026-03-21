@@ -7,7 +7,7 @@ use crate::{
     dto::skill::{CreateSkillRequest, SkillResponse, UpdateSkillRequest},
     error::{ApiCreated, ApiError, ApiNoContent, ApiResult},
     extractors::{AgentParam, ScopeParams},
-    routes::build_manager,
+    routes::{build_manager_from_resolved, require_writable_scope},
 };
 
 fn check_skills_supported(agent: &AgentParam) -> Result<(), ApiError> {
@@ -53,7 +53,22 @@ fn check_skills_mutable(agent: &AgentParam) -> Result<(), ApiError> {
 #[get("/agents/<agent>/skills?<scope..>")]
 pub fn list_skills(agent: AgentParam, scope: ScopeParams) -> ApiResult<Vec<SkillResponse>> {
     check_skills_supported(&agent)?;
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
+
+    if resolved.is_all() {
+        let (skills, _) = manager.load_both_annotated().map_err(ApiError::from)?;
+        let items = skills
+            .iter()
+            .map(|(s, src)| {
+                let mut r = SkillResponse::from(s);
+                r.source = Some(*src);
+                r
+            })
+            .collect();
+        return Ok(Json(items));
+    }
+
     let config = manager.load().map_err(ApiError::from)?;
     let skills = config.skills.iter().map(SkillResponse::from).collect();
     Ok(Json(skills))
@@ -66,7 +81,9 @@ pub fn create_skill(
     body: Json<CreateSkillRequest>,
 ) -> ApiCreated<SkillResponse> {
     check_skills_mutable(&agent)?;
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     match manager.load() {
         Ok(_) => {}
         Err(ConfigError::NotFound { .. }) => manager.init_empty_config(),
@@ -81,7 +98,20 @@ pub fn create_skill(
 #[get("/agents/<agent>/skills/<name>?<scope..>")]
 pub fn get_skill(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResult<SkillResponse> {
     check_skills_supported(&agent)?;
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
+
+    if resolved.is_all() {
+        let (skills, _) = manager.load_both_annotated().map_err(ApiError::from)?;
+        let skill = skills
+            .iter()
+            .find(|(s, _)| s.name == name)
+            .ok_or_else(|| ApiError::from(ConfigError::resource_not_found("skill", name)))?;
+        let mut r = SkillResponse::from(&skill.0);
+        r.source = Some(skill.1);
+        return Ok(Json(r));
+    }
+
     manager.load().map_err(ApiError::from)?;
     let skill = manager
         .get_skill(name)
@@ -97,7 +127,9 @@ pub fn update_skill(
     body: Json<UpdateSkillRequest>,
 ) -> ApiResult<SkillResponse> {
     check_skills_mutable(&agent)?;
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     manager.load().map_err(ApiError::from)?;
     let existing = manager
         .get_skill(name)
@@ -112,7 +144,9 @@ pub fn update_skill(
 #[delete("/agents/<agent>/skills/<name>?<scope..>")]
 pub fn delete_skill(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiNoContent {
     check_skills_mutable(&agent)?;
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     manager.load().map_err(ApiError::from)?;
     manager.remove_skill(name).map_err(ApiError::from)?;
     Ok(NoContent)
@@ -125,7 +159,9 @@ pub fn enable_skill(
     scope: ScopeParams,
 ) -> ApiResult<SkillResponse> {
     check_skills_supported(&agent)?;
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     manager.load().map_err(ApiError::from)?;
     manager.enable_skill(name).map_err(ApiError::from)?;
     let skill = manager.get_skill(name).expect("skill present after enable");
@@ -139,7 +175,9 @@ pub fn disable_skill(
     scope: ScopeParams,
 ) -> ApiResult<SkillResponse> {
     check_skills_supported(&agent)?;
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     manager.load().map_err(ApiError::from)?;
     manager.disable_skill(name).map_err(ApiError::from)?;
     let skill = manager.get_skill(name).expect("skill present after disable");

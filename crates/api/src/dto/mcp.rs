@@ -1,4 +1,4 @@
-use aghub_core::models::{McpServer, McpTransport};
+use aghub_core::models::{ConfigSource, McpServer, McpTransport};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -149,6 +149,8 @@ pub struct McpResponse {
     pub transport: TransportDto,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timeout: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<ConfigSource>,
 }
 
 impl From<McpServer> for McpResponse {
@@ -158,6 +160,7 @@ impl From<McpServer> for McpResponse {
             enabled: s.enabled,
             transport: TransportDto::from(&s.transport),
             timeout: s.timeout,
+            source: None,
         }
     }
 }
@@ -169,6 +172,7 @@ impl From<&McpServer> for McpResponse {
             enabled: s.enabled,
             transport: TransportDto::from(&s.transport),
             timeout: s.timeout,
+            source: None,
         }
     }
 }

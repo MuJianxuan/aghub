@@ -7,12 +7,27 @@ use crate::{
     dto::mcp::{CreateMcpRequest, McpResponse, UpdateMcpRequest},
     error::{ApiCreated, ApiError, ApiNoContent, ApiResult},
     extractors::{AgentParam, ScopeParams},
-    routes::build_manager,
+    routes::{build_manager_from_resolved, require_writable_scope},
 };
 
 #[get("/agents/<agent>/mcps?<scope..>")]
 pub fn list_mcps(agent: AgentParam, scope: ScopeParams) -> ApiResult<Vec<McpResponse>> {
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
+
+    if resolved.is_all() {
+        let (_, mcps) = manager.load_both_annotated().map_err(ApiError::from)?;
+        let items = mcps
+            .iter()
+            .map(|(m, src)| {
+                let mut r = McpResponse::from(m);
+                r.source = Some(*src);
+                r
+            })
+            .collect();
+        return Ok(Json(items));
+    }
+
     let config = manager.load().map_err(ApiError::from)?;
     let mcps = config.mcps.iter().map(McpResponse::from).collect();
     Ok(Json(mcps))
@@ -24,7 +39,9 @@ pub fn create_mcp(
     scope: ScopeParams,
     body: Json<CreateMcpRequest>,
 ) -> ApiCreated<McpResponse> {
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     match manager.load() {
         Ok(_) => {}
         Err(ConfigError::NotFound { .. }) => manager.init_empty_config(),
@@ -38,7 +55,20 @@ pub fn create_mcp(
 
 #[get("/agents/<agent>/mcps/<name>?<scope..>")]
 pub fn get_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResult<McpResponse> {
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
+
+    if resolved.is_all() {
+        let (_, mcps) = manager.load_both_annotated().map_err(ApiError::from)?;
+        let mcp = mcps
+            .iter()
+            .find(|(m, _)| m.name == name)
+            .ok_or_else(|| ApiError::from(ConfigError::resource_not_found("mcp", name)))?;
+        let mut r = McpResponse::from(&mcp.0);
+        r.source = Some(mcp.1);
+        return Ok(Json(r));
+    }
+
     manager.load().map_err(ApiError::from)?;
     let mcp = manager
         .get_mcp(name)
@@ -53,7 +83,9 @@ pub fn update_mcp(
     scope: ScopeParams,
     body: Json<UpdateMcpRequest>,
 ) -> ApiResult<McpResponse> {
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     manager.load().map_err(ApiError::from)?;
     let existing = manager
         .get_mcp(name)
@@ -67,7 +99,9 @@ pub fn update_mcp(
 
 #[delete("/agents/<agent>/mcps/<name>?<scope..>")]
 pub fn delete_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiNoContent {
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     manager.load().map_err(ApiError::from)?;
     manager.remove_mcp(name).map_err(ApiError::from)?;
     Ok(NoContent)
@@ -75,7 +109,9 @@ pub fn delete_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiNoCon
 
 #[post("/agents/<agent>/mcps/<name>/enable?<scope..>")]
 pub fn enable_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResult<McpResponse> {
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     manager.load().map_err(ApiError::from)?;
     manager.enable_mcp(name).map_err(ApiError::from)?;
     let mcp = manager.get_mcp(name).expect("mcp present after enable");
@@ -84,7 +120,9 @@ pub fn enable_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResul
 
 #[post("/agents/<agent>/mcps/<name>/disable?<scope..>")]
 pub fn disable_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResult<McpResponse> {
-    let mut manager = build_manager(&agent, &scope)?;
+    let resolved = scope.resolve()?;
+    require_writable_scope(&resolved)?;
+    let mut manager = build_manager_from_resolved(&agent, &resolved)?;
     manager.load().map_err(ApiError::from)?;
     manager.disable_mcp(name).map_err(ApiError::from)?;
     let mcp = manager.get_mcp(name).expect("mcp present after disable");

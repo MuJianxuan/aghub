@@ -76,6 +76,16 @@ Run a single test: `cargo test --package aghub-core test_name -- --exact`
 
 Skills are loaded from directories containing `SKILL.md` files. The adapter parses YAML frontmatter (between `---` markers) to extract metadata like name, description, author, and version. The `source` field was recently removed from the Skill struct.
 
+### Adding/Removing Agents
+
+Touch all of these when adding or removing an agent:
+1. `crates/core/src/agents/` — create or delete the `<name>.rs` descriptor file
+2. `crates/core/src/agents/mod.rs` — add/remove `pub mod <name>;`
+3. `crates/core/src/registry/mod.rs` — add/remove `&agents::<name>::DESCRIPTOR` from `ALL_AGENTS`
+4. `crates/core/src/models.rs` — add/remove enum variant, `ALL` array entry, `as_str()` arm, `from_str()` arm
+5. `crates/core/src/adapters/mod.rs` — only if the agent has an explicit match arm (older agents do; newer ones fall through to the registry catch-all)
+6. `crates/core/src/paths.rs` — only if the agent has dedicated path functions used by an explicit adapter match arm
+
 ### Testing
 
 Integration tests in `crates/core/tests/integration_tests.rs` use a `TestConfig` helper to create isolated temp directories with `.claude/` or `.opencode/` structures.

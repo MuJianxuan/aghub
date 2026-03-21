@@ -27,13 +27,12 @@ pub fn convert_skill(skill_pkg: skill::Skill) -> models::Skill {
 		name: skill_pkg.name,
 		enabled: true,
 		description: Some(skill_pkg.description),
-		author: skill_pkg.metadata.get("author").cloned(),
-		version: skill_pkg.metadata.get("version").cloned(),
+		author: None,
+		version: None,
 		tools: skill_pkg
 			.allowed_tools
 			.map(|t| t.split(',').map(|s| s.trim().to_string()).collect())
 			.unwrap_or_default(),
-		metadata: None,
 	}
 }
 

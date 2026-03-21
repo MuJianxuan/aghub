@@ -2,7 +2,6 @@
 
 use crate::error::{Result, SkillError};
 use crate::model::{Skill, SkillSource};
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -244,34 +243,12 @@ pub fn parse_skill_md(content: &str) -> Result<Skill> {
 		.and_then(|v| v.as_str())
 		.map(String::from);
 
-	// Extract metadata as HashMap<String, String>
-	let skill_metadata: HashMap<String, String> = metadata
-		.get("metadata")
-		.and_then(|v| v.as_mapping())
-		.map(|m| {
-			m.iter()
-				.filter_map(|(k, v)| {
-					k.as_str().map(|key| {
-						let value = match v {
-							serde_yaml::Value::String(s) => s.clone(),
-							serde_yaml::Value::Number(n) => n.to_string(),
-							serde_yaml::Value::Bool(b) => b.to_string(),
-							_ => format!("{:?}", v),
-						};
-						(key.to_string(), value)
-					})
-				})
-				.collect()
-		})
-		.unwrap_or_default();
-
 	Ok(Skill {
 		name: name.to_string(),
 		description: description.to_string(),
 		license,
 		compatibility,
 		allowed_tools,
-		metadata: skill_metadata,
 		content: body,
 		source: SkillSource::SkillMd(PathBuf::new()),
 		scripts: Vec::new(),

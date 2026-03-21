@@ -1,7 +1,6 @@
 //! Data models for Agent Skills.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Properties parsed from a skill's SKILL.md frontmatter.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -23,10 +22,6 @@ pub struct SkillProperties {
 	/// Tool patterns the skill requires (optional, experimental).
 	#[serde(rename = "allowed-tools", skip_serializing_if = "Option::is_none")]
 	pub allowed_tools: Option<String>,
-
-	/// Key-value pairs for client-specific properties.
-	#[serde(default, skip_serializing_if = "HashMap::is_empty")]
-	pub metadata: HashMap<String, String>,
 }
 
 impl SkillProperties {
@@ -61,18 +56,6 @@ impl SkillProperties {
 			map.insert(
 				"allowed-tools".to_string(),
 				serde_json::Value::String(allowed_tools.clone()),
-			);
-		}
-
-		if !self.metadata.is_empty() {
-			let metadata_map: serde_json::Map<String, serde_json::Value> = self
-				.metadata
-				.iter()
-				.map(|(k, v)| (k.clone(), serde_json::Value::String(v.clone())))
-				.collect();
-			map.insert(
-				"metadata".to_string(),
-				serde_json::Value::Object(metadata_map),
 			);
 		}
 

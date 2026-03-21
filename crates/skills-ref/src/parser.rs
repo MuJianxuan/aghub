@@ -68,38 +68,7 @@ pub fn parse_frontmatter(
 		.iter()
 		.filter_map(|(k, v)| {
 			k.as_str().map(|key| {
-				let value = if key == "metadata" && v.is_mapping() {
-					// Convert nested metadata mapping to have string values
-					if let serde_yaml::Value::Mapping(m) = v {
-						let converted: HashMap<String, String> = m
-							.iter()
-							.filter_map(|(mk, mv)| {
-								mk.as_str().map(|k| {
-									let value_str = match mv {
-										serde_yaml::Value::String(s) => {
-											s.clone()
-										}
-										serde_yaml::Value::Number(n) => {
-											n.to_string()
-										}
-										serde_yaml::Value::Bool(b) => {
-											b.to_string()
-										}
-										_ => format!("{:?}", mv),
-									};
-									(k.to_string(), value_str)
-								})
-							})
-							.collect();
-						serde_yaml::to_value(converted)
-							.unwrap_or_else(|_| v.clone())
-					} else {
-						v.clone()
-					}
-				} else {
-					v.clone()
-				};
-				(key.to_string(), value)
+				(key.to_string(), v.clone())
 			})
 		})
 		.collect();
@@ -176,33 +145,11 @@ pub fn read_properties(
 		.and_then(|v| v.as_str())
 		.map(String::from);
 
-	// Extract metadata as HashMap<String, String>
-	let skill_metadata: HashMap<String, String> = metadata
-		.get("metadata")
-		.and_then(|v| v.as_mapping())
-		.map(|m| {
-			m.iter()
-				.filter_map(|(k, v)| {
-					k.as_str().map(|key| {
-						let value = match v {
-							serde_yaml::Value::String(s) => s.clone(),
-							serde_yaml::Value::Number(n) => n.to_string(),
-							serde_yaml::Value::Bool(b) => b.to_string(),
-							_ => format!("{:?}", v),
-						};
-						(key.to_string(), value)
-					})
-				})
-				.collect()
-		})
-		.unwrap_or_default();
-
 	Ok(SkillProperties {
 		name: name.to_string(),
 		description: description.to_string(),
 		license,
 		compatibility,
 		allowed_tools,
-		metadata: skill_metadata,
 	})
 }

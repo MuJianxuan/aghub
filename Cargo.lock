@@ -48,7 +48,6 @@ dependencies = [
  "serde",
  "serde_json",
  "skill",
- "skills-ref",
  "tempfile",
  "thiserror 1.0.69",
  "toml",

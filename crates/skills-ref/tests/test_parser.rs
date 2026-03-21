@@ -93,33 +93,6 @@ license: MIT
 }
 
 #[test]
-fn test_read_with_metadata() {
-	let temp = TempDir::new().unwrap();
-	let skill_dir = temp.path().join("my-skill");
-	std::fs::create_dir(&skill_dir).unwrap();
-	std::fs::write(
-		skill_dir.join("SKILL.md"),
-		r#"---
-name: my-skill
-description: A test skill
-metadata:
-  author: Test Author
-  version: 1.0
----
-Body
-"#,
-	)
-	.unwrap();
-
-	let props = read_properties(&skill_dir).unwrap();
-	assert_eq!(
-		props.metadata.get("author"),
-		Some(&"Test Author".to_string())
-	);
-	assert_eq!(props.metadata.get("version"), Some(&"1.0".to_string()));
-}
-
-#[test]
 fn test_missing_skill_md() {
 	let temp = TempDir::new().unwrap();
 	let result = read_properties(temp.path());

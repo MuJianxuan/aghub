@@ -28,7 +28,6 @@ fn main() {
 	println!("License: {:?}", skill.license);
 	println!("Compatibility: {:?}", skill.compatibility);
 	println!("Allowed Tools: {:?}", skill.allowed_tools);
-	println!("Metadata: {:?}", skill.metadata);
 	println!("Scripts: {:?}", skill.scripts);
 	println!("References: {:?}", skill.references);
 	println!("Assets: {:?}", skill.assets);

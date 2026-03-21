@@ -1,7 +1,6 @@
 //! Data models for skills.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::path::PathBuf;
 
 /// Source type for a skill.
@@ -56,10 +55,6 @@ pub struct Skill {
 	#[serde(rename = "allowed-tools", skip_serializing_if = "Option::is_none")]
 	pub allowed_tools: Option<String>,
 
-	/// Additional metadata from frontmatter.
-	#[serde(default, skip_serializing_if = "HashMap::is_empty")]
-	pub metadata: HashMap<String, String>,
-
 	/// Body content from SKILL.md (markdown instructions).
 	#[serde(skip)]
 	pub content: String,
@@ -93,7 +88,6 @@ impl Skill {
 			license: None,
 			compatibility: None,
 			allowed_tools: None,
-			metadata: HashMap::new(),
 			content: String::new(),
 			source: SkillSource::SkillMd(PathBuf::new()),
 			scripts: Vec::new(),
@@ -110,7 +104,6 @@ impl Skill {
 			license: self.license.clone(),
 			compatibility: self.compatibility.clone(),
 			allowed_tools: self.allowed_tools.clone(),
-			metadata: self.metadata.clone(),
 		}
 	}
 

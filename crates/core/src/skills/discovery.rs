@@ -1,9 +1,8 @@
 use crate::models::Skill;
-use skills_ref::read_properties;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Load skills from a directory using skills-ref parser
+/// Load skills from a directory using skill parser
 pub fn load_skills_from_dir(skills_dir: &Path) -> Vec<Skill> {
 	let mut skills = Vec::new();
 	collect_skills(skills_dir, &mut skills);
@@ -46,19 +45,9 @@ fn collect_skills(dir: &Path, skills: &mut Vec<Skill>) {
 			continue;
 		}
 
-		// Try to read skill using skills-ref parser
-		if let Ok(props) = read_properties(&path) {
-			skills.push(Skill {
-				name: props.name,
-				enabled: true,
-				description: Some(props.description),
-				author: None, // skills-ref doesn't have author field
-				version: None, // skills-ref doesn't have version field
-				tools: Vec::new(),
-			});
-		} else {
-			// Recurse into subdirectories if no SKILL.md found at this level
-			collect_skills(&path, skills);
+		match skill::parser::parse_skill_dir(&path) {
+			Ok(skill_pkg) => skills.push(crate::convert_skill(skill_pkg)),
+			Err(_) => collect_skills(&path, skills),
 		}
 	}
 }

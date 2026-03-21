@@ -213,8 +213,6 @@ fn test_valid_with_all_fields() {
 name: my-skill
 description: A test skill
 license: MIT
-metadata:
-  author: Test
 ---
 Body
 "#,

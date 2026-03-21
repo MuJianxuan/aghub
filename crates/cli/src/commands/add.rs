@@ -60,7 +60,6 @@ pub fn execute(
 					author,
 					version,
 					tools,
-					metadata: None,
 				};
 				manager.add_skill(skill.clone())?;
 				eprintln_verbose!("Skill added successfully");

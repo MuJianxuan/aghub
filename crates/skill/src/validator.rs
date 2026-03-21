@@ -238,7 +238,6 @@ mod tests {
 			license: None,
 			compatibility: None,
 			allowed_tools: None,
-			metadata: std::collections::HashMap::new(),
 			content: String::new(),
 			source: crate::model::SkillSource::SkillMd(
 				std::path::PathBuf::new(),

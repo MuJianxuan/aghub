@@ -381,7 +381,6 @@ fn add_skill_from_registry(manager: &mut ConfigManager) -> Result<()> {
 		author: Some(skill_result.source.clone()),
 		version: None,
 		tools: Vec::new(),
-		metadata: None,
 	};
 
 	manager.add_skill(skill.clone())?;
@@ -464,7 +463,6 @@ fn add_skill_manually(manager: &mut ConfigManager) -> Result<()> {
 		author,
 		version,
 		tools,
-		metadata: None,
 	};
 
 	manager.add_skill(skill.clone())?;

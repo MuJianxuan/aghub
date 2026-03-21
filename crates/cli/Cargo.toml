@@ -13,17 +13,12 @@ path = "src/main.rs"
 [dependencies]
 aghub-core = { path = "../core" }
 skill = { path = "../skill" }
-skills-sh = { path = "../skills-sh" }
 
 clap = { workspace = true }
 tabled = { workspace = true }
 anyhow = { workspace = true }
-colored = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-inquire = { workspace = true }
-tokio = { version = "1", features = [ "rt-multi-thread" ] }
-crossterm = "0.28.1"
 
 [dev-dependencies]
 assert_cmd = { workspace = true }

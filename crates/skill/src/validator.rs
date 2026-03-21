@@ -270,4 +270,84 @@ mod tests {
 		let errors = validate(&skill_file);
 		assert!(errors.is_empty());
 	}
+
+	// --- Path traversal tests (ported from subpath-traversal.test.ts) ---
+
+	fn make_skill_with_resources(
+		scripts: Vec<&str>,
+		references: Vec<&str>,
+		assets: Vec<&str>,
+	) -> crate::model::Skill {
+		crate::model::Skill {
+			name: "test-skill".to_string(),
+			description: "A test skill".to_string(),
+			license: None,
+			compatibility: None,
+			allowed_tools: None,
+			content: String::new(),
+			source: crate::model::SkillSource::SkillMd(
+				std::path::PathBuf::new(),
+			),
+			scripts: scripts.iter().map(|s| s.to_string()).collect(),
+			references: references.iter().map(|s| s.to_string()).collect(),
+			assets: assets.iter().map(|s| s.to_string()).collect(),
+		}
+	}
+
+	#[test]
+	fn test_traversal_in_scripts() {
+		let skill = make_skill_with_resources(
+			vec!["scripts/../../../etc/passwd"],
+			vec![],
+			vec![],
+		);
+		let errors = validate_skill_structure(&skill);
+		assert!(
+			!errors.is_empty(),
+			"Expected error for traversal in scripts"
+		);
+		assert!(errors.iter().any(|e| e.contains("..")));
+	}
+
+	#[test]
+	fn test_traversal_in_references() {
+		let skill = make_skill_with_resources(
+			vec![],
+			vec!["references/../../etc/shadow"],
+			vec![],
+		);
+		let errors = validate_skill_structure(&skill);
+		assert!(
+			!errors.is_empty(),
+			"Expected error for traversal in references"
+		);
+		assert!(errors.iter().any(|e| e.contains("..")));
+	}
+
+	#[test]
+	fn test_traversal_in_assets() {
+		let skill =
+			make_skill_with_resources(vec![], vec![], vec!["assets/../secret"]);
+		let errors = validate_skill_structure(&skill);
+		assert!(
+			!errors.is_empty(),
+			"Expected error for traversal in assets"
+		);
+		assert!(errors.iter().any(|e| e.contains("..")));
+	}
+
+	#[test]
+	fn test_valid_resource_paths_accepted() {
+		let skill = make_skill_with_resources(
+			vec!["scripts/helper.sh", "scripts/install.sh"],
+			vec!["references/guide.md"],
+			vec!["assets/logo.png"],
+		);
+		let errors = validate_skill_structure(&skill);
+		assert!(
+			errors.is_empty(),
+			"Expected no errors for valid paths, got: {:?}",
+			errors
+		);
+	}
 }

@@ -26,6 +26,7 @@ pub mod error;
 pub mod model;
 pub mod package;
 pub mod parser;
+pub mod sanitize;
 pub mod validator;
 
 // Re-export commonly used items
@@ -38,6 +39,7 @@ pub use parser::{
 pub use validator::{
 	validate, validate_skill_dir, validate_skill_file, validate_zip,
 };
+pub use sanitize::sanitize_name;
 
 // Re-export from skills-ref for convenience
 pub use skills_ref::{validate as validate_skill_properties, SkillProperties};

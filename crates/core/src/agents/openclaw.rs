@@ -8,6 +8,27 @@ fn project_path(root: &Path) -> PathBuf {
 	root.join(".openclaw/openclaw.json")
 }
 
+/// Return the global skills directory for OpenClaw, checking fallback dirs.
+///
+/// Priority: `.openclaw` → `.clawdbot` → `.moltbot`, defaulting to `.openclaw`.
+/// The `exists` parameter allows dependency injection for testing.
+pub fn get_openclaw_skills_dir(
+	home: &Path,
+	exists: impl Fn(&Path) -> bool,
+) -> PathBuf {
+	for dir in [".openclaw", ".clawdbot", ".moltbot"] {
+		if exists(&home.join(dir)) {
+			return home.join(dir).join("skills");
+		}
+	}
+	home.join(".openclaw/skills")
+}
+
+fn global_skills_path() -> PathBuf {
+	let home = dirs::home_dir().unwrap();
+	get_openclaw_skills_dir(&home, |p| p.exists())
+}
+
 pub const DESCRIPTOR: AgentDescriptor = AgentDescriptor {
 	id: "openclaw",
 	display_name: "OpenClaw",
@@ -19,11 +40,11 @@ pub const DESCRIPTOR: AgentDescriptor = AgentDescriptor {
 		mcp_stdio: true,
 		mcp_remote: true,
 		mcp_enable_disable: false,
-		skills: false,
+		skills: true,
 		universal_skills: false,
 	},
-	skills_dir: None,
-	global_skills_path: None,
+	skills_dir: Some(".openclaw/skills"),
+	global_skills_path: Some(global_skills_path),
 	uses_universal_skills: false,
 	cli_name: "openclaw",
 	validate_args: &["--version"],

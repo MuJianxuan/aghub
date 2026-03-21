@@ -1099,3 +1099,92 @@ fn test_jetbrains_ai_mcp_workflow() {
 	assert!(manager.config().unwrap().mcps.is_empty());
 }
 
+// ==================== Skill Discovery Tests ====================
+// Ported from list-installed.test.ts and full-depth-discovery.test.ts
+
+#[test]
+fn test_multiple_skills_loaded() {
+	let test = TestConfig::new(AgentType::Claude).unwrap();
+
+	test.create_test_skill("skill-1", Some("First skill")).unwrap();
+	test.create_test_skill("skill-2", Some("Second skill")).unwrap();
+
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let config = manager.config().unwrap();
+	assert_eq!(config.skills.len(), 2);
+
+	let names: Vec<&str> =
+		config.skills.iter().map(|s| s.name.as_str()).collect();
+	assert!(names.contains(&"skill-1"));
+	assert!(names.contains(&"skill-2"));
+}
+
+#[test]
+fn test_dir_without_skill_md_ignored() {
+	let test = TestConfig::new(AgentType::Claude).unwrap();
+
+	// Create a valid skill
+	test.create_test_skill("valid-skill", Some("Valid skill")).unwrap();
+
+	// Create a directory without SKILL.md (should be ignored)
+	let empty_dir = test.skills_dir().join("not-a-skill");
+	std::fs::create_dir(&empty_dir).unwrap();
+	std::fs::write(empty_dir.join("other-file.txt"), "content").unwrap();
+
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let config = manager.config().unwrap();
+	assert_eq!(
+		config.skills.len(),
+		1,
+		"Only the valid skill should be loaded"
+	);
+	assert_eq!(config.skills[0].name, "valid-skill");
+}
+
+#[test]
+fn test_invalid_skill_md_graceful() {
+	let test = TestConfig::new(AgentType::Claude).unwrap();
+
+	// Create a valid skill
+	test.create_test_skill("valid-skill", Some("Valid skill")).unwrap();
+
+	// Create a skill dir with a SKILL.md that has no frontmatter
+	let invalid_dir = test.skills_dir().join("invalid-skill");
+	std::fs::create_dir(&invalid_dir).unwrap();
+	std::fs::write(
+		invalid_dir.join("SKILL.md"),
+		"# No Frontmatter\nJust markdown content.",
+	)
+	.unwrap();
+
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	// Invalid skill should be silently skipped; valid skill still loads
+	let config = manager.config().unwrap();
+	assert_eq!(
+		config.skills.len(),
+		1,
+		"Invalid SKILL.md should be skipped, valid skill should load"
+	);
+	assert_eq!(config.skills[0].name, "valid-skill");
+}
+
+#[test]
+fn test_empty_skills_dir_loads_zero_skills() {
+	let test = TestConfig::new(AgentType::Claude).unwrap();
+
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let config = manager.config().unwrap();
+	assert!(
+		config.skills.is_empty(),
+		"Empty skills dir should yield no skills"
+	);
+}
+

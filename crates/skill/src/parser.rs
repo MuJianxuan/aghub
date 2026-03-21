@@ -386,4 +386,46 @@ mod tests {
 		let result = parse_skill_md(content);
 		assert!(result.is_err());
 	}
+
+	// --- Non-string frontmatter rejection (ported from skill-matching.test.ts) ---
+
+	#[test]
+	fn test_numeric_name_rejected() {
+		// YAML parses `name: 123` as an integer, not a string
+		// .and_then(|v| v.as_str()) returns None → error
+		let content = "---\nname: 123\ndescription: A valid description\n---\n";
+		let result = parse_skill_md(content);
+		assert!(result.is_err(), "Expected error for numeric name");
+	}
+
+	#[test]
+	fn test_boolean_name_rejected() {
+		let content = "---\nname: true\ndescription: A valid description\n---\n";
+		let result = parse_skill_md(content);
+		assert!(result.is_err(), "Expected error for boolean name");
+	}
+
+	#[test]
+	fn test_array_name_rejected() {
+		let content =
+			"---\nname:\n  - foo\n  - bar\ndescription: A valid description\n---\n";
+		let result = parse_skill_md(content);
+		assert!(result.is_err(), "Expected error for array name");
+	}
+
+	#[test]
+	fn test_numeric_description_rejected() {
+		let content = "---\nname: valid-name\ndescription: 456\n---\n";
+		let result = parse_skill_md(content);
+		assert!(result.is_err(), "Expected error for numeric description");
+	}
+
+	#[test]
+	fn test_valid_string_name_and_description_accepted() {
+		let content =
+			"---\nname: valid-skill\ndescription: A valid skill\n---\n";
+		let skill = parse_skill_md(content).unwrap();
+		assert_eq!(skill.name, "valid-skill");
+		assert_eq!(skill.description, "A valid skill");
+	}
 }

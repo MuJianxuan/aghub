@@ -1,41 +1,41 @@
+import React from "react"
 import { Link, useLocation } from "wouter"
 import { Separator } from "@heroui/react"
 import {
-  ChevronLeft,
-  Settings2,
-  User,
-  Palette,
-  Keyboard,
-  FlaskConical,
-  FolderOpen,
-  Box,
-  BookOpen,
-  Bot,
-  Server,
-  Puzzle,
-  type LucideIcon,
-} from "lucide-react"
+  ChevronLeftIcon,
+  AdjustmentsHorizontalIcon,
+  UserIcon,
+  SwatchIcon,
+  CommandLineIcon,
+  BeakerIcon,
+  FolderOpenIcon,
+  ArchiveBoxIcon,
+  BookOpenIcon,
+  CpuChipIcon,
+  ServerIcon,
+  PuzzlePieceIcon,
+} from "@heroicons/react/24/solid"
 import { cn } from "../lib/utils"
 
 type MenuItem =
   | { type: "divider" }
-  | { type: "link"; label: string; href: string; icon: LucideIcon; isBack?: boolean }
+  | { type: "link"; label: string; href: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; isBack?: boolean }
 
 const menuItems: MenuItem[] = [
-  { type: "link", label: "Back", href: "/", icon: ChevronLeft, isBack: true },
+  { type: "link", label: "Back", href: "/", icon: ChevronLeftIcon, isBack: true },
   { type: "divider" },
-  { type: "link", label: "Preferences", href: "/settings/preferences", icon: Settings2 },
-  { type: "link", label: "Account", href: "/settings/account", icon: User },
-  { type: "link", label: "Appearance", href: "/settings/appearance", icon: Palette },
-  { type: "link", label: "Keyboard", href: "/settings/keyboard", icon: Keyboard },
-  { type: "link", label: "Beta", href: "/settings/beta", icon: FlaskConical },
+  { type: "link", label: "Preferences", href: "/settings/preferences", icon: AdjustmentsHorizontalIcon },
+  { type: "link", label: "Account", href: "/settings/account", icon: UserIcon },
+  { type: "link", label: "Appearance", href: "/settings/appearance", icon: SwatchIcon },
+  { type: "link", label: "Keyboard", href: "/settings/keyboard", icon: CommandLineIcon },
+  { type: "link", label: "Beta", href: "/settings/beta", icon: BeakerIcon },
   { type: "divider" },
-  { type: "link", label: "Projects", href: "/settings/projects", icon: FolderOpen },
-  { type: "link", label: "Models", href: "/settings/models", icon: Box },
-  { type: "link", label: "Skills", href: "/settings/skills", icon: BookOpen },
-  { type: "link", label: "Custom Agents", href: "/settings/custom-agents", icon: Bot },
-  { type: "link", label: "MCP Servers", href: "/settings/mcp-servers", icon: Server },
-  { type: "link", label: "Plugins", href: "/settings/plugins", icon: Puzzle },
+  { type: "link", label: "Projects", href: "/settings/projects", icon: FolderOpenIcon },
+  { type: "link", label: "Models", href: "/settings/models", icon: ArchiveBoxIcon },
+  { type: "link", label: "Skills", href: "/settings/skills", icon: BookOpenIcon },
+  { type: "link", label: "Custom Agents", href: "/settings/custom-agents", icon: CpuChipIcon },
+  { type: "link", label: "MCP Servers", href: "/settings/mcp-servers", icon: ServerIcon },
+  { type: "link", label: "Plugins", href: "/settings/plugins", icon: PuzzlePieceIcon },
 ]
 
 export function SettingsSidebar() {

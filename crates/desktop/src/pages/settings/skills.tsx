@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Plus, Bot, Search } from "lucide-react"
+import { PlusIcon, CpuChipIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid"
 import { Button, Chip, TextField, InputGroup } from "@heroui/react"
 import { cn } from "../../lib/utils"
 
@@ -54,13 +54,13 @@ export default function SkillsPage() {
           >
             <InputGroup variant="secondary">
               <InputGroup.Prefix>
-                <Search className="size-4 text-[--muted]" />
+                <MagnifyingGlassIcon className="size-4 text-[--muted]" />
               </InputGroup.Prefix>
               <InputGroup.Input placeholder="Search skills & command..." />
             </InputGroup>
           </TextField>
           <Button isIconOnly variant="ghost" size="sm">
-            <Plus className="size-4" />
+            <PlusIcon className="size-4" />
           </Button>
         </div>
 
@@ -128,7 +128,7 @@ export default function SkillsPage() {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-sm font-medium text-[--muted]">Instructions</h2>
-                  <Bot className="size-4 text-[--muted]" />
+                  <CpuChipIcon className="size-4 text-[--muted]" />
                 </div>
                 <div className="rounded-lg border border-[--border] bg-[--surface-secondary] p-4">
                   <h3 className="text-base font-semibold text-[--foreground] mb-3">

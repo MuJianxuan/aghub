@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Plus, Search, Bot } from "lucide-react"
+import { PlusIcon, MagnifyingGlassIcon, CpuChipIcon } from "@heroicons/react/24/solid"
 import { Button, TextField, InputGroup } from "@heroui/react"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "../../components/ui/empty"
 
@@ -20,13 +20,13 @@ export default function CustomAgentsPage() {
           >
             <InputGroup variant="secondary">
               <InputGroup.Prefix>
-                <Search className="size-4 text-[--muted]" />
+                <MagnifyingGlassIcon className="size-4 text-[--muted]" />
               </InputGroup.Prefix>
               <InputGroup.Input placeholder="Search agents..." />
             </InputGroup>
           </TextField>
           <Button isIconOnly variant="ghost" size="sm">
-            <Plus className="size-4" />
+            <PlusIcon className="size-4" />
           </Button>
         </div>
 
@@ -35,14 +35,14 @@ export default function CustomAgentsPage() {
           <Empty className="border-0">
             <EmptyHeader>
               <EmptyMedia>
-                <Bot className="size-8 text-[--muted]" />
+                <CpuChipIcon className="size-8 text-[--muted]" />
               </EmptyMedia>
               <EmptyTitle className="text-sm font-normal text-[--muted]">
                 No agents
               </EmptyTitle>
             </EmptyHeader>
             <Button variant="outline" size="sm">
-              <Plus className="size-4 mr-1" />
+              <PlusIcon className="size-4 mr-1" />
               Create agent
             </Button>
           </Empty>
@@ -54,14 +54,14 @@ export default function CustomAgentsPage() {
         <Empty className="border-0">
           <EmptyHeader>
             <EmptyMedia>
-              <Bot className="size-8 text-[--muted]" />
+              <CpuChipIcon className="size-8 text-[--muted]" />
             </EmptyMedia>
             <EmptyTitle className="text-sm font-normal text-[--muted]">
               No custom agents found
             </EmptyTitle>
           </EmptyHeader>
           <Button variant="outline" size="sm">
-            <Plus className="size-4 mr-1" />
+            <PlusIcon className="size-4 mr-1" />
             Create your first agent
           </Button>
         </Empty>

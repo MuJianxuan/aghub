@@ -1,6 +1,6 @@
 import { Link } from "wouter"
 import { Button } from "@heroui/react"
-import { Settings, BookOpen, Bot, Server } from "lucide-react"
+import { Cog6ToothIcon, BookOpenIcon, CpuChipIcon, ServerIcon } from "@heroicons/react/24/solid"
 
 export default function HomePage() {
   return (
@@ -16,28 +16,28 @@ export default function HomePage() {
         <div className="flex flex-col gap-3 max-w-xs mx-auto">
           <Link href="/settings/skills">
             <Button variant="outline" fullWidth className="justify-start gap-3 h-12">
-              <BookOpen className="size-5" />
+              <BookOpenIcon className="size-5" />
               <span>Skills</span>
             </Button>
           </Link>
 
           <Link href="/settings/custom-agents">
             <Button variant="outline" fullWidth className="justify-start gap-3 h-12">
-              <Bot className="size-5" />
+              <CpuChipIcon className="size-5" />
               <span>Custom Agents</span>
             </Button>
           </Link>
 
           <Link href="/settings/mcp-servers">
             <Button variant="outline" fullWidth className="justify-start gap-3 h-12">
-              <Server className="size-5" />
+              <ServerIcon className="size-5" />
               <span>MCP Servers</span>
             </Button>
           </Link>
 
           <Link href="/settings/skills">
             <Button variant="primary" fullWidth className="justify-start gap-3 h-12">
-              <Settings className="size-5" />
+              <Cog6ToothIcon className="size-5" />
               <span>Open Settings</span>
             </Button>
           </Link>

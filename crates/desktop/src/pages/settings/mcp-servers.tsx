@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Plus, RefreshCw, Trash2, Search } from "lucide-react"
+import { PlusIcon, ArrowPathIcon, TrashIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid"
 import { Button, TextField, InputGroup } from "@heroui/react"
 import { cn } from "../../lib/utils"
 
@@ -65,16 +65,16 @@ export default function MCPServersPage() {
           >
             <InputGroup variant="secondary">
               <InputGroup.Prefix>
-                <Search className="size-4 text-[--muted]" />
+                <MagnifyingGlassIcon className="size-4 text-[--muted]" />
               </InputGroup.Prefix>
               <InputGroup.Input placeholder="Search servers..." />
             </InputGroup>
           </TextField>
           <Button isIconOnly variant="ghost" size="sm">
-            <Plus className="size-4" />
+            <PlusIcon className="size-4" />
           </Button>
           <Button isIconOnly variant="ghost" size="sm">
-            <RefreshCw className="size-4" />
+            <ArrowPathIcon className="size-4" />
           </Button>
         </div>
 
@@ -127,7 +127,7 @@ export default function MCPServersPage() {
               <div className="flex items-center justify-between mb-1">
                 <h1 className="text-xl font-semibold text-[--foreground]">{selectedServer.name}</h1>
                 <Button isIconOnly variant="ghost" size="sm" className="text-[--muted] hover:text-[--danger]">
-                  <Trash2 className="size-4" />
+                  <TrashIcon className="size-4" />
                 </Button>
               </div>
               <p className="text-sm text-[--muted] mb-6">{selectedServer.tools} tools</p>

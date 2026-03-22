@@ -17,6 +17,9 @@ pub(crate) struct SkillView {
 	version: Option<String>,
 	#[serde(skip_serializing_if = "Vec::is_empty")]
 	tools: Vec<String>,
+	/// Agent identifier (only set when using --agent all)
+	#[serde(skip_serializing_if = "Option::is_none")]
+	agent: Option<&'static str>,
 }
 
 #[derive(Serialize)]
@@ -25,9 +28,12 @@ pub(crate) struct McpView {
 	enabled: bool,
 	#[serde(rename = "type")]
 	transport_type: String,
+	/// Agent identifier (only set when using --agent all)
+	#[serde(skip_serializing_if = "Option::is_none")]
+	agent: Option<&'static str>,
 }
 
-pub(crate) fn skill_to_view(s: &aghub_core::models::Skill) -> SkillView {
+pub(crate) fn skill_to_view(s: &aghub_core::models::Skill, agent: Option<&'static str>) -> SkillView {
 	SkillView {
 		name: s.name.clone(),
 		enabled: s.enabled,
@@ -36,10 +42,11 @@ pub(crate) fn skill_to_view(s: &aghub_core::models::Skill) -> SkillView {
 		author: s.author.clone(),
 		version: s.version.clone(),
 		tools: s.tools.clone(),
+		agent,
 	}
 }
 
-pub(crate) fn mcp_to_view(m: &aghub_core::models::McpServer) -> McpView {
+pub(crate) fn mcp_to_view(m: &aghub_core::models::McpServer, agent: Option<&'static str>) -> McpView {
 	McpView {
 		name: m.name.clone(),
 		enabled: m.enabled,
@@ -50,6 +57,7 @@ pub(crate) fn mcp_to_view(m: &aghub_core::models::McpServer) -> McpView {
 				"streamable-http".to_string()
 			}
 		},
+		agent,
 	}
 }
 
@@ -59,13 +67,13 @@ pub fn execute(manager: &ConfigManager, resource: ResourceType) -> Result<()> {
 	match resource {
 		ResourceType::Skills => {
 			let views: Vec<SkillView> =
-				config.skills.iter().map(skill_to_view).collect();
+				config.skills.iter().map(|s| skill_to_view(s, None)).collect();
 			eprintln_verbose!("Found {} skills", views.len());
 			println!("{}", serde_json::to_string_pretty(&views)?);
 		}
 		ResourceType::Mcps => {
 			let views: Vec<McpView> =
-				config.mcps.iter().map(mcp_to_view).collect();
+				config.mcps.iter().map(|m| mcp_to_view(m, None)).collect();
 			eprintln_verbose!("Found {} MCP servers", views.len());
 			println!("{}", serde_json::to_string_pretty(&views)?);
 		}
@@ -78,24 +86,34 @@ pub fn execute_all(
 	resources: Vec<aghub_core::all_agents::AgentResources>,
 	resource: ResourceType,
 ) -> Result<()> {
-	// Use serde_json::Value for dynamic output - only include the requested resource type
-	use serde_json::{json, Value};
-
-	let views: Vec<Value> = resources
-		.into_iter()
-		.map(|r| match resource {
-			ResourceType::Skills => json!({
-				"agent": r.agent_id,
-				"skills": r.skills.iter().map(skill_to_view).collect::<Vec<_>>(),
-			}),
-			ResourceType::Mcps => json!({
-				"agent": r.agent_id,
-				"mcps": r.mcps.iter().map(mcp_to_view).collect::<Vec<_>>(),
-			}),
-		})
-		.collect();
-
-	eprintln_verbose!("Listing resources for {} agents", views.len());
-	println!("{}", serde_json::to_string_pretty(&views)?);
+	// Flatten output: each resource has an `agent` field indicating which agent it belongs to
+	match resource {
+		ResourceType::Skills => {
+			let views: Vec<SkillView> = resources
+				.into_iter()
+				.flat_map(|r| {
+					let agent_id = r.agent_id;
+					r.skills
+						.into_iter()
+						.map(move |s| skill_to_view(&s, Some(agent_id)))
+				})
+				.collect();
+			eprintln_verbose!("Found {} skills across all agents", views.len());
+			println!("{}", serde_json::to_string_pretty(&views)?);
+		}
+		ResourceType::Mcps => {
+			let views: Vec<McpView> = resources
+				.into_iter()
+				.flat_map(|r| {
+					let agent_id = r.agent_id;
+					r.mcps
+						.into_iter()
+						.map(move |m| mcp_to_view(&m, Some(agent_id)))
+				})
+				.collect();
+			eprintln_verbose!("Found {} MCP servers across all agents", views.len());
+			println!("{}", serde_json::to_string_pretty(&views)?);
+		}
+	}
 	Ok(())
 }

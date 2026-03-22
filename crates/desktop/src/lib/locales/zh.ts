@@ -1,0 +1,46 @@
+export default {
+  // Common
+  settings: "设置",
+  skills: "技能",
+  mcpServers: "MCP 服务器",
+  search: "搜索",
+  add: "添加",
+  refresh: "刷新",
+  remove: "删除",
+
+  // Settings
+  appearance: "外观",
+  theme: "主题",
+  language: "语言",
+  light: "浅色",
+  dark: "深色",
+  system: "跟随系统",
+  english: "English",
+  chinese: "中文",
+
+  // Skills Page
+  searchSkills: "搜索技能...",
+  addSkill: "添加技能",
+  refreshSkills: "刷新技能",
+  noSkillsMatch: "没有匹配的技能",
+  selectSkill: "选择一个技能查看详情",
+  description: "描述",
+  author: "作者",
+  version: "版本",
+  tools: "工具",
+  source: "来源",
+
+  // MCP Servers Page
+  searchServers: "搜索服务器...",
+  addMcpServer: "添加 MCP 服务器",
+  refreshServers: "刷新服务器",
+  noServersMatch: "没有匹配的服务器",
+  selectServer: "选择一个服务器查看详情",
+  transport: "传输",
+  type: "类型",
+  command: "命令",
+  args: "参数",
+  url: "URL",
+  timeout: "超时",
+  unknown: "未知",
+}

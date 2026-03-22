@@ -1,4 +1,5 @@
 import React from "react"
+import { useTranslation } from "react-i18next"
 import { Link, useLocation } from "wouter"
 import { Surface } from "@heroui/react"
 import {
@@ -9,14 +10,15 @@ import {
 import { cn } from "../lib/utils"
 
 type MenuItem =
-  | { type: "link"; label: string; href: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }
+  | { type: "link"; labelKey: string; href: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }
 
 const menuItems: MenuItem[] = [
-  { type: "link", label: "Skills", href: "/settings/skills", icon: BookOpenIcon },
-  { type: "link", label: "MCP Servers", href: "/settings/mcp-servers", icon: ServerIcon },
+  { type: "link", labelKey: "skills", href: "/settings/skills", icon: BookOpenIcon },
+  { type: "link", labelKey: "mcpServers", href: "/settings/mcp-servers", icon: ServerIcon },
 ]
 
 export function SettingsSidebar() {
+  const { t } = useTranslation()
   const [pathname] = useLocation()
 
   return (
@@ -39,7 +41,7 @@ export function SettingsSidebar() {
                 )}
               >
                 <Icon className="size-4" />
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
               </Link>
             )
           })}
@@ -55,7 +57,7 @@ export function SettingsSidebar() {
             )}
           >
             <Cog6ToothIcon className="size-4" />
-            <span>Settings</span>
+            <span>{t("settings")}</span>
           </Link>
         </nav>
       </aside>

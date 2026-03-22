@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { PlusIcon, ArrowPathIcon } from "@heroicons/react/24/solid"
 import { Button, Chip, Header, Label, ListBox, SearchField, type Selection } from "@heroui/react"
 import { useSkills } from "../../hooks/use-skills"
@@ -10,6 +11,7 @@ interface SkillGroup {
 }
 
 export default function SkillsPage() {
+  const { t } = useTranslation()
   const { data: skills, refetch } = useSkills()
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -50,20 +52,20 @@ export default function SkillsPage() {
           <SearchField
             value={searchQuery}
             onChange={setSearchQuery}
-            aria-label="Search skills"
+            aria-label={t("searchSkills")}
             variant="secondary"
             className="flex-1 min-w-0"
           >
             <SearchField.Group>
               <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Search skills..." />
+              <SearchField.Input placeholder={t("searchSkills")} />
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>
-          <Button isIconOnly variant="ghost" size="sm" className="shrink-0" aria-label="Add skill">
+          <Button isIconOnly variant="ghost" size="sm" className="shrink-0" aria-label={t("addSkill")}>
             <PlusIcon className="size-4" />
           </Button>
-          <Button isIconOnly variant="ghost" size="sm" className="shrink-0" aria-label="Refresh skills" onPress={() => refetch()}>
+          <Button isIconOnly variant="ghost" size="sm" className="shrink-0" aria-label={t("refreshSkills")} onPress={() => refetch()}>
             <ArrowPathIcon className="size-4" />
           </Button>
         </div>
@@ -89,7 +91,7 @@ export default function SkillsPage() {
         </ListBox>
         {filteredGroups.length === 0 && (
           <p className="px-3 py-6 text-sm text-muted text-center">
-            No skills match &ldquo;{searchQuery}&rdquo;
+            {t("noSkillsMatch")} &ldquo;{searchQuery}&rdquo;
           </p>
         )}
       </div>
@@ -100,7 +102,7 @@ export default function SkillsPage() {
           <SkillDetail group={selectedGroup} />
         ) : (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-muted">Select a skill to view details</p>
+            <p className="text-sm text-muted">{t("selectSkill")}</p>
           </div>
         )}
       </div>
@@ -109,6 +111,7 @@ export default function SkillsPage() {
 }
 
 function SkillDetail({ group }: { group: SkillGroup }) {
+  const { t } = useTranslation()
   const skill = group.items[0]
 
   return (
@@ -125,7 +128,7 @@ function SkillDetail({ group }: { group: SkillGroup }) {
         {/* Description */}
         {skill.description && (
           <div className="mb-6">
-            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Description</h3>
+            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">{t("description")}</h3>
             <p className="text-sm text-foreground">{skill.description}</p>
           </div>
         )}
@@ -135,13 +138,13 @@ function SkillDetail({ group }: { group: SkillGroup }) {
           <div className="mb-6 flex gap-6">
             {skill.author && (
               <div>
-                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">Author</h3>
+                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">{t("author")}</h3>
                 <p className="text-sm text-foreground">{skill.author}</p>
               </div>
             )}
             {skill.version && (
               <div>
-                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">Version</h3>
+                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">{t("version")}</h3>
                 <p className="text-sm text-foreground font-mono">{skill.version}</p>
               </div>
             )}
@@ -152,7 +155,7 @@ function SkillDetail({ group }: { group: SkillGroup }) {
         {skill.tools.length > 0 && (
           <div className="mb-6">
             <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
-              Tools ({skill.tools.length})
+              {t("tools")} ({skill.tools.length})
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {skill.tools.map((tool) => (
@@ -167,7 +170,7 @@ function SkillDetail({ group }: { group: SkillGroup }) {
         {/* Source scope */}
         {skill.source && (
           <div>
-            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">Source</h3>
+            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">{t("source")}</h3>
             <Chip size="sm">
               {skill.source}
             </Chip>

@@ -7,6 +7,6 @@
 }
 
 .dark {
-  --accent: oklch(0.75 0.18 145);
+  --accent: oklch(0.65 0.18 145);
   --accent-foreground: oklch(0.98 0.01 145);
 }

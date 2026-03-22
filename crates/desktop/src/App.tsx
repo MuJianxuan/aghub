@@ -1,25 +1,35 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Button } from "@heroui/react";
+import { Router, Route, Switch } from "wouter";
+import { SettingsLayout } from "./layouts/settings-layout";
+import HomePage from "./pages/home";
+import SkillsPage from "./pages/settings/skills";
+import MCPServersPage from "./pages/settings/mcp-servers";
+import CustomAgentsPage from "./pages/settings/custom-agents";
 
 function App() {
-  const [port, setPort] = useState<number | null>(null);
-
   useEffect(() => {
-    invoke<number>("start_server")
-      .then(setPort)
-      .catch(console.error);
+    invoke<number>("start_server").catch(console.error);
   }, []);
 
-  const apiBase = port ? `http://127.0.0.1:${port}/api/v1` : null;
-
   return (
-    <div className="flex items-center justify-center h-screen">
-      <h1 className="text-4xl font-bold">Hello World</h1>
-      <Button variant="primary" className="ml-4" isDisabled={!apiBase}>
-        {apiBase ? `API: ${apiBase}` : "Starting server…"}
-      </Button>
-    </div>
+    <Router>
+      <Switch>
+        <Route path="/" component={HomePage} />
+        <Route path="/settings/skills">
+          <SettingsLayout><SkillsPage /></SettingsLayout>
+        </Route>
+        <Route path="/settings/mcp-servers">
+          <SettingsLayout><MCPServersPage /></SettingsLayout>
+        </Route>
+        <Route path="/settings/custom-agents">
+          <SettingsLayout><CustomAgentsPage /></SettingsLayout>
+        </Route>
+        <Route>
+          <SettingsLayout><SkillsPage /></SettingsLayout>
+        </Route>
+      </Switch>
+    </Router>
   );
 }
 

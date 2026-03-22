@@ -49,6 +49,7 @@ pub fn convert_skill(skill_pkg: skill::Skill) -> models::Skill {
 			.map(|t| t.split(',').map(|s| s.trim().to_string()).collect())
 			.unwrap_or_default(),
 		source_path,
+		config_source: None,
 	}
 }
 

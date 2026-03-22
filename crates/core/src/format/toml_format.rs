@@ -43,6 +43,7 @@ pub fn parse(content: &str) -> Result<AgentConfig> {
 				timeout: None,
 			},
 			timeout: None,
+			config_source: None,
 		});
 	}
 

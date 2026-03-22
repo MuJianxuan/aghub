@@ -116,6 +116,7 @@ pub fn parse(content: &str) -> Result<AgentConfig> {
 			enabled: mcp.enabled,
 			transport,
 			timeout,
+			config_source: None,
 		});
 	}
 
@@ -128,6 +129,7 @@ pub fn parse(content: &str) -> Result<AgentConfig> {
 			version: skill.version,
 			tools: skill.tools,
 			source_path: skill.source_path,
+			config_source: None,
 		});
 	}
 
@@ -237,6 +239,7 @@ mod tests {
 				enabled: false,
 				transport: McpTransport::stdio("echo", vec![]),
 				timeout: None,
+				config_source: None,
 			}],
 			skills: vec![Skill {
 				name: "disabled-skill".to_string(),
@@ -246,6 +249,7 @@ mod tests {
 				version: None,
 				tools: vec![],
 				source_path: None,
+				config_source: None,
 			}],
 		};
 		let json = serialize(&config, None).unwrap();

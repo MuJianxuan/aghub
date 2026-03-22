@@ -61,6 +61,7 @@ pub fn execute(
 					version,
 					tools,
 					source_path: None,
+					config_source: None,
 				};
 				manager.add_skill(skill.clone())?;
 				eprintln_verbose!("Skill added successfully");

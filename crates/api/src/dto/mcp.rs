@@ -116,6 +116,7 @@ impl From<CreateMcpRequest> for McpServer {
             enabled: true,
             transport: req.transport.into(),
             timeout: req.timeout,
+            config_source: None,
         }
     }
 }
@@ -138,6 +139,7 @@ impl UpdateMcpRequest {
                 .map(Into::into)
                 .unwrap_or(existing.transport),
             timeout: self.timeout.or(existing.timeout),
+            config_source: existing.config_source,
         }
     }
 }
@@ -168,8 +170,17 @@ impl From<&McpServer> for McpResponse {
             enabled: s.enabled,
             transport: TransportDto::from(&s.transport),
             timeout: s.timeout,
-            source: None,
+            source: s.config_source,
             agent: None,
+        }
+    }
+}
+
+impl From<(McpServer, &str)> for McpResponse {
+    fn from((s, agent_id): (McpServer, &str)) -> Self {
+        McpResponse {
+            agent: Some(agent_id.to_string()),
+            ..McpResponse::from(s)
         }
     }
 }

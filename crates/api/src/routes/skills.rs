@@ -52,14 +52,7 @@ pub fn list_skills(agent: AgentParam, scope: ScopeParams) -> ApiResult<Vec<Skill
 
     if resolved.is_all() {
         let (skills, _) = manager.load_both_annotated().map_err(ApiError::from)?;
-        let items = skills
-            .iter()
-            .map(|(s, src)| {
-                let mut r = SkillResponse::from(s);
-                r.source = Some(*src);
-                r
-            })
-            .collect();
+        let items = skills.iter().map(SkillResponse::from).collect();
         return Ok(Json(items));
     }
 
@@ -99,11 +92,9 @@ pub fn get_skill(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResult
         let (skills, _) = manager.load_both_annotated().map_err(ApiError::from)?;
         let skill = skills
             .iter()
-            .find(|(s, _)| s.name == name)
+            .find(|s| s.name == name)
             .ok_or_else(|| ApiError::from(ConfigError::resource_not_found("skill", name)))?;
-        let mut r = SkillResponse::from(&skill.0);
-        r.source = Some(skill.1);
-        return Ok(Json(r));
+        return Ok(Json(SkillResponse::from(skill)));
     }
 
     manager.load().map_err(ApiError::from)?;
@@ -182,16 +173,11 @@ pub fn disable_skill(
 pub fn list_all_agents_skills(scope: ScopeParams) -> ApiResult<Vec<SkillResponse>> {
     let resolved = scope.resolve()?;
     let (resource_scope, project_root) = resolved_to_resource_scope(&resolved);
-    let results = load_all_agents(resource_scope, project_root.as_deref());
-    let items = results
+    let items = load_all_agents(resource_scope, project_root.as_deref())
         .into_iter()
         .flat_map(|ar| {
-            let agent_id = ar.agent_id;
-            ar.skills.into_iter().map(move |s| {
-                let mut r = SkillResponse::from(s);
-                r.agent = Some(agent_id.to_string());
-                r
-            })
+            let id = ar.agent_id;
+            ar.skills.into_iter().map(move |s| SkillResponse::from((s, id)))
         })
         .collect();
     Ok(Json(items))

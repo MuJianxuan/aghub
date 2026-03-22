@@ -20,6 +20,7 @@ impl From<CreateSkillRequest> for Skill {
             version: req.version,
             tools: req.tools.unwrap_or_default(),
             source_path: None,
+            config_source: None,
         }
     }
 }
@@ -44,6 +45,7 @@ impl UpdateSkillRequest {
             version: self.version.or(existing.version),
             tools: self.tools.unwrap_or(existing.tools),
             source_path: existing.source_path,
+            config_source: existing.config_source,
         }
     }
 }
@@ -79,8 +81,17 @@ impl From<&Skill> for SkillResponse {
             author: s.author.clone(),
             version: s.version.clone(),
             tools: s.tools.clone(),
-            source: None,
+            source: s.config_source,
             agent: None,
+        }
+    }
+}
+
+impl From<(Skill, &str)> for SkillResponse {
+    fn from((s, agent_id): (Skill, &str)) -> Self {
+        SkillResponse {
+            agent: Some(agent_id.to_string()),
+            ..SkillResponse::from(s)
         }
     }
 }

@@ -40,6 +40,9 @@ pub struct Skill {
 	/// Source path relative to skills directory with ~ prefix (e.g., "~/.claude/skills/my-skill/SKILL.md")
 	#[serde(skip_serializing_if = "Option::is_none", default)]
 	pub source_path: Option<String>,
+	/// Which config scope this skill was loaded from (set at load time, not persisted)
+	#[serde(skip)]
+	pub config_source: Option<ConfigSource>,
 }
 
 impl Skill {
@@ -52,6 +55,7 @@ impl Skill {
 			version: None,
 			tools: Vec::new(),
 			source_path: None,
+			config_source: None,
 		}
 	}
 }
@@ -65,6 +69,9 @@ pub struct McpServer {
 	pub transport: McpTransport,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub timeout: Option<u64>, // Timeout in seconds
+	/// Which config scope this MCP was loaded from (set at load time, not persisted)
+	#[serde(skip)]
+	pub config_source: Option<ConfigSource>,
 }
 
 impl McpServer {
@@ -74,6 +81,7 @@ impl McpServer {
 			enabled: true,
 			transport,
 			timeout: None,
+			config_source: None,
 		}
 	}
 }
@@ -428,6 +436,7 @@ mod tests {
 			enabled: true,
 			transport,
 			timeout: Some(60),
+			config_source: None,
 		};
 
 		let json = serde_json::to_string(&mcp).unwrap();

@@ -89,12 +89,11 @@ impl ConfigManager {
 	/// Load and merge configs from both project and global, tracking provenance.
 	/// Skills are deduplicated by name (project takes precedence).
 	/// MCPs are not deduplicated — same name can appear from both scopes.
-	#[allow(clippy::type_complexity)]
 	pub fn load_both_annotated(
 		&mut self,
-	) -> Result<(Vec<(Skill, ConfigSource)>, Vec<(McpServer, ConfigSource)>)> {
-		let mut skills: Vec<(Skill, ConfigSource)> = Vec::new();
-		let mut mcps: Vec<(McpServer, ConfigSource)> = Vec::new();
+	) -> Result<(Vec<Skill>, Vec<McpServer>)> {
+		let mut skills: Vec<Skill> = Vec::new();
+		let mut mcps: Vec<McpServer> = Vec::new();
 		let mut seen = std::collections::HashSet::new();
 
 		// Project first (takes precedence for skills)
@@ -104,12 +103,14 @@ impl ConfigManager {
 				self.adapter
 					.load_config(&project_path, Some(&root), ResourceScope::ProjectOnly)
 			{
-				for skill in project.skills {
+				for mut skill in project.skills {
 					seen.insert(skill.name.clone());
-					skills.push((skill, ConfigSource::Project));
+					skill.config_source = Some(ConfigSource::Project);
+					skills.push(skill);
 				}
-				for mcp in project.mcps {
-					mcps.push((mcp, ConfigSource::Project));
+				for mut mcp in project.mcps {
+					mcp.config_source = Some(ConfigSource::Project);
+					mcps.push(mcp);
 				}
 			}
 		}
@@ -120,13 +121,15 @@ impl ConfigManager {
 			self.adapter
 				.load_config(&global_path, None, ResourceScope::GlobalOnly)
 		{
-			for skill in global.skills {
+			for mut skill in global.skills {
 				if !seen.contains(&skill.name) {
-					skills.push((skill, ConfigSource::Global));
+					skill.config_source = Some(ConfigSource::Global);
+					skills.push(skill);
 				}
 			}
-			for mcp in global.mcps {
-				mcps.push((mcp, ConfigSource::Global));
+			for mut mcp in global.mcps {
+				mcp.config_source = Some(ConfigSource::Global);
+				mcps.push(mcp);
 			}
 		}
 

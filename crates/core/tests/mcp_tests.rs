@@ -353,6 +353,7 @@ fn test_opencode_stdio_env_becomes_environment() {
 			timeout: None,
 		},
 		timeout: None,
+		config_source: None,
 	};
 	manager.add_mcp(mcp).unwrap();
 
@@ -390,6 +391,7 @@ fn test_opencode_timeout_preserved() {
 			timeout: Some(120),
 		},
 		timeout: None,
+		config_source: None,
 	};
 	let remote_with_timeout = McpServer {
 		name: "remote-with-timeout".to_string(),
@@ -400,6 +402,7 @@ fn test_opencode_timeout_preserved() {
 			timeout: Some(45),
 		},
 		timeout: None,
+		config_source: None,
 	};
 	manager.add_mcp(local_with_timeout).unwrap();
 	manager.add_mcp(remote_with_timeout).unwrap();
@@ -1009,6 +1012,7 @@ fn test_codex_mcp_toml_stdio_with_env() {
 			timeout: None,
 		},
 		timeout: None,
+		config_source: None,
 	};
 	manager.add_mcp(mcp).unwrap();
 

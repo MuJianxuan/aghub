@@ -96,6 +96,7 @@ pub fn parse(content: &str, server_key: &str) -> Result<AgentConfig> {
 			enabled: true,
 			transport,
 			timeout: None,
+			config_source: None,
 		});
 	}
 
@@ -280,6 +281,7 @@ mod tests {
 				version: Some("1.0.0".to_string()),
 				tools: vec!["tool1".to_string()],
 				source_path: None,
+				config_source: None,
 			}],
 		};
 		let json = serialize(&config, None, "mcpServers").unwrap();
@@ -298,12 +300,14 @@ mod tests {
 					enabled: true,
 					transport: McpTransport::stdio("echo", vec![]),
 					timeout: None,
+					config_source: None,
 				},
 				McpServer {
 					name: "disabled".to_string(),
 					enabled: false,
 					transport: McpTransport::stdio("echo", vec![]),
 					timeout: None,
+					config_source: None,
 				},
 			],
 			skills: vec![],

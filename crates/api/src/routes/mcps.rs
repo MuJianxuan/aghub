@@ -17,14 +17,7 @@ pub fn list_mcps(agent: AgentParam, scope: ScopeParams) -> ApiResult<Vec<McpResp
 
     if resolved.is_all() {
         let (_, mcps) = manager.load_both_annotated().map_err(ApiError::from)?;
-        let items = mcps
-            .iter()
-            .map(|(m, src)| {
-                let mut r = McpResponse::from(m);
-                r.source = Some(*src);
-                r
-            })
-            .collect();
+        let items = mcps.iter().map(McpResponse::from).collect();
         return Ok(Json(items));
     }
 
@@ -62,11 +55,9 @@ pub fn get_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResult<M
         let (_, mcps) = manager.load_both_annotated().map_err(ApiError::from)?;
         let mcp = mcps
             .iter()
-            .find(|(m, _)| m.name == name)
+            .find(|m| m.name == name)
             .ok_or_else(|| ApiError::from(ConfigError::resource_not_found("mcp", name)))?;
-        let mut r = McpResponse::from(&mcp.0);
-        r.source = Some(mcp.1);
-        return Ok(Json(r));
+        return Ok(Json(McpResponse::from(mcp)));
     }
 
     manager.load().map_err(ApiError::from)?;
@@ -133,16 +124,11 @@ pub fn disable_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResu
 pub fn list_all_agents_mcps(scope: ScopeParams) -> ApiResult<Vec<McpResponse>> {
     let resolved = scope.resolve()?;
     let (resource_scope, project_root) = resolved_to_resource_scope(&resolved);
-    let results = load_all_agents(resource_scope, project_root.as_deref());
-    let items = results
+    let items = load_all_agents(resource_scope, project_root.as_deref())
         .into_iter()
         .flat_map(|ar| {
-            let agent_id = ar.agent_id;
-            ar.mcps.into_iter().map(move |m| {
-                let mut r = McpResponse::from(m);
-                r.agent = Some(agent_id.to_string());
-                r
-            })
+            let id = ar.agent_id;
+            ar.mcps.into_iter().map(move |m| McpResponse::from((m, id)))
         })
         .collect();
     Ok(Json(items))

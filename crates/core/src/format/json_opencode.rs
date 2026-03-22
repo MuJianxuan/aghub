@@ -87,6 +87,7 @@ pub fn parse(content: &str) -> Result<AgentConfig> {
 			enabled: entry.enabled,
 			transport,
 			timeout: None,
+			config_source: None,
 		});
 	}
 

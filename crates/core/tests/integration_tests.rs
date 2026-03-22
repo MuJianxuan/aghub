@@ -41,6 +41,7 @@ fn create_test_skill(name: &str) -> Skill {
 		version: Some("1.0.0".to_string()),
 		tools: vec!["tool1".to_string(), "tool2".to_string()],
 		source_path: None,
+		config_source: None,
 	}
 }
 
@@ -216,12 +217,14 @@ fn test_config_round_trip_preserves_enabled_state() {
 		enabled: true,
 		transport: McpTransport::stdio("echo", vec!["test".to_string()]),
 		timeout: None,
+		config_source: None,
 	};
 	let disabled_mcp = McpServer {
 		name: "disabled-mcp".to_string(),
 		enabled: false,
 		transport: McpTransport::stdio("echo", vec!["test".to_string()]),
 		timeout: None,
+		config_source: None,
 	};
 
 	manager.add_mcp(enabled_mcp).unwrap();
@@ -375,6 +378,7 @@ fn test_mcp_with_env_vars() {
 			timeout: None,
 		},
 		timeout: None,
+		config_source: None,
 	};
 
 	manager.add_mcp(mcp).unwrap();

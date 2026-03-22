@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { PlusIcon, ArrowPathIcon, TrashIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid"
-import { Button, TextField, InputGroup } from "@heroui/react"
+import { PlusIcon, ArrowPathIcon, TrashIcon } from "@heroicons/react/24/solid"
+import { Button, Card, Description, Header, Label, ListBox, SearchField, Table, type Selection } from "@heroui/react"
 import { cn } from "../../lib/utils"
 
 interface MCPServer {
@@ -37,7 +37,9 @@ const mcpServers: MCPServer[] = [
 
 export default function MCPServersPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedServer, setSelectedServer] = useState<MCPServer | null>(mcpServers[0])
+  const [selected, setSelected] = useState<Selection>(new Set([mcpServers[0].id]))
+
+  const selectedServer = mcpServers.find(s => [...(selected as Set<string>)][0] === s.id) ?? null
 
   const filteredServers = mcpServers.filter(
     (server) =>
@@ -54,22 +56,22 @@ export default function MCPServersPage() {
   return (
     <div className="flex h-full">
       {/* Servers List Panel */}
-      <div className="w-80 shrink-0 border-r border-[--border] flex flex-col">
+      <div className="w-80 shrink-0 border-r border-border flex flex-col">
         {/* Search Header */}
-        <div className="flex items-center gap-2 p-3 border-b border-[--border]">
-          <TextField
+        <div className="flex items-center gap-2 p-3 border-b border-border">
+          <SearchField
             value={searchQuery}
             onChange={setSearchQuery}
             aria-label="Search MCP servers"
-            fullWidth
+            variant="secondary"
+            className="flex-1"
           >
-            <InputGroup variant="secondary">
-              <InputGroup.Prefix>
-                <MagnifyingGlassIcon className="size-4 text-[--muted]" />
-              </InputGroup.Prefix>
-              <InputGroup.Input placeholder="Search servers..." />
-            </InputGroup>
-          </TextField>
+            <SearchField.Group>
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Search servers..." />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
           <Button isIconOnly variant="ghost" size="sm">
             <PlusIcon className="size-4" />
           </Button>
@@ -79,43 +81,36 @@ export default function MCPServersPage() {
         </div>
 
         {/* Servers List */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-2">
-            {Object.entries(groupedServers).map(([category, servers]) => (
-              <div key={category} className="mb-4">
-                <div className="px-2 py-1.5 text-xs font-medium text-[--muted] uppercase tracking-wide">
-                  {category}
-                </div>
-                {servers.map((server) => (
-                  <button
-                    key={server.id}
-                    onClick={() => setSelectedServer(server)}
+        <ListBox
+          aria-label="MCP Servers"
+          selectionMode="single"
+          selectedKeys={selected}
+          onSelectionChange={setSelected}
+          className="flex-1 overflow-y-auto p-2"
+        >
+          {Object.entries(groupedServers).map(([category, servers]) => (
+            <ListBox.Section key={category}>
+              <Header className="px-2 py-1.5 text-xs font-medium text-muted uppercase tracking-wide">
+                {category}
+              </Header>
+              {servers.map((server) => (
+                <ListBox.Item key={server.id} id={server.id} textValue={server.name}>
+                  <div className="flex-1 min-w-0">
+                    <Label>{server.name}</Label>
+                    <Description>{server.source}</Description>
+                  </div>
+                  <span
                     className={cn(
-                      "w-full flex items-center gap-2 rounded-md px-2 py-2 text-left transition-colors",
-                      selectedServer?.id === server.id
-                        ? "bg-[--surface-secondary]"
-                        : "hover:bg-[--surface-tertiary]"
+                      "size-2 rounded-full shrink-0",
+                      server.status === "online" ? "bg-success" : "bg-muted"
                     )}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-[--foreground]">{server.name}</div>
-                      <div className="text-xs text-[--muted]">{server.source}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={cn(
-                          "size-2 rounded-full",
-                          server.status === "online" ? "bg-[--success]" : "bg-[--muted]"
-                        )}
-                      />
-                      <span className="text-xs text-[--muted]">{server.tools} tools</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
+                  />
+                  <span className="text-xs text-muted">{server.tools} tools</span>
+                </ListBox.Item>
+              ))}
+            </ListBox.Section>
+          ))}
+        </ListBox>
       </div>
 
       {/* Server Detail Panel */}
@@ -125,50 +120,60 @@ export default function MCPServersPage() {
             <div className="p-6 max-w-3xl">
               {/* Header */}
               <div className="flex items-center justify-between mb-1">
-                <h1 className="text-xl font-semibold text-[--foreground]">{selectedServer.name}</h1>
-                <Button isIconOnly variant="ghost" size="sm" className="text-[--muted] hover:text-[--danger]">
+                <h1 className="text-xl font-semibold text-foreground">{selectedServer.name}</h1>
+                <Button isIconOnly variant="ghost" size="sm" className="text-muted hover:text-danger">
                   <TrashIcon className="size-4" />
                 </Button>
               </div>
-              <p className="text-sm text-[--muted] mb-6">{selectedServer.tools} tools</p>
+              <p className="text-sm text-muted mb-6">{selectedServer.tools} tools</p>
 
               {/* Connection */}
               {selectedServer.connection && (
                 <div className="mb-6">
-                  <h2 className="text-sm font-medium text-[--foreground] mb-3">Connection</h2>
-                  <div className="rounded-lg border border-[--border] overflow-hidden">
-                    <table className="w-full text-sm">
-                      <tbody>
-                        <tr className="border-b border-[--border]">
-                          <td className="px-4 py-2.5 text-[--muted] bg-[--surface-secondary] w-24">Type</td>
-                          <td className="px-4 py-2.5 font-medium text-[--foreground]">{selectedServer.connection.type}</td>
-                        </tr>
-                        <tr className="border-b border-[--border]">
-                          <td className="px-4 py-2.5 text-[--muted] bg-[--surface-secondary]">Command</td>
-                          <td className="px-4 py-2.5 font-medium text-[--foreground]">{selectedServer.connection.command}</td>
-                        </tr>
-                        <tr>
-                          <td className="px-4 py-2.5 text-[--muted] bg-[--surface-secondary] align-top">Args</td>
-                          <td className="px-4 py-2.5 font-mono text-xs break-all text-[--foreground]">{selectedServer.connection.args}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                  <h2 className="text-sm font-medium text-foreground mb-3">Connection</h2>
+                  <Table variant="secondary">
+                    <Table.ScrollContainer>
+                      <Table.Content aria-label="Connection details">
+                        <Table.Header>
+                          <Table.Column isRowHeader className="w-24">Property</Table.Column>
+                          <Table.Column>Value</Table.Column>
+                        </Table.Header>
+                        <Table.Body>
+                          <Table.Row>
+                            <Table.Cell>Type</Table.Cell>
+                            <Table.Cell>{selectedServer.connection.type}</Table.Cell>
+                          </Table.Row>
+                          <Table.Row>
+                            <Table.Cell>Command</Table.Cell>
+                            <Table.Cell>{selectedServer.connection.command}</Table.Cell>
+                          </Table.Row>
+                          <Table.Row>
+                            <Table.Cell>Args</Table.Cell>
+                            <Table.Cell>
+                              <code className="font-mono text-xs break-all">{selectedServer.connection.args}</code>
+                            </Table.Cell>
+                          </Table.Row>
+                        </Table.Body>
+                      </Table.Content>
+                    </Table.ScrollContainer>
+                  </Table>
                 </div>
               )}
 
               {/* Tools */}
               {selectedServer.toolsList && selectedServer.toolsList.length > 0 && (
                 <div>
-                  <h2 className="text-sm font-medium text-[--foreground] mb-3">
+                  <h2 className="text-sm font-medium text-foreground mb-3">
                     Tools ({selectedServer.toolsList.length})
                   </h2>
                   <div className="space-y-3">
                     {selectedServer.toolsList.map((tool) => (
-                      <div key={tool.name} className="rounded-lg border border-[--border] p-4">
-                        <h3 className="font-mono text-sm font-semibold mb-2 text-[--foreground]">{tool.name}</h3>
-                        <p className="text-sm text-[--muted] leading-relaxed">{tool.description}</p>
-                      </div>
+                      <Card key={tool.name} variant="secondary">
+                        <Card.Content>
+                          <h3 className="font-mono text-sm font-semibold mb-2">{tool.name}</h3>
+                          <p className="text-sm text-muted leading-relaxed">{tool.description}</p>
+                        </Card.Content>
+                      </Card>
                     ))}
                   </div>
                 </div>
@@ -176,7 +181,7 @@ export default function MCPServersPage() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-[--muted]">
+          <div className="flex items-center justify-center h-full text-muted">
             Select a server to view details
           </div>
         )}

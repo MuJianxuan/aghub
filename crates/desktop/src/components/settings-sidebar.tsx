@@ -1,6 +1,6 @@
 import React from "react"
 import { Link, useLocation } from "wouter"
-import { Separator } from "@heroui/react"
+import { Separator, Surface } from "@heroui/react"
 import {
   ChevronLeftIcon,
   AdjustmentsHorizontalIcon,
@@ -42,34 +42,36 @@ export function SettingsSidebar() {
   const [pathname] = useLocation()
 
   return (
-    <aside className="w-60 shrink-0 border-r border-[--border] bg-[--surface] p-3">
-      <nav className="flex flex-col gap-0.5">
-        {menuItems.map((item, index) => {
-          if (item.type === "divider") {
-            return <Separator key={index} className="my-2" />
-          }
+    <Surface variant="default" className="w-60 shrink-0 border-r border-border p-3 rounded-none">
+      <aside>
+        <nav className="flex flex-col gap-0.5">
+          {menuItems.map((item, index) => {
+            if (item.type === "divider") {
+              return <Separator key={index} className="my-2" />
+            }
 
-          const Icon = item.icon
-          const isActive = pathname === item.href
+            const Icon = item.icon
+            const isActive = pathname === item.href
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
-                isActive
-                  ? "bg-[--accent]/10 text-[--foreground] font-medium"
-                  : "text-[--muted] hover:bg-[--surface-secondary] hover:text-[--foreground]",
-                item.isBack && "text-[--foreground]"
-              )}
-            >
-              <Icon className="size-4" />
-              <span>{item.label}</span>
-            </Link>
-          )
-        })}
-      </nav>
-    </aside>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                  isActive
+                    ? "bg-accent/10 text-foreground font-medium"
+                    : "text-muted hover:bg-surface-secondary hover:text-foreground",
+                  item.isBack && "text-foreground"
+                )}
+              >
+                <Icon className="size-4" />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      </aside>
+    </Surface>
   )
 }

@@ -1,14 +1,14 @@
 import { Link } from "wouter"
-import { Button } from "@heroui/react"
+import { Button, Surface } from "@heroui/react"
 import { Cog6ToothIcon, BookOpenIcon, CpuChipIcon, ServerIcon } from "@heroicons/react/24/solid"
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[--background]">
+    <Surface variant="default" className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-8">
         <div className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight text-[--foreground]">Settings Dashboard</h1>
-          <p className="text-[--muted]">
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">Settings Dashboard</h1>
+          <p className="text-muted">
             A clone of the Claude Desktop settings interface
           </p>
         </div>
@@ -43,6 +43,6 @@ export default function HomePage() {
           </Link>
         </div>
       </div>
-    </main>
+    </Surface>
   )
 }

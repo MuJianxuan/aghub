@@ -1,7 +1,6 @@
 import { useState } from "react"
-import { PlusIcon, CpuChipIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid"
-import { Button, Chip, TextField, InputGroup } from "@heroui/react"
-import { cn } from "../../lib/utils"
+import { PlusIcon, CpuChipIcon } from "@heroicons/react/24/solid"
+import { Button, Card, Chip, Description, Header, Label, ListBox, SearchField, type Selection } from "@heroui/react"
 
 interface Skill {
   id: string
@@ -32,7 +31,9 @@ const skills: Skill[] = [
 
 export default function SkillsPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(skills[0])
+  const [selected, setSelected] = useState<Selection>(new Set([skills[0].id]))
+
+  const selectedSkill = skills.find(s => [...(selected as Set<string>)][0] === s.id) ?? null
 
   const filteredSkills = skills.filter(
     (skill) =>
@@ -43,55 +44,50 @@ export default function SkillsPage() {
   return (
     <div className="flex h-full">
       {/* Skills List Panel */}
-      <div className="w-80 shrink-0 border-r border-[--border] flex flex-col">
+      <div className="w-80 shrink-0 border-r border-border flex flex-col">
         {/* Search Header */}
-        <div className="flex items-center gap-2 p-3 border-b border-[--border]">
-          <TextField
+        <div className="flex items-center gap-2 p-3 border-b border-border">
+          <SearchField
             value={searchQuery}
             onChange={setSearchQuery}
             aria-label="Search skills"
-            fullWidth
+            variant="secondary"
+            className="flex-1"
           >
-            <InputGroup variant="secondary">
-              <InputGroup.Prefix>
-                <MagnifyingGlassIcon className="size-4 text-[--muted]" />
-              </InputGroup.Prefix>
-              <InputGroup.Input placeholder="Search skills & command..." />
-            </InputGroup>
-          </TextField>
+            <SearchField.Group>
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Search skills & command..." />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
           <Button isIconOnly variant="ghost" size="sm">
             <PlusIcon className="size-4" />
           </Button>
         </div>
 
         {/* Skills List */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-2">
-            <div className="px-2 py-1.5 text-xs font-medium text-[--muted] uppercase tracking-wide">
+        <ListBox
+          aria-label="Skills"
+          selectionMode="single"
+          selectedKeys={selected}
+          onSelectionChange={setSelected}
+          className="flex-1 overflow-y-auto p-2"
+        >
+          <ListBox.Section>
+            <Header className="px-2 py-1.5 text-xs font-medium text-muted uppercase tracking-wide">
               USER
-            </div>
+            </Header>
             {filteredSkills.map((skill) => (
-              <button
-                key={skill.id}
-                onClick={() => setSelectedSkill(skill)}
-                className={cn(
-                  "w-full flex items-start gap-2 rounded-md px-2 py-2 text-left transition-colors",
-                  selectedSkill?.id === skill.id
-                    ? "bg-[--surface-secondary]"
-                    : "hover:bg-[--surface-tertiary]"
-                )}
-              >
-                <div className="size-2 mt-1.5 rounded-full bg-[--accent]" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate text-[--foreground]">{skill.name}</div>
-                  <div className="text-xs text-[--muted] truncate">
-                    {skill.description}
-                  </div>
+              <ListBox.Item key={skill.id} id={skill.id} textValue={skill.name}>
+                <div className="size-2 rounded-full bg-accent shrink-0 mt-1" />
+                <div className="flex flex-col min-w-0">
+                  <Label className="truncate">{skill.name}</Label>
+                  <Description className="truncate">{skill.description}</Description>
                 </div>
-              </button>
+              </ListBox.Item>
             ))}
-          </div>
-        </div>
+          </ListBox.Section>
+        </ListBox>
       </div>
 
       {/* Skill Detail Panel */}
@@ -101,75 +97,81 @@ export default function SkillsPage() {
             <div className="p-6 max-w-3xl">
               {/* Header */}
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-xl font-semibold text-[--foreground]">{selectedSkill.name}</h1>
+                <h1 className="text-xl font-semibold text-foreground">{selectedSkill.name}</h1>
                 <Chip variant="soft" size="sm">Skill</Chip>
               </div>
-              <p className="text-sm text-[--muted] mb-6">
+              <p className="text-sm text-muted mb-6">
                 ~/.claude/skills/{selectedSkill.name}/SKILL.md
               </p>
 
               {/* Description */}
               <div className="mb-6">
-                <h2 className="text-sm font-medium text-[--muted] mb-2">Description</h2>
-                <div className="rounded-lg border border-[--border] bg-[--surface-secondary] p-3">
-                  <p className="text-sm text-[--foreground]">{selectedSkill.description}</p>
-                </div>
+                <h2 className="text-sm font-medium text-muted mb-2">Description</h2>
+                <Card variant="secondary">
+                  <Card.Content>
+                    <p className="text-sm">{selectedSkill.description}</p>
+                  </Card.Content>
+                </Card>
               </div>
 
               {/* Usage */}
               <div className="mb-6">
-                <h2 className="text-sm font-medium text-[--muted] mb-2">Usage</h2>
-                <div className="rounded-lg border border-[--border] bg-[--surface-secondary] p-3">
-                  <code className="text-sm font-mono text-[--foreground]">{selectedSkill.usage}</code>
-                </div>
+                <h2 className="text-sm font-medium text-muted mb-2">Usage</h2>
+                <Card variant="secondary">
+                  <Card.Content>
+                    <code className="text-sm font-mono">{selectedSkill.usage}</code>
+                  </Card.Content>
+                </Card>
               </div>
 
               {/* Instructions */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-sm font-medium text-[--muted]">Instructions</h2>
-                  <CpuChipIcon className="size-4 text-[--muted]" />
+                  <h2 className="text-sm font-medium text-muted">Instructions</h2>
+                  <CpuChipIcon className="size-4 text-muted" />
                 </div>
-                <div className="rounded-lg border border-[--border] bg-[--surface-secondary] p-4">
-                  <h3 className="text-base font-semibold text-[--foreground] mb-3">
-                    Browser Automation with agent-browser
-                  </h3>
-                  <h4 className="text-sm font-medium text-[--foreground] mb-2">Quick start</h4>
-                  <pre className="bg-[--surface-tertiary] rounded-md p-3 text-xs font-mono overflow-x-auto text-[--foreground]">
-                    <code>{`agent-browser open <url>        # Navigate to page
+                <Card variant="secondary">
+                  <Card.Content>
+                    <h3 className="text-base font-semibold mb-3">
+                      Browser Automation with agent-browser
+                    </h3>
+                    <h4 className="text-sm font-medium mb-2">Quick start</h4>
+                    <pre className="bg-surface-tertiary rounded-md p-3 text-xs font-mono overflow-x-auto">
+                      <code>{`agent-browser open <url>        # Navigate to page
 agent-browser snapshot -i       # Get interactive elements with refs
 agent-browser click @e1         # Click element by ref
 agent-browser fill @e2 "text"   # Fill input by ref
 agent-browser close             # Close browser`}</code>
-                  </pre>
+                    </pre>
 
-                  <h4 className="text-sm font-medium text-[--foreground] mt-4 mb-2">Core workflow</h4>
-                  <ol className="list-decimal list-inside space-y-1 text-sm text-[--foreground]">
-                    <li>
-                      Navigate: <code className="bg-[--surface-tertiary] px-1 py-0.5 rounded text-xs">agent-browser open {"<url>"}</code>
-                    </li>
-                    <li>
-                      Snapshot: <code className="bg-[--surface-tertiary] px-1 py-0.5 rounded text-xs">agent-browser snapshot -i</code>{" "}
-                      (returns refs like <code className="bg-[--surface-tertiary] px-1 py-0.5 rounded text-xs">@e1</code>)
-                    </li>
-                    <li>Interact using refs from the snapshot</li>
-                    <li>Re-snapshot after navigation or significant DOM changes</li>
-                  </ol>
+                    <h4 className="text-sm font-medium mt-4 mb-2">Core workflow</h4>
+                    <ol className="list-decimal list-inside space-y-1 text-sm">
+                      <li>
+                        Navigate: <code className="bg-surface-tertiary px-1 py-0.5 rounded text-xs">agent-browser open {"<url>"}</code>
+                      </li>
+                      <li>
+                        Snapshot: <code className="bg-surface-tertiary px-1 py-0.5 rounded text-xs">agent-browser snapshot -i</code>{" "}
+                        (returns refs like <code className="bg-surface-tertiary px-1 py-0.5 rounded text-xs">@e1</code>)
+                      </li>
+                      <li>Interact using refs from the snapshot</li>
+                      <li>Re-snapshot after navigation or significant DOM changes</li>
+                    </ol>
 
-                  <h4 className="text-sm font-medium text-[--foreground] mt-4 mb-2">Navigation commands</h4>
-                  <pre className="bg-[--surface-tertiary] rounded-md p-3 text-xs font-mono overflow-x-auto text-[--foreground]">
-                    <code>{`agent-browser open <url>   # Navigate (aliases: goto, navigate)
+                    <h4 className="text-sm font-medium mt-4 mb-2">Navigation commands</h4>
+                    <pre className="bg-surface-tertiary rounded-md p-3 text-xs font-mono overflow-x-auto">
+                      <code>{`agent-browser open <url>   # Navigate (aliases: goto, navigate)
 agent-browser back         # Go back
 agent-browser forward      # Go forward
 agent-browser reload       # Reload page
 agent-browser close        # Close browser (aliases: quit, exit)`}</code>
-                  </pre>
-                </div>
+                    </pre>
+                  </Card.Content>
+                </Card>
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-[--muted]">
+          <div className="flex items-center justify-center h-full text-muted">
             Select a skill to view details
           </div>
         )}

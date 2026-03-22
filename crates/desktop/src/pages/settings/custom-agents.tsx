@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { PlusIcon, MagnifyingGlassIcon, CpuChipIcon } from "@heroicons/react/24/solid"
-import { Button, TextField, InputGroup } from "@heroui/react"
+import { PlusIcon, CpuChipIcon } from "@heroicons/react/24/solid"
+import { Button, SearchField } from "@heroui/react"
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle } from "../../components/ui/empty"
 
 export default function CustomAgentsPage() {
@@ -9,22 +9,22 @@ export default function CustomAgentsPage() {
   return (
     <div className="flex h-full">
       {/* Agents List Panel */}
-      <div className="w-80 shrink-0 border-r border-[--border] flex flex-col">
+      <div className="w-80 shrink-0 border-r border-border flex flex-col">
         {/* Search Header */}
-        <div className="flex items-center gap-2 p-3 border-b border-[--border]">
-          <TextField
+        <div className="flex items-center gap-2 p-3 border-b border-border">
+          <SearchField
             value={searchQuery}
             onChange={setSearchQuery}
             aria-label="Search agents"
-            fullWidth
+            variant="secondary"
+            className="flex-1"
           >
-            <InputGroup variant="secondary">
-              <InputGroup.Prefix>
-                <MagnifyingGlassIcon className="size-4 text-[--muted]" />
-              </InputGroup.Prefix>
-              <InputGroup.Input placeholder="Search agents..." />
-            </InputGroup>
-          </TextField>
+            <SearchField.Group>
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Search agents..." />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
           <Button isIconOnly variant="ghost" size="sm">
             <PlusIcon className="size-4" />
           </Button>
@@ -35,9 +35,9 @@ export default function CustomAgentsPage() {
           <Empty className="border-0">
             <EmptyHeader>
               <EmptyMedia>
-                <CpuChipIcon className="size-8 text-[--muted]" />
+                <CpuChipIcon className="size-8 text-muted" />
               </EmptyMedia>
-              <EmptyTitle className="text-sm font-normal text-[--muted]">
+              <EmptyTitle className="text-sm font-normal text-muted">
                 No agents
               </EmptyTitle>
             </EmptyHeader>
@@ -54,9 +54,9 @@ export default function CustomAgentsPage() {
         <Empty className="border-0">
           <EmptyHeader>
             <EmptyMedia>
-              <CpuChipIcon className="size-8 text-[--muted]" />
+              <CpuChipIcon className="size-8 text-muted" />
             </EmptyMedia>
-            <EmptyTitle className="text-sm font-normal text-[--muted]">
+            <EmptyTitle className="text-sm font-normal text-muted">
               No custom agents found
             </EmptyTitle>
           </EmptyHeader>

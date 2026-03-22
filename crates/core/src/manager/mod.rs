@@ -89,6 +89,7 @@ impl ConfigManager {
 	/// Load and merge configs from both project and global, tracking provenance.
 	/// Skills are deduplicated by name (project takes precedence).
 	/// MCPs are not deduplicated — same name can appear from both scopes.
+	#[allow(clippy::type_complexity)]
 	pub fn load_both_annotated(
 		&mut self,
 	) -> Result<(Vec<(Skill, ConfigSource)>, Vec<(McpServer, ConfigSource)>)> {

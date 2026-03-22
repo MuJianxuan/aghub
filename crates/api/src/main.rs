@@ -14,6 +14,7 @@ fn rocket() -> _ {
             "/api/v1",
             routes![
                 routes::agents::list_agents,
+                routes::skills::list_all_agents_skills,
                 routes::skills::list_skills,
                 routes::skills::create_skill,
                 routes::skills::get_skill,
@@ -21,6 +22,7 @@ fn rocket() -> _ {
                 routes::skills::delete_skill,
                 routes::skills::enable_skill,
                 routes::skills::disable_skill,
+                routes::mcps::list_all_agents_mcps,
                 routes::mcps::list_mcps,
                 routes::mcps::create_mcp,
                 routes::mcps::get_mcp,

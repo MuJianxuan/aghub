@@ -1,4 +1,4 @@
-use aghub_core::{errors::ConfigError, models::McpServer};
+use aghub_core::{errors::ConfigError, load_all_agents, models::McpServer};
 use rocket::http::Status;
 use rocket::response::status::NoContent;
 use rocket::serde::json::Json;
@@ -7,7 +7,7 @@ use crate::{
     dto::mcp::{CreateMcpRequest, McpResponse, UpdateMcpRequest},
     error::{ApiCreated, ApiError, ApiNoContent, ApiResult},
     extractors::{AgentParam, ScopeParams},
-    routes::{build_manager_from_resolved, require_writable_scope},
+    routes::{build_manager_from_resolved, require_writable_scope, resolved_to_resource_scope},
 };
 
 #[get("/agents/<agent>/mcps?<scope..>")]
@@ -127,4 +127,23 @@ pub fn disable_mcp(agent: AgentParam, name: &str, scope: ScopeParams) -> ApiResu
     manager.disable_mcp(name).map_err(ApiError::from)?;
     let mcp = manager.get_mcp(name).expect("mcp present after disable");
     Ok(Json(McpResponse::from(mcp)))
+}
+
+#[get("/agents/all/mcps?<scope..>")]
+pub fn list_all_agents_mcps(scope: ScopeParams) -> ApiResult<Vec<McpResponse>> {
+    let resolved = scope.resolve()?;
+    let (resource_scope, project_root) = resolved_to_resource_scope(&resolved);
+    let results = load_all_agents(resource_scope, project_root.as_deref());
+    let items = results
+        .into_iter()
+        .flat_map(|ar| {
+            let agent_id = ar.agent_id;
+            ar.mcps.into_iter().map(move |m| {
+                let mut r = McpResponse::from(m);
+                r.agent = Some(agent_id.to_string());
+                r
+            })
+        })
+        .collect();
+    Ok(Json(items))
 }

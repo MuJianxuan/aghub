@@ -1,4 +1,4 @@
-use aghub_core::{errors::ConfigError, models::Skill, registry};
+use aghub_core::{errors::ConfigError, load_all_agents, models::Skill, registry};
 use rocket::http::Status;
 use rocket::response::status::NoContent;
 use rocket::serde::json::Json;
@@ -7,7 +7,7 @@ use crate::{
     dto::skill::{CreateSkillRequest, SkillResponse, UpdateSkillRequest},
     error::{ApiCreated, ApiError, ApiNoContent, ApiResult},
     extractors::{AgentParam, ScopeParams},
-    routes::{build_manager_from_resolved, require_writable_scope},
+    routes::{build_manager_from_resolved, require_writable_scope, resolved_to_resource_scope},
 };
 
 fn check_skills_supported(agent: &AgentParam) -> Result<(), ApiError> {
@@ -176,4 +176,23 @@ pub fn disable_skill(
     manager.disable_skill(name).map_err(ApiError::from)?;
     let skill = manager.get_skill(name).expect("skill present after disable");
     Ok(Json(SkillResponse::from(skill)))
+}
+
+#[get("/agents/all/skills?<scope..>")]
+pub fn list_all_agents_skills(scope: ScopeParams) -> ApiResult<Vec<SkillResponse>> {
+    let resolved = scope.resolve()?;
+    let (resource_scope, project_root) = resolved_to_resource_scope(&resolved);
+    let results = load_all_agents(resource_scope, project_root.as_deref());
+    let items = results
+        .into_iter()
+        .flat_map(|ar| {
+            let agent_id = ar.agent_id;
+            ar.skills.into_iter().map(move |s| {
+                let mut r = SkillResponse::from(s);
+                r.agent = Some(agent_id.to_string());
+                r
+            })
+        })
+        .collect();
+    Ok(Json(items))
 }

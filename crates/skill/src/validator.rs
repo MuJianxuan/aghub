@@ -133,15 +133,6 @@ fn validate_skill(skill: &crate::model::Skill) -> Vec<String> {
 fn validate_skill_structure(skill: &crate::model::Skill) -> Vec<String> {
 	let mut errors = Vec::new();
 
-	// Check for recommended files
-	if skill.scripts.is_empty()
-		&& skill.references.is_empty()
-		&& skill.assets.is_empty()
-	{
-		// This is just a warning, not an error
-		// errors.push("Skill has no resources (scripts/, references/, or assets/); consider adding supporting files".to_string());
-	}
-
 	// Validate resource paths are valid
 	for script in &skill.scripts {
 		if script.contains("..") {

@@ -155,41 +155,26 @@ pub fn parse_skill_dir(path: &Path) -> Result<Skill> {
 	Ok(skill)
 }
 
+/// Scan a subdirectory and populate a skill resource list.
+fn scan_subdir(base: &Path, subdir: &str, out: &mut Vec<String>) {
+	if let Ok(entries) = std::fs::read_dir(base.join(subdir)) {
+		for entry in entries.flatten() {
+			if entry.file_type().is_ok_and(|ft| ft.is_file()) {
+				out.push(format!(
+					"{}/{}",
+					subdir,
+					entry.file_name().to_string_lossy()
+				));
+			}
+		}
+	}
+}
+
 /// Scan the directory structure and populate skill resource lists.
 fn scan_directory_structure(path: &Path, skill: &mut Skill) -> Result<()> {
-	// Scan scripts directory
-	let scripts_dir = path.join("scripts");
-	if let Ok(entries) = std::fs::read_dir(&scripts_dir) {
-		for entry in entries.flatten() {
-			if entry.file_type().is_ok_and(|ft| ft.is_file()) {
-				let name = entry.file_name().to_string_lossy().to_string();
-				skill.scripts.push(format!("scripts/{}", name));
-			}
-		}
-	}
-
-	// Scan references directory
-	let refs_dir = path.join("references");
-	if let Ok(entries) = std::fs::read_dir(&refs_dir) {
-		for entry in entries.flatten() {
-			if entry.file_type().is_ok_and(|ft| ft.is_file()) {
-				let name = entry.file_name().to_string_lossy().to_string();
-				skill.references.push(format!("references/{}", name));
-			}
-		}
-	}
-
-	// Scan assets directory
-	let assets_dir = path.join("assets");
-	if let Ok(entries) = std::fs::read_dir(&assets_dir) {
-		for entry in entries.flatten() {
-			if entry.file_type().is_ok_and(|ft| ft.is_file()) {
-				let name = entry.file_name().to_string_lossy().to_string();
-				skill.assets.push(format!("assets/{}", name));
-			}
-		}
-	}
-
+	scan_subdir(path, "scripts", &mut skill.scripts);
+	scan_subdir(path, "references", &mut skill.references);
+	scan_subdir(path, "assets", &mut skill.assets);
 	Ok(())
 }
 

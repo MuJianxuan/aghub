@@ -6,7 +6,7 @@
 use crate::error::{Result, SkillError};
 use std::fs::File;
 use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use walkdir::WalkDir;
 use zip::write::SimpleFileOptions;
 use zip::{CompressionMethod, ZipArchive, ZipWriter};
@@ -235,42 +235,25 @@ pub fn read_skill_md(skill_file: &Path) -> Result<String> {
 	let file = File::open(skill_file)?;
 	let mut archive = ZipArchive::new(file)?;
 
-	// Try to find SKILL.md in the archive
-	// It could be at the root or in a subdirectory
-	let mut skill_md_path: Option<PathBuf> = None;
-
 	for i in 0..archive.len() {
-		let file = archive.by_index(i)?;
-		let name = file.name();
+		let mut file = archive.by_index(i)?;
+		let name = file.name().to_string();
 		if name.ends_with("SKILL.md") || name.ends_with("skill.md") {
-			skill_md_path = Some(PathBuf::from(name));
-			break;
+			let mut content = String::new();
+			file.read_to_string(&mut content)?;
+			return Ok(content);
 		}
 	}
 
-	let skill_md_path =
-		skill_md_path.ok_or_else(|| SkillError::MissingSkillMd {
-			path: skill_file.to_path_buf(),
-		})?;
-
-	// Re-open to read the content
-	let file = File::open(skill_file)?;
-	let mut archive = ZipArchive::new(file)?;
-	let mut file = archive
-		.by_name(skill_md_path.to_string_lossy().as_ref())
-		.map_err(|_| SkillError::MissingSkillMd {
-			path: skill_file.to_path_buf(),
-		})?;
-
-	let mut content = String::new();
-	file.read_to_string(&mut content)?;
-
-	Ok(content)
+	Err(SkillError::MissingSkillMd {
+		path: skill_file.to_path_buf(),
+	})
 }
 
 #[cfg(test)]
 mod tests {
 	use super::*;
+	use std::path::PathBuf;
 	use tempfile::TempDir;
 
 	fn create_test_skill_dir(dir: &Path) -> PathBuf {

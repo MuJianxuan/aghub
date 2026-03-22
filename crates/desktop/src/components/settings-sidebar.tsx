@@ -8,6 +8,7 @@ import {
   Cog6ToothIcon,
 } from "@heroicons/react/24/solid"
 import { cn } from "../lib/utils"
+import { ProjectList } from "./project-list"
 
 type MenuItem =
   | { type: "link"; labelKey: string; href: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }
@@ -24,7 +25,7 @@ export function SettingsSidebar() {
   return (
     <Surface variant="default" className="w-60 shrink-0 border-r border-border p-3 rounded-none flex flex-col">
       <aside className="flex flex-col h-full">
-        <nav className="flex flex-col gap-0.5 flex-1">
+        <nav className="flex flex-col gap-0.5">
           {menuItems.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -46,6 +47,9 @@ export function SettingsSidebar() {
             )
           })}
         </nav>
+        {/* Project List */}
+        <ProjectList />
+
         <nav className="mt-auto">
           <Link
             href="/settings"

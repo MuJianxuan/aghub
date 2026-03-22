@@ -3,10 +3,14 @@ export default {
   settings: "Settings",
   skills: "Skills",
   mcpServers: "MCP Servers",
+  projects: "Projects",
   search: "Search",
   add: "Add",
   refresh: "Refresh",
   remove: "Remove",
+  edit: "Edit",
+  save: "Save",
+  cancel: "Cancel",
 
   // Settings
   appearance: "Appearance",
@@ -43,4 +47,11 @@ export default {
   url: "URL",
   timeout: "Timeout",
   unknown: "unknown",
+
+  // Projects
+  addProject: "Add Project",
+  editProject: "Edit Project",
+  projectName: "Project Name",
+  projectPath: "Project Path",
+  projectPathPlaceholder: "/path/to/your/project",
 }

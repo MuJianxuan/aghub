@@ -12,6 +12,7 @@ import SkillsPage from "./pages/settings/skills"
 import MCPServersPage from "./pages/settings/mcp-servers"
 import CustomAgentsPage from "./pages/settings/custom-agents"
 import SettingsPage from "./pages/settings"
+import ProjectDetailPage from "./pages/project/detail"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,6 +65,9 @@ function App() {
             </Route>
             <Route path="/settings">
               <SettingsLayout><SettingsPage /></SettingsLayout>
+            </Route>
+            <Route path="/projects/:id">
+              <SettingsLayout><ProjectDetailPage /></SettingsLayout>
             </Route>
             <Route>
               <SettingsLayout>

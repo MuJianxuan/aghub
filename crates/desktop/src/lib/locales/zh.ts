@@ -3,10 +3,14 @@ export default {
   settings: "设置",
   skills: "技能",
   mcpServers: "MCP 服务器",
+  projects: "项目",
   search: "搜索",
   add: "添加",
   refresh: "刷新",
   remove: "删除",
+  edit: "编辑",
+  save: "保存",
+  cancel: "取消",
 
   // Settings
   appearance: "外观",
@@ -43,4 +47,11 @@ export default {
   url: "URL",
   timeout: "超时",
   unknown: "未知",
+
+  // Projects
+  addProject: "添加项目",
+  editProject: "编辑项目",
+  projectName: "项目名称",
+  projectPath: "项目路径",
+  projectPathPlaceholder: "/path/to/your/project",
 }

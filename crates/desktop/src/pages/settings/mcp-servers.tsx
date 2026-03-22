@@ -107,13 +107,14 @@ export default function MCPServersPage() {
               </Header>
               {servers.map((server) => (
                 <ListBox.Item key={server.id} id={server.id} textValue={server.name}>
-                  <div className="flex-1 min-w-0">
-                    <Label>{server.name}</Label>
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <Label className="truncate">{server.name}</Label>
                     <Description>
                       <Chip
                         size="sm"
                         variant="flat"
                         color={server.source === "Global" ? "primary" : "default"}
+                        classNames={{ label: "max-w-28 truncate" }}
                       >
                         {server.source}
                       </Chip>
@@ -126,7 +127,9 @@ export default function MCPServersPage() {
                       server.status === "online" ? "bg-success" : "bg-muted"
                     )}
                   />
-                  <span className="text-xs text-muted">{server.tools} tools</span>
+                  <span className="text-xs text-muted shrink-0">
+                    {server.tools} {server.tools === 1 ? "tool" : "tools"}
+                  </span>
                 </ListBox.Item>
               ))}
             </ListBox.Section>
@@ -145,18 +148,20 @@ export default function MCPServersPage() {
           <div className="h-full overflow-y-auto">
             <div className="p-6 max-w-3xl">
               {/* Header */}
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-xl font-semibold text-foreground">{selectedServer.name}</h2>
-                <Button isIconOnly variant="ghost" size="sm" className="text-muted hover:text-danger" aria-label="Remove server">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <h2 className="text-xl font-semibold text-foreground truncate">{selectedServer.name}</h2>
+                <Button isIconOnly variant="ghost" size="sm" className="text-muted hover:text-danger shrink-0" aria-label="Remove server">
                   <TrashIcon className="size-4" />
                 </Button>
               </div>
-              <p className="text-sm text-muted mb-6">{selectedServer.tools} tools</p>
+              <p className="text-sm text-muted mb-6">
+                {selectedServer.tools} {selectedServer.tools === 1 ? "tool" : "tools"}
+              </p>
 
               {/* Connection */}
               {selectedServer.connection && (
                 <div className="mb-6">
-                  <h2 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">Connection</h2>
+                  <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">Connection</h3>
                   <Table variant="secondary">
                     <Table.ScrollContainer>
                       <Table.Content aria-label="Connection details">
@@ -189,14 +194,14 @@ export default function MCPServersPage() {
               {/* Tools */}
               {selectedServer.toolsList && selectedServer.toolsList.length > 0 && (
                 <div>
-                  <h2 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
+                  <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
                     Tools ({selectedServer.toolsList.length})
-                  </h2>
+                  </h3>
                   <div className="space-y-3">
                     {selectedServer.toolsList.map((tool) => (
                       <Card key={tool.name} variant="secondary">
                         <Card.Content>
-                          <h3 className="font-mono text-xs font-semibold mb-2">{tool.name}</h3>
+                          <h4 className="font-mono text-xs font-semibold mb-2 break-all">{tool.name}</h4>
                           <p className="text-sm text-muted leading-relaxed">{tool.description}</p>
                         </Card.Content>
                       </Card>
@@ -219,8 +224,8 @@ export default function MCPServersPage() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-center h-full text-muted">
-            Select a server to view details
+          <div className="flex items-center justify-center h-full">
+            <p className="text-sm text-muted">Select a server to view details</p>
           </div>
         )}
       </div>

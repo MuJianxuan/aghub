@@ -1,75 +1,28 @@
 import { useMemo, useState } from "react"
 import { PlusIcon } from "@heroicons/react/24/solid"
-import { Button, Description, Header, Label, ListBox, SearchField, type Selection } from "@heroui/react"
-
-interface Skill {
-  id: string
-  name: string
-  description: string
-  type: "user" | "system"
-  usage: string
-  instructions?: React.ReactNode
-}
-
-const skills: Skill[] = [
-  {
-    id: "agent-browser",
-    name: "agent-browser",
-    description: "Automates browser interactions for web testing, form filling, screenshots, and data extraction",
-    type: "user",
-    usage: "@agent-browser",
-    instructions: (
-      <>
-        <h3 className="text-sm font-semibold mb-3">Browser Automation with agent-browser</h3>
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Quick start</h4>
-        <pre className="bg-neutral-900 dark:bg-neutral-950 text-neutral-100 rounded-md p-3 text-xs font-mono overflow-x-auto mb-4">
-          <code>{`agent-browser open <url>        # Navigate to page\nagent-browser snapshot -i       # Get interactive elements with refs\nagent-browser click @e1         # Click element by ref\nagent-browser fill @e2 "text"   # Fill input by ref\nagent-browser close             # Close browser`}</code>
-        </pre>
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Core workflow</h4>
-        <ol className="list-decimal list-inside space-y-1 text-sm mb-4">
-          <li>Navigate: <code className="bg-muted/30 px-1 py-0.5 rounded text-xs font-mono">agent-browser open {"<url>"}</code></li>
-          <li>Snapshot: <code className="bg-muted/30 px-1 py-0.5 rounded text-xs font-mono">agent-browser snapshot -i</code> (returns refs like <code className="bg-muted/30 px-1 py-0.5 rounded text-xs font-mono">@e1</code>)</li>
-          <li>Interact using refs from the snapshot</li>
-          <li>Re-snapshot after navigation or significant DOM changes</li>
-        </ol>
-        <h4 className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">Navigation commands</h4>
-        <pre className="bg-neutral-900 dark:bg-neutral-950 text-neutral-100 rounded-md p-3 text-xs font-mono overflow-x-auto">
-          <code>{`agent-browser open <url>   # Navigate (aliases: goto, navigate)\nagent-browser back         # Go back\nagent-browser forward      # Go forward\nagent-browser reload       # Reload page\nagent-browser close        # Close browser (aliases: quit, exit)`}</code>
-        </pre>
-      </>
-    ),
-  },
-  { id: "agent-reach", name: "agent-reach", description: "Give your AI agent eyes to see the entire internet across 16 platforms", type: "user", usage: "@agent-reach" },
-  { id: "codebase-doc-gen", name: "codebase-doc-gen", description: "Analyze a codebase and generate structured architecture documentation", type: "user", usage: "@codebase-doc-gen" },
-  { id: "deck-out-new-project", name: "deck-out-new-project", description: "Marketing-style README creation and GitHub repository configuration", type: "user", usage: "@deck-out-new-project" },
-  { id: "find-skills", name: "find-skills", description: "Helps users discover and install agent skills", type: "user", usage: "@find-skills" },
-  { id: "frontend-design", name: "frontend-design", description: "Create distinctive, production-grade frontend interfaces", type: "user", usage: "@frontend-design" },
-  { id: "git-commit", name: "git-commit", description: "Execute git commit with conventional commit message analysis", type: "user", usage: "@git-commit" },
-  { id: "pure-frontend-content-site", name: "pure-frontend-content-site", description: "纯前端内容型展示网站构建指南", type: "user", usage: "@pure-frontend-content-site" },
-  { id: "react-doctor", name: "react-doctor", description: "Diagnose and fix React codebase health issues", type: "user", usage: "@react-doctor" },
-  { id: "seo-audit", name: "seo-audit", description: "Audit, review, or diagnose SEO issues on your site", type: "user", usage: "@seo-audit" },
-  { id: "skill-creator", name: "skill-creator", description: "Guide for creating effective skills", type: "user", usage: "@skill-creator" },
-  { id: "vercel-composition-patterns", name: "vercel-composition-patterns", description: "React composition patterns that scale", type: "user", usage: "@vercel-composition-patterns" },
-  { id: "vercel-react-best-practices", name: "vercel-react-best-practices", description: "React and Next.js performance optimization guidelines", type: "user", usage: "@vercel-react-best-practices" },
-  { id: "vercel-react-native-skills", name: "vercel-react-native-skills", description: "React Native and Expo best practices for building performant mobile apps", type: "user", usage: "@vercel-react-native-skills" },
-  { id: "web-design-guidelines", name: "web-design-guidelines", description: "Review UI code for Web Interface Guidelines compliance", type: "user", usage: "@web-design-guidelines" },
-  { id: "web-search", name: "web-search", description: "Web search and content extraction with Tavily and Exa", type: "user", usage: "@web-search" },
-]
+import { Button, Chip, Description, Header, Label, ListBox, SearchField, type Selection } from "@heroui/react"
+import { useSkills } from "../../hooks/use-skills"
+import type { SkillResponse } from "../../lib/api-types"
 
 export default function SkillsPage() {
+  const { data: skills } = useSkills()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selected, setSelected] = useState<Selection>(new Set([skills[0].id]))
+  const [selected, setSelected] = useState<Selection>(
+    new Set(skills[0] ? [`${skills[0].agent || ""}/${skills[0].name}`] : [])
+  )
 
-  const selectedSkill = skills.find(s => [...(selected as Set<string>)][0] === s.id) ?? null
+  const selectedSkill = skills.find(
+    (s) => [...(selected as Set<string>)][0] === `${s.agent || ""}/${s.name}`
+  ) ?? null
 
   const filteredSkills = useMemo(
     () =>
       skills.filter(
         (skill) =>
           skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          skill.description.toLowerCase().includes(searchQuery.toLowerCase())
+          (skill.description ?? "").toLowerCase().includes(searchQuery.toLowerCase())
       ),
-    [searchQuery]
+    [skills, searchQuery]
   )
 
   return (
@@ -87,7 +40,7 @@ export default function SkillsPage() {
           >
             <SearchField.Group>
               <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Search skills and commands..." />
+              <SearchField.Input placeholder="Search skills..." />
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>
@@ -106,14 +59,28 @@ export default function SkillsPage() {
         >
           <ListBox.Section>
             <Header className="px-2 py-1.5 text-xs font-medium text-muted uppercase tracking-wide">
-              USER
+              ALL SKILLS ({filteredSkills.length})
             </Header>
             {filteredSkills.map((skill) => (
-              <ListBox.Item key={skill.id} id={skill.id} textValue={skill.name}>
-                <div className="flex flex-col min-w-0">
+              <ListBox.Item
+                key={`${skill.agent || ""}/${skill.name}`}
+                id={`${skill.agent || ""}/${skill.name}`}
+                textValue={skill.name}
+              >
+                <div className="flex-1 min-w-0 overflow-hidden">
                   <Label className="truncate">{skill.name}</Label>
-                  <Description className="truncate">{skill.description}</Description>
+                  <Description className="truncate">
+                    {skill.description ?? "No description"}
+                  </Description>
                 </div>
+                {skill.agent && (
+                  <Chip
+                    size="sm"
+                    className="max-w-20 truncate"
+                  >
+                    {skill.agent}
+                  </Chip>
+                )}
               </ListBox.Item>
             ))}
           </ListBox.Section>
@@ -128,40 +95,83 @@ export default function SkillsPage() {
       {/* Skill Detail Panel */}
       <div className="flex-1 overflow-hidden">
         {selectedSkill ? (
-          <div className="h-full overflow-y-auto">
-            <div className="p-6 max-w-3xl">
-              {/* Header */}
-              <h2 className="text-xl font-semibold leading-tight text-foreground mb-2">{selectedSkill.name}</h2>
-              <p className="text-xs text-muted mb-6 font-mono">
-                ~/.claude/skills/{selectedSkill.name}/SKILL.md
-              </p>
-
-              {/* Description */}
-              <div className="mb-6">
-                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Description</h3>
-                <p className="text-sm text-foreground">{selectedSkill.description}</p>
-              </div>
-
-              {/* Usage */}
-              <div className="mb-6">
-                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Usage</h3>
-                <code className="text-sm font-mono text-foreground">{selectedSkill.usage}</code>
-              </div>
-
-              {/* Instructions */}
-              <div>
-                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">Instructions</h3>
-                <div>
-                  {selectedSkill.instructions ?? (
-                    <p className="text-sm text-muted">No instructions available for this skill.</p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <SkillDetail skill={selectedSkill} />
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-sm text-muted">Select a skill to view details</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SkillDetail({ skill }: { skill: SkillResponse }) {
+  return (
+    <div className="h-full overflow-y-auto">
+      <div className="p-6 max-w-3xl">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-1">
+          <h2 className="text-xl font-semibold leading-tight text-foreground">{skill.name}</h2>
+          {skill.agent && (
+            <Chip size="sm">
+              {skill.agent}
+            </Chip>
+          )}
+        </div>
+        {skill.source_path && (
+          <p className="text-xs text-muted mb-6 font-mono">{skill.source_path}</p>
+        )}
+
+        {/* Description */}
+        {skill.description && (
+          <div className="mb-6">
+            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">Description</h3>
+            <p className="text-sm text-foreground">{skill.description}</p>
+          </div>
+        )}
+
+        {/* Metadata */}
+        {(skill.author || skill.version) && (
+          <div className="mb-6 flex gap-6">
+            {skill.author && (
+              <div>
+                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">Author</h3>
+                <p className="text-sm text-foreground">{skill.author}</p>
+              </div>
+            )}
+            {skill.version && (
+              <div>
+                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">Version</h3>
+                <p className="text-sm text-foreground font-mono">{skill.version}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tools */}
+        {skill.tools.length > 0 && (
+          <div className="mb-6">
+            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+              Tools ({skill.tools.length})
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {skill.tools.map((tool) => (
+                <Chip key={tool} size="sm">
+                  {tool}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Source scope */}
+        {skill.source && (
+          <div>
+            <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-1">Source</h3>
+            <Chip size="sm">
+              {skill.source}
+            </Chip>
           </div>
         )}
       </div>

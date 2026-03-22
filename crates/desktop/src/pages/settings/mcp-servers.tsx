@@ -112,9 +112,7 @@ export default function MCPServersPage() {
                     <Description>
                       <Chip
                         size="sm"
-                        variant="flat"
-                        color={server.source === "Global" ? "primary" : "default"}
-                        classNames={{ label: "max-w-28 truncate" }}
+                        className="max-w-28 truncate"
                       >
                         {server.source}
                       </Chip>

@@ -1,4 +1,6 @@
+use aghub_api::{ApiOptions, start};
+
 #[tokio::main]
 async fn main() {
-    aghub_api::start(8000).await.expect("server error");
+    start(ApiOptions { port: 8000 }).await.expect("server error");
 }

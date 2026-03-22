@@ -1,3 +1,5 @@
+use aghub_api::{ApiOptions, start};
+
 pub struct AppState {
     pub port: std::sync::Mutex<Option<u16>>,
 }
@@ -17,7 +19,7 @@ fn greet(name: &str) -> String {
 async fn start_server(state: tauri::State<'_, AppState>) -> Result<u16, String> {
     let port = find_available_port()?;
     tokio::spawn(async move {
-        let _ = aghub_api::start(port).await;
+        let _ = start(ApiOptions { port }).await;
     });
     *state.port.lock().unwrap() = Some(port);
     Ok(port)

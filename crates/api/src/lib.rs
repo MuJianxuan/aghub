@@ -7,13 +7,26 @@ pub mod extractors;
 pub mod routes;
 pub mod state;
 
-pub async fn start(port: u16) -> Result<(), rocket::Error> {
+pub struct ApiOptions {
+    pub port: u16,
+}
+
+pub async fn start(options: ApiOptions) -> Result<(), rocket::Error> {
     let config = rocket::Config {
-        port,
+        port: options.port,
         address: std::net::IpAddr::V4(std::net::Ipv4Addr::LOCALHOST),
         log_level: rocket::config::LogLevel::Off,
         ..rocket::Config::default()
     };
+    let cors = rocket_cors::CorsOptions {
+        // TODO: Make this configurable before release
+        allowed_origins: rocket_cors::AllOrSome::All,
+        allowed_methods: vec![rocket::http::Method::Get].into_iter().map(From::from).collect(),
+        allowed_headers: rocket_cors::AllowedHeaders::some(&["Authorization", "Accept"]),
+        allow_credentials: true,
+        ..Default::default()
+    }
+    .to_cors().unwrap();
     rocket::custom(config)
         .mount(
             "/api/v1",
@@ -46,6 +59,8 @@ pub async fn start(port: u16) -> Result<(), rocket::Error> {
                 routes::catchers::default_catcher,
             ],
         )
+        .mount("/", rocket_cors::catch_all_options_routes())
+        .attach(cors)
         .launch()
         .await
         .map(|_| ())

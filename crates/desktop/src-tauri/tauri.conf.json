@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "aghub-desktop",
-        "width": 800,
-        "height": 600
+        "width": 1080,
+        "height": 640
       }
     ],
     "security": {

@@ -1,68 +1,39 @@
 import { useMemo, useState } from "react"
 import { PlusIcon, ArrowPathIcon, TrashIcon } from "@heroicons/react/24/solid"
-import { Button, Card, Chip, Description, Header, Label, ListBox, SearchField, Table, type Selection } from "@heroui/react"
-import { cn } from "../../lib/utils"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from "../../components/ui/empty"
-
-interface MCPServer {
-  id: string
-  name: string
-  source: string
-  tools: number
-  status: "online" | "offline"
-  category: string
-  connection?: { type: string; command: string; args: string }
-  toolsList?: { name: string; description: string }[]
-}
-
-const mcpServers: MCPServer[] = [
-  {
-    id: "context7-claude",
-    name: "context7",
-    source: "Global",
-    tools: 2,
-    status: "online",
-    category: "CLAUDE CODE",
-    connection: { type: "stdio", command: "npx", args: "-y @upstash/context7-mcp" },
-    toolsList: [
-      { name: "resolve-library-id", description: "Resolves a package/product name to a Context7-compatible library ID and returns matching libraries." },
-      { name: "query-docs", description: "Retrieves and queries up-to-date documentation and code examples from Context7 for any programming library or framework." },
-    ],
-  },
-  { id: "context7-poly", name: "context7", source: "poly-market", tools: 2, status: "online", category: "CLAUDE CODE" },
-  { id: "shadcn", name: "shadcn", source: "poly-market", tools: 7, status: "online", category: "CLAUDE CODE" },
-  { id: "better-auth", name: "better-auth", source: "poly-market", tools: 4, status: "online", category: "CLAUDE CODE" },
-  { id: "context7-codex", name: "context7", source: "Global", tools: 2, status: "online", category: "CODEX" },
-  { id: "pencil", name: "pencil", source: "Global", tools: 14, status: "online", category: "CODEX" },
-]
+import { Button, Chip, Header, Label, ListBox, SearchField, Table, type Selection } from "@heroui/react"
+import { useMcps } from "../../hooks/use-mcps"
+import type { McpResponse } from "../../lib/api-types"
 
 export default function MCPServersPage() {
+  const { data: mcps, refetch } = useMcps()
   const [searchQuery, setSearchQuery] = useState("")
-  const [selected, setSelected] = useState<Selection>(new Set([mcpServers[0].id]))
+  const [selected, setSelected] = useState<Selection>(
+    new Set(mcps.length > 0 ? [`${mcps[0].name}-${mcps[0].agent ?? "default"}`] : [])
+  )
 
-  const selectedServer = mcpServers.find(s => [...(selected as Set<string>)][0] === s.id) ?? null
+  const selectedKey = [...(selected as Set<string>)][0]
+  const selectedServer = mcps.find(
+    (s) => `${s.name}-${s.agent ?? "default"}` === selectedKey
+  ) ?? null
 
   const filteredServers = useMemo(
-    () => mcpServers.filter(
+    () => mcps.filter(
       (server) =>
         server.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        server.source.toLowerCase().includes(searchQuery.toLowerCase())
+        (server.source ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (server.agent ?? "").toLowerCase().includes(searchQuery.toLowerCase())
     ),
-    [searchQuery]
+    [mcps, searchQuery]
   )
 
   const groupedServers = useMemo(
     () => filteredServers.reduce((acc, server) => {
-      if (!acc[server.category]) acc[server.category] = []
-      acc[server.category].push(server)
+      const category = (server.agent ?? "unknown").toUpperCase()
+      if (!acc[category]) acc[category] = []
+      acc[category].push(server)
       return acc
-    }, {} as Record<string, MCPServer[]>),
+    }, {} as Record<string, McpResponse[]>),
     [filteredServers]
-  )
-
-  const hasDetails = selectedServer && (
-    selectedServer.connection ||
-    (selectedServer.toolsList && selectedServer.toolsList.length > 0)
   )
 
   return (
@@ -76,7 +47,7 @@ export default function MCPServersPage() {
             onChange={setSearchQuery}
             aria-label="Search MCP servers"
             variant="secondary"
-            className="flex-1"
+            className="flex-1 min-w-0"
           >
             <SearchField.Group>
               <SearchField.SearchIcon />
@@ -84,10 +55,10 @@ export default function MCPServersPage() {
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>
-          <Button isIconOnly variant="ghost" size="sm" aria-label="Add MCP server">
+          <Button isIconOnly variant="ghost" size="sm" className="shrink-0" aria-label="Add MCP server">
             <PlusIcon className="size-4" />
           </Button>
-          <Button isIconOnly variant="ghost" size="sm" aria-label="Refresh servers">
+          <Button isIconOnly variant="ghost" size="sm" className="shrink-0" aria-label="Refresh servers" onPress={() => refetch()}>
             <ArrowPathIcon className="size-4" />
           </Button>
         </div>
@@ -105,31 +76,14 @@ export default function MCPServersPage() {
               <Header className="px-2 py-1.5 text-xs font-medium text-muted uppercase tracking-wide">
                 {category}
               </Header>
-              {servers.map((server) => (
-                <ListBox.Item key={server.id} id={server.id} textValue={server.name}>
-                  <div className="flex-1 min-w-0 overflow-hidden">
+              {servers.map((server) => {
+                const id = `${server.name}-${server.agent ?? "default"}`
+                return (
+                  <ListBox.Item key={id} id={id} textValue={server.name} className="data-[selected]:bg-accent/10">
                     <Label className="truncate">{server.name}</Label>
-                    <Description>
-                      <Chip
-                        size="sm"
-                        className="max-w-28 truncate"
-                      >
-                        {server.source}
-                      </Chip>
-                    </Description>
-                  </div>
-                  <span
-                    title={server.status === "online" ? "Online" : "Offline"}
-                    className={cn(
-                      "size-2 rounded-full shrink-0",
-                      server.status === "online" ? "bg-success" : "bg-muted"
-                    )}
-                  />
-                  <span className="text-xs text-muted shrink-0">
-                    {server.tools} {server.tools === 1 ? "tool" : "tools"}
-                  </span>
-                </ListBox.Item>
-              ))}
+                  </ListBox.Item>
+                )
+              })}
             </ListBox.Section>
           ))}
         </ListBox>
@@ -152,73 +106,64 @@ export default function MCPServersPage() {
                   <TrashIcon className="size-4" />
                 </Button>
               </div>
-              <p className="text-sm text-muted mb-6">
-                {selectedServer.tools} {selectedServer.tools === 1 ? "tool" : "tools"}
-              </p>
+              <div className="flex items-center gap-2 mb-6">
+                <Chip size="sm">{selectedServer.transport.type}</Chip>
+                {selectedServer.source && <Chip size="sm">{selectedServer.source}</Chip>}
+                {selectedServer.agent && <Chip size="sm">{selectedServer.agent}</Chip>}
+              </div>
 
-              {/* Connection */}
-              {selectedServer.connection && (
-                <div className="mb-6">
-                  <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">Connection</h3>
-                  <Table variant="secondary">
-                    <Table.ScrollContainer>
-                      <Table.Content aria-label="Connection details">
-                        <Table.Header>
-                          <Table.Column isRowHeader className="w-24">Property</Table.Column>
-                          <Table.Column>Value</Table.Column>
-                        </Table.Header>
-                        <Table.Body>
+              {/* Connection / Transport */}
+              <div className="mb-6">
+                <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">Transport</h3>
+                <Table>
+                  <Table.ScrollContainer>
+                    <Table.Content aria-label="Transport details">
+                      <Table.Header>
+                        <Table.Column isRowHeader className="w-24">Property</Table.Column>
+                        <Table.Column>Value</Table.Column>
+                      </Table.Header>
+                      <Table.Body>
+                        <Table.Row>
+                          <Table.Cell>Type</Table.Cell>
+                          <Table.Cell>{selectedServer.transport.type}</Table.Cell>
+                        </Table.Row>
+                        {selectedServer.transport.type === "stdio" && (
+                          <>
+                            <Table.Row>
+                              <Table.Cell>Command</Table.Cell>
+                              <Table.Cell>{selectedServer.transport.command}</Table.Cell>
+                            </Table.Row>
+                            {selectedServer.transport.args && selectedServer.transport.args.length > 0 && (
+                              <Table.Row>
+                                <Table.Cell>Args</Table.Cell>
+                                <Table.Cell>
+                                  <code className="font-mono text-xs break-all">
+                                    {selectedServer.transport.args.join(" ")}
+                                  </code>
+                                </Table.Cell>
+                              </Table.Row>
+                            )}
+                          </>
+                        )}
+                        {(selectedServer.transport.type === "sse" || selectedServer.transport.type === "streamable_http") && (
                           <Table.Row>
-                            <Table.Cell>Type</Table.Cell>
-                            <Table.Cell>{selectedServer.connection.type}</Table.Cell>
-                          </Table.Row>
-                          <Table.Row>
-                            <Table.Cell>Command</Table.Cell>
-                            <Table.Cell>{selectedServer.connection.command}</Table.Cell>
-                          </Table.Row>
-                          <Table.Row>
-                            <Table.Cell>Args</Table.Cell>
+                            <Table.Cell>URL</Table.Cell>
                             <Table.Cell>
-                              <code className="font-mono text-xs break-all">{selectedServer.connection.args}</code>
+                              <code className="font-mono text-xs break-all">{selectedServer.transport.url}</code>
                             </Table.Cell>
                           </Table.Row>
-                        </Table.Body>
-                      </Table.Content>
-                    </Table.ScrollContainer>
-                  </Table>
-                </div>
-              )}
-
-              {/* Tools */}
-              {selectedServer.toolsList && selectedServer.toolsList.length > 0 && (
-                <div>
-                  <h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
-                    Tools ({selectedServer.toolsList.length})
-                  </h3>
-                  <div className="space-y-3">
-                    {selectedServer.toolsList.map((tool) => (
-                      <Card key={tool.name} variant="secondary">
-                        <Card.Content>
-                          <h4 className="font-mono text-xs font-semibold mb-2 break-all">{tool.name}</h4>
-                          <p className="text-sm text-muted leading-relaxed">{tool.description}</p>
-                        </Card.Content>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Empty state for servers without detail data */}
-              {!hasDetails && (
-                <Empty className="mt-4">
-                  <EmptyHeader>
-                    <EmptyTitle>No details available</EmptyTitle>
-                    <EmptyDescription>
-                      Connection and tool information will appear here when the server is inspected.
-                    </EmptyDescription>
-                  </EmptyHeader>
-                </Empty>
-              )}
+                        )}
+                        {selectedServer.timeout && (
+                          <Table.Row>
+                            <Table.Cell>Timeout</Table.Cell>
+                            <Table.Cell>{selectedServer.timeout}s</Table.Cell>
+                          </Table.Row>
+                        )}
+                      </Table.Body>
+                    </Table.Content>
+                  </Table.ScrollContainer>
+                </Table>
+              </div>
             </div>
           </div>
         ) : (

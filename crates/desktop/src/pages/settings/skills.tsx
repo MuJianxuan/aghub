@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { PlusIcon } from "@heroicons/react/24/solid"
+import { PlusIcon, ArrowPathIcon } from "@heroicons/react/24/solid"
 import { Button, Chip, Header, Label, ListBox, SearchField, type Selection } from "@heroui/react"
 import { useSkills } from "../../hooks/use-skills"
 import type { SkillResponse } from "../../lib/api-types"
@@ -10,7 +10,7 @@ interface SkillGroup {
 }
 
 export default function SkillsPage() {
-  const { data: skills } = useSkills()
+  const { data: skills, refetch } = useSkills()
   const [searchQuery, setSearchQuery] = useState("")
 
   const groupedSkills = useMemo(() => {
@@ -52,7 +52,7 @@ export default function SkillsPage() {
             onChange={setSearchQuery}
             aria-label="Search skills"
             variant="secondary"
-            className="flex-1"
+            className="flex-1 min-w-0"
           >
             <SearchField.Group>
               <SearchField.SearchIcon />
@@ -60,8 +60,11 @@ export default function SkillsPage() {
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>
-          <Button isIconOnly variant="ghost" size="sm" aria-label="Add skill">
+          <Button isIconOnly variant="ghost" size="sm" className="shrink-0" aria-label="Add skill">
             <PlusIcon className="size-4" />
+          </Button>
+          <Button isIconOnly variant="ghost" size="sm" className="shrink-0" aria-label="Refresh skills" onPress={() => refetch()}>
+            <ArrowPathIcon className="size-4" />
           </Button>
         </div>
 
@@ -82,6 +85,7 @@ export default function SkillsPage() {
                 key={group.name}
                 id={group.name}
                 textValue={group.name}
+                className="data-[selected]:bg-accent/10"
               >
                 <Label className="truncate">{group.name}</Label>
               </ListBox.Item>

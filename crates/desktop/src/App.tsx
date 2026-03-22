@@ -47,7 +47,13 @@ function App() {
               </SettingsLayout>
             </Route>
             <Route path="/settings/mcp-servers">
-              <SettingsLayout><MCPServersPage /></SettingsLayout>
+              <SettingsLayout>
+                <ErrorBoundary>
+                  <Suspense fallback={<SkillsPageSkeleton />}>
+                    <MCPServersPage />
+                  </Suspense>
+                </ErrorBoundary>
+              </SettingsLayout>
             </Route>
             <Route path="/settings/custom-agents">
               <SettingsLayout><CustomAgentsPage /></SettingsLayout>

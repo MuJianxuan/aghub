@@ -9,3 +9,17 @@ export interface SkillResponse {
   source?: "Global" | "Project"
   agent?: string
 }
+
+export type TransportDto =
+  | { type: "stdio"; command: string; args?: string[]; env?: Record<string, string>; timeout?: number }
+  | { type: "sse"; url: string; headers?: Record<string, string>; timeout?: number }
+  | { type: "streamable_http"; url: string; headers?: Record<string, string>; timeout?: number }
+
+export interface McpResponse {
+  name: string
+  enabled: boolean
+  transport: TransportDto
+  timeout?: number
+  source?: "Global" | "Project"
+  agent?: string
+}

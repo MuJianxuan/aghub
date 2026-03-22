@@ -1,4 +1,4 @@
-import type { SkillResponse } from "./api-types"
+import type { McpResponse, SkillResponse } from "./api-types"
 
 class ApiError extends Error {
   constructor(
@@ -24,6 +24,11 @@ export function createApi(baseUrl: string) {
     skills: {
       listAll(scope: "global" | "project" | "all" = "global"): Promise<SkillResponse[]> {
         return fetchJson(`${baseUrl}/agents/all/skills?scope=${scope}`)
+      },
+    },
+    mcps: {
+      listAll(scope: "global" | "project" | "all" = "global"): Promise<McpResponse[]> {
+        return fetchJson(`${baseUrl}/agents/all/mcps?scope=${scope}`)
       },
     },
   }

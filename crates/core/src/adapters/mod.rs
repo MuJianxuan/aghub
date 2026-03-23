@@ -24,6 +24,20 @@ pub trait AgentAdapter: Send + Sync {
 	/// New code should use load_config instead
 	fn parse_config(&self, content: &str) -> Result<AgentConfig>;
 
+	/// Get all valid skill paths for the given scope (used for loading)
+	fn get_skills_paths(
+		&self,
+		project_root: Option<&Path>,
+		scope: ResourceScope,
+	) -> Vec<PathBuf>;
+
+	/// Get the target directory for writing new skills based on scope
+	fn target_skills_dir(
+		&self,
+		project_root: Option<&Path>,
+		scope: ResourceScope,
+	) -> Option<PathBuf>;
+
 	fn serialize_config(
 		&self,
 		config: &AgentConfig,

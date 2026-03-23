@@ -9,9 +9,11 @@ use std::path::{Path, PathBuf};
 
 #[test]
 fn test_opencode_uses_universal_skills() {
-	assert_eq!(
-		opencode::DESCRIPTOR.capabilities.universal_skills,
-		true,
+	let descriptor = aghub_core::registry::iter_all()
+		.find(|d| d.id == "opencode")
+		.unwrap();
+	assert!(
+		descriptor.capabilities.universal_skills,
 		"OpenCode should use universal skills path (~/.config/agents/skills)"
 	);
 }
@@ -140,9 +142,91 @@ fn test_openclaw_defaults_to_openclaw_when_none_exist() {
 
 #[test]
 fn test_openclaw_skills_enabled() {
-	assert_eq!(
-		openclaw::DESCRIPTOR.capabilities.skills,
-		true,
+	let descriptor = aghub_core::registry::iter_all()
+		.find(|d| d.id == "openclaw")
+		.unwrap();
+	assert!(
+		descriptor.capabilities.skills,
 		"OpenClaw should have skills capability enabled"
+	);
+}
+
+// ─── Regression Tests for Mutation Targeting ────────────────────────────────
+
+#[test]
+fn test_opencode_global_creation_persists() {
+	let temp = tempfile::tempdir().unwrap();
+	std::env::set_var("XDG_CONFIG_HOME", temp.path());
+
+	// TestConfig Builder sets an override by default, we must CLEAR it
+	// to allow real path logic to execute the fallback to XDG_CONFIG_HOME.
+	let test =
+		aghub_core::testing::TestConfig::new(aghub_core::AgentType::OpenCode)
+			.unwrap();
+	aghub_core::adapter::set_skills_path_override("opencode", None);
+
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let mut skill = aghub_core::models::Skill::new("test-skill-opencode");
+	skill.description = Some("desc".to_string());
+
+	manager.add_skill(skill).unwrap();
+
+	// Verify the file was created in XDG_CONFIG_HOME/agents/skills/test-skill-opencode/SKILL.md
+	let expected_path = temp
+		.path()
+		.join("agents/skills/test-skill-opencode/SKILL.md");
+	assert!(
+		expected_path.exists(),
+		"Skill should be written to universal skills path"
+	);
+
+	// Reload and check it persists
+	let mut manager2 = test.create_manager();
+	manager2.load().unwrap();
+	assert!(
+		manager2.get_skill("test-skill-opencode").is_some(),
+		"Skill should survive reload"
+	);
+
+	std::env::remove_var("XDG_CONFIG_HOME");
+}
+
+#[test]
+fn test_source_path_update_targets_original_directory() {
+	let test =
+		aghub_core::testing::TestConfig::new(aghub_core::AgentType::Codex)
+			.unwrap();
+
+	// Create a skill at the overridden skills dir
+	test.create_test_skill("codex-skill", Some("original"))
+		.unwrap();
+
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let skill = manager
+		.get_skill("codex-skill")
+		.expect("Should load skill from test dir");
+
+	// source_path should point to the test skills dir
+	let sp = skill.source_path.as_ref().unwrap();
+	assert!(
+		sp.contains("codex-skill"),
+		"source_path should reference the skill directory"
+	);
+
+	// Update it
+	let mut updated = skill.clone();
+	updated.description = Some("updated".to_string());
+	manager.update_skill("codex-skill", updated).unwrap();
+
+	// Verify the file was updated in place at the original source_path
+	let skill_file = test.skills_dir().join("codex-skill/SKILL.md");
+	let content = std::fs::read_to_string(skill_file).unwrap();
+	assert!(
+		content.contains("description: updated"),
+		"Skill should be updated at original source path"
 	);
 }

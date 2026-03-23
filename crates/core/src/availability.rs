@@ -26,8 +26,11 @@ fn check_global_directory_exists(global_path: PathBuf) -> bool {
 }
 
 /// Check availability for a single agent
-pub fn check_agent_availability(descriptor: &AgentDescriptor) -> AvailabilityInfo {
-	let has_global_directory = check_global_directory_exists((descriptor.global_path)());
+pub fn check_agent_availability(
+	descriptor: &AgentDescriptor,
+) -> AvailabilityInfo {
+	let has_global_directory =
+		check_global_directory_exists((descriptor.global_path)());
 	let has_cli = check_cli_exists(descriptor.cli_name);
 
 	AvailabilityInfo {
@@ -42,7 +45,8 @@ pub fn check_agent_availability(descriptor: &AgentDescriptor) -> AvailabilityInf
 pub fn check_all_agents_availability() -> Vec<AvailabilityInfo> {
 	use std::thread;
 
-	let descriptors: Vec<&AgentDescriptor> = crate::registry::iter_all().collect();
+	let descriptors: Vec<&AgentDescriptor> =
+		crate::registry::iter_all().collect();
 
 	// Spawn threads for each agent check
 	let handles: Vec<_> = descriptors
@@ -74,7 +78,9 @@ mod tests {
 
 	#[test]
 	fn test_check_cli_exists_for_nonexistent_command() {
-		assert!(!check_cli_exists("this_command_definitely_does_not_exist_12345"));
+		assert!(!check_cli_exists(
+			"this_command_definitely_does_not_exist_12345"
+		));
 	}
 
 	#[test]
@@ -90,7 +96,10 @@ mod tests {
 		let descriptor = registry::get(crate::AgentType::Claude);
 		let info = check_agent_availability(descriptor);
 		assert_eq!(info.agent_id, "claude");
-		assert_eq!(info.is_available, info.has_global_directory || info.has_cli);
+		assert_eq!(
+			info.is_available,
+			info.has_global_directory || info.has_cli
+		);
 	}
 
 	#[test]

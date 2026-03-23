@@ -1,4 +1,5 @@
 import { Spinner } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 import {
 	createContext,
 	type ReactNode,
@@ -6,10 +7,9 @@ import {
 	useEffect,
 	useState,
 } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { createApi, type AgentInfo, type AgentAvailability } from "../lib/api";
-import { useServer } from "../providers/server";
+import { type AgentAvailability, type AgentInfo, createApi } from "../lib/api";
 import { getDisabledAgents } from "../lib/store";
+import { useServer } from "../providers/server";
 
 export interface AvailableAgent extends AgentInfo {
 	availability: AgentAvailability;
@@ -45,7 +45,9 @@ export function AgentAvailabilityProvider({
 }) {
 	const { baseUrl } = useServer();
 	const api = createApi(baseUrl);
-	const [disabledAgents, setDisabledAgents] = useState<Set<string>>(new Set());
+	const [disabledAgents, setDisabledAgents] = useState<Set<string>>(
+		new Set(),
+	);
 
 	// Fetch all agents
 	const {
@@ -81,26 +83,30 @@ export function AgentAvailabilityProvider({
 	};
 
 	// Combine data
-	const availableAgents: AvailableAgent[] = allAgents.map((agent: AgentInfo) => {
-		const availability: AgentAvailability =
-			availabilityData.find((a: AgentAvailability) => a.id === agent.id) ??
-			({
-				id: agent.id,
-				has_global_directory: false,
-				has_cli: false,
-				is_available: false,
-			} as AgentAvailability);
+	const availableAgents: AvailableAgent[] = allAgents.map(
+		(agent: AgentInfo) => {
+			const availability: AgentAvailability =
+				availabilityData.find(
+					(a: AgentAvailability) => a.id === agent.id,
+				) ??
+				({
+					id: agent.id,
+					has_global_directory: false,
+					has_cli: false,
+					is_available: false,
+				} as AgentAvailability);
 
-		const isDisabled = disabledAgents.has(agent.id);
-		const isUsable = availability.is_available && !isDisabled;
+			const isDisabled = disabledAgents.has(agent.id);
+			const isUsable = availability.is_available && !isDisabled;
 
-		return {
-			...agent,
-			availability,
-			isDisabled,
-			isUsable,
-		};
-	});
+			return {
+				...agent,
+				availability,
+				isDisabled,
+				isUsable,
+			};
+		},
+	);
 
 	const isLoading = isLoadingAgents || isLoadingAvailability;
 

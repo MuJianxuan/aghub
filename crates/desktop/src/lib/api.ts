@@ -1,5 +1,11 @@
 import ky from "ky";
-import type { CreateSkillRequest, MarketSkill, McpResponse, SkillResponse, TransportDto } from "./api-types";
+import type {
+	CreateSkillRequest,
+	MarketSkill,
+	McpResponse,
+	SkillResponse,
+	TransportDto,
+} from "./api-types";
 
 export interface UpdateMcpRequest {
 	name?: string;

@@ -89,9 +89,7 @@ export async function getDisabledAgents(): Promise<string[]> {
 	return (await store.get<string[]>("disabledAgents")) ?? [];
 }
 
-export async function setDisabledAgents(
-	agentIds: string[],
-): Promise<void> {
+export async function setDisabledAgents(agentIds: string[]): Promise<void> {
 	const store = await getStore();
 	await store.set("disabledAgents", agentIds);
 	await store.save();

@@ -9,12 +9,12 @@ import { AgentAvailabilityProvider } from "./providers/agent-availability";
 import { ServerProvider } from "./providers/server";
 import { ThemeProvider } from "./providers/theme";
 import "./lib/i18n";
+import { Redirect } from "./components/redirect";
 import ProjectDetailPage from "./pages/project/detail";
 import SettingsPage from "./pages/settings";
 import CustomAgentsPage from "./pages/settings/custom-agents";
 import MCPServersPage from "./pages/settings/mcp-servers";
 import SkillsPage from "./pages/settings/skills";
-import { Redirect } from "./components/redirect";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -69,7 +69,9 @@ function App() {
 									<SettingsLayout>
 										<ErrorBoundary>
 											<Suspense
-												fallback={<SkillsPageSkeleton />}
+												fallback={
+													<SkillsPageSkeleton />
+												}
 											>
 												<SkillsPage />
 											</Suspense>
@@ -80,7 +82,9 @@ function App() {
 									<SettingsLayout>
 										<ErrorBoundary>
 											<Suspense
-												fallback={<SkillsPageSkeleton />}
+												fallback={
+													<SkillsPageSkeleton />
+												}
 											>
 												<MCPServersPage />
 											</Suspense>

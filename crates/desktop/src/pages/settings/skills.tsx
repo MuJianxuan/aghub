@@ -1,8 +1,4 @@
-import {
-	ArrowPathIcon,
-	FolderIcon,
-	PlusIcon,
-} from "@heroicons/react/24/solid";
+import { ArrowPathIcon, FolderIcon, PlusIcon } from "@heroicons/react/24/solid";
 import {
 	Button,
 	Chip,
@@ -16,16 +12,16 @@ import {
 	type Selection,
 	TextField,
 } from "@heroui/react";
+import { useQuery } from "@tanstack/react-query";
 import { openPath } from "@tauri-apps/plugin-opener";
 import { dirname } from "pathe";
-import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCreateSkill, useSkills } from "../../hooks/use-skills";
 import { createApi } from "../../lib/api";
 import type { MarketSkill, SkillResponse } from "../../lib/api-types";
-import { useServer } from "../../providers/server";
 import { useAgentAvailability } from "../../providers/agent-availability";
+import { useServer } from "../../providers/server";
 
 interface SkillGroup {
 	name: string;
@@ -496,9 +492,7 @@ function CreateSkillPanel({ onDone }: { onDone: () => void }) {
 								!name.trim() || !agent || createSkill.isPending
 							}
 						>
-							{createSkill.isPending
-								? t("creating")
-								: t("save")}
+							{createSkill.isPending ? t("creating") : t("save")}
 						</Button>
 					</div>
 				</Form>

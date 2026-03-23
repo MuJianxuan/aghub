@@ -77,7 +77,8 @@ export default {
 		'This will delete "{{name}}" from {{count}} agents: {{agents}}. This action cannot be undone.',
 	deleting: "Deleting...",
 	editMcpServer: "Edit MCP Server",
-	changeWillApplyToAgents: "This change will apply to {{count}} agents: {{agents}}",
+	changeWillApplyToAgents:
+		"This change will apply to {{count}} agents: {{agents}}",
 	name: "Name",
 	serverName: "Server name",
 	transportType: "Transport Type",

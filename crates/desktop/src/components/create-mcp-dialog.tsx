@@ -16,8 +16,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createApi } from "../lib/api";
 import type { TransportDto } from "../lib/api-types";
-import { useServer } from "../providers/server";
 import { useAgentAvailability } from "../providers/agent-availability";
+import { useServer } from "../providers/server";
 
 interface CreateMcpDialogProps {
 	isOpen: boolean;

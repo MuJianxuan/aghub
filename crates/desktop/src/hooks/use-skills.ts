@@ -1,7 +1,7 @@
 import {
-	useSuspenseQuery,
 	useMutation,
 	useQueryClient,
+	useSuspenseQuery,
 } from "@tanstack/react-query";
 import { createApi } from "../lib/api";
 import type { CreateSkillRequest, SkillResponse } from "../lib/api-types";

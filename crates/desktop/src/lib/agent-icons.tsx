@@ -31,8 +31,14 @@ export function AgentIcon({ id, name }: AgentIconProps) {
 
 	// Fallback: Avatar with first letter (square with border)
 	return (
-		<Avatar size="lg" variant="soft" className="rounded-lg border border-border">
-			<Avatar.Fallback className="rounded-lg">{fallbackText}</Avatar.Fallback>
+		<Avatar
+			size="lg"
+			variant="soft"
+			className="rounded-lg border border-border"
+		>
+			<Avatar.Fallback className="rounded-lg">
+				{fallbackText}
+			</Avatar.Fallback>
 		</Avatar>
 	);
 }

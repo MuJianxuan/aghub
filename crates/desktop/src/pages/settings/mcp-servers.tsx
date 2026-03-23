@@ -26,8 +26,8 @@ import { EditMcpDialog } from "../../components/edit-mcp-dialog";
 import { useMcps } from "../../hooks/use-mcps";
 import { createApi } from "../../lib/api";
 import type { McpResponse } from "../../lib/api-types";
-import { useServer } from "../../providers/server";
 import { getMcpMergeKey } from "../../lib/utils";
+import { useServer } from "../../providers/server";
 
 interface McpGroup {
 	mergeKey: string;
@@ -99,7 +99,8 @@ export default function MCPServersPage() {
 		mutationFn: (group: McpGroup) => {
 			return Promise.all(
 				group.items.map((item) => {
-					const scope = item.source === "Project" ? "project" : "global";
+					const scope =
+						item.source === "Project" ? "project" : "global";
 					return api.mcps.delete(
 						item.name,
 						item.agent ?? "default",
@@ -210,7 +211,11 @@ export default function MCPServersPage() {
 									{group.items[0].name}
 								</Label>
 								{group.items.length > 1 && (
-									<Chip size="sm" variant="soft" color="accent">
+									<Chip
+										size="sm"
+										variant="soft"
+										color="accent"
+									>
 										{group.items.length}
 									</Chip>
 								)}
@@ -242,7 +247,9 @@ export default function MCPServersPage() {
 										size="sm"
 										className="text-muted hover:text-foreground shrink-0"
 										aria-label={t("copy")}
-										onPress={() => handleCopy(selectedGroup)}
+										onPress={() =>
+											handleCopy(selectedGroup)
+										}
 									>
 										<DocumentDuplicateIcon className="size-4" />
 									</Button>
@@ -278,12 +285,26 @@ export default function MCPServersPage() {
 								</h3>
 								<div className="flex flex-wrap gap-1.5">
 									{selectedGroup.items.map((item) => (
-										<div key={item.agent ?? "default"} className="flex items-center gap-1">
+										<div
+											key={item.agent ?? "default"}
+											className="flex items-center gap-1"
+										>
 											<Chip size="sm" variant="secondary">
-												{item.agent ? item.agent.charAt(0).toUpperCase() + item.agent.slice(1).toLowerCase() : "Default"}
+												{item.agent
+													? item.agent
+															.charAt(0)
+															.toUpperCase() +
+														item.agent
+															.slice(1)
+															.toLowerCase()
+													: "Default"}
 											</Chip>
 											{!item.enabled && (
-												<Chip size="sm" variant="soft" color="warning">
+												<Chip
+													size="sm"
+													variant="soft"
+													color="warning"
+												>
 													{t("disabled")}
 												</Chip>
 											)}
@@ -338,8 +359,8 @@ export default function MCPServersPage() {
 																}
 															</Table.Cell>
 														</Table.Row>
-														{selectedGroup
-															.transport.args &&
+														{selectedGroup.transport
+															.args &&
 															selectedGroup
 																.transport.args
 																.length > 0 && (
@@ -418,14 +439,22 @@ export default function MCPServersPage() {
 									? t("deleteMcpMultipleConfirm", {
 											name: groupToDelete.items[0].name,
 											count: groupToDelete.items.length,
-											agents: groupToDelete.items.map(i =>
-												i.agent ? i.agent.charAt(0).toUpperCase() + i.agent.slice(1).toLowerCase() : "Default"
-											).join(", "),
+											agents: groupToDelete.items
+												.map((i) =>
+													i.agent
+														? i.agent
+																.charAt(0)
+																.toUpperCase() +
+															i.agent
+																.slice(1)
+																.toLowerCase()
+														: "Default",
+												)
+												.join(", "),
 										})
 									: t("deleteMcpServerConfirm", {
 											name: groupToDelete?.items[0]?.name,
-										})
-								}
+										})}
 							</p>
 						</Modal.Body>
 						<Modal.Footer>

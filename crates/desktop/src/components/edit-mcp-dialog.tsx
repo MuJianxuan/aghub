@@ -46,7 +46,9 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 
 	// stdio fields
 	const [command, setCommand] = useState(
-		primaryServer.transport.type === "stdio" ? primaryServer.transport.command : "",
+		primaryServer.transport.type === "stdio"
+			? primaryServer.transport.command
+			: "",
 	);
 	const [args, setArgs] = useState(
 		primaryServer.transport.type === "stdio" && primaryServer.transport.args
@@ -54,7 +56,10 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 			: "",
 	);
 	const [env, setEnv] = useState(() => {
-		if (primaryServer.transport.type === "stdio" && primaryServer.transport.env) {
+		if (
+			primaryServer.transport.type === "stdio" &&
+			primaryServer.transport.env
+		) {
 			return Object.entries(primaryServer.transport.env)
 				.map(([k, v]) => `${k}=${v}`)
 				.join("\n");
@@ -64,10 +69,15 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 
 	// http fields
 	const [url, setUrl] = useState(
-		primaryServer.transport.type !== "stdio" ? primaryServer.transport.url : "",
+		primaryServer.transport.type !== "stdio"
+			? primaryServer.transport.url
+			: "",
 	);
 	const [headers, setHeaders] = useState(() => {
-		if (primaryServer.transport.type !== "stdio" && primaryServer.transport.headers) {
+		if (
+			primaryServer.transport.type !== "stdio" &&
+			primaryServer.transport.headers
+		) {
 			return Object.entries(primaryServer.transport.headers)
 				.map(([k, v]) => `${k}: ${v}`)
 				.join("\n");
@@ -113,7 +123,8 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 		mutationFn: (body: UpdateMcpRequest) => {
 			return Promise.all(
 				group.items.map((item) => {
-					const scope = item.source === "Project" ? "project" : "global";
+					const scope =
+						item.source === "Project" ? "project" : "global";
 					return api.mcps.update(
 						item.name,
 						item.agent ?? "default",
@@ -216,9 +227,18 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 								<p className="text-sm text-warning">
 									{t("changeWillApplyToAgents", {
 										count: group.items.length,
-										agents: group.items.map(i =>
-											i.agent ? i.agent.charAt(0).toUpperCase() + i.agent.slice(1).toLowerCase() : "Default"
-										).join(", ")
+										agents: group.items
+											.map((i) =>
+												i.agent
+													? i.agent
+															.charAt(0)
+															.toUpperCase() +
+														i.agent
+															.slice(1)
+															.toLowerCase()
+													: "Default",
+											)
+											.join(", "),
 									})}
 								</p>
 							</div>

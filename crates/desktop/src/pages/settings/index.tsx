@@ -10,12 +10,12 @@ import {
 	ToggleButton,
 	ToggleButtonGroup,
 } from "@heroui/react";
-import { useTranslation } from "react-i18next";
-import { useTheme } from "../../providers/theme";
-import { useAgentAvailability } from "../../providers/agent-availability";
-import { disableAgent, enableAgent } from "../../lib/store";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AgentCard } from "../../components/agent-card";
+import { disableAgent, enableAgent } from "../../lib/store";
+import { useAgentAvailability } from "../../providers/agent-availability";
+import { useTheme } from "../../providers/theme";
 
 export default function SettingsPage() {
 	const { t, i18n } = useTranslation();
@@ -54,10 +54,15 @@ export default function SettingsPage() {
 					onSelectionChange={(key) => setSelectedTab(key as string)}
 				>
 					<div className="flex items-center justify-between mb-2">
-						<h2 className="text-xl font-semibold">{t("settings")}</h2>
+						<h2 className="text-xl font-semibold">
+							{t("settings")}
+						</h2>
 
 						<Tabs.ListContainer>
-							<Tabs.List aria-label="Settings sections" className="w-auto inline-flex">
+							<Tabs.List
+								aria-label="Settings sections"
+								className="w-auto inline-flex"
+							>
 								<Tabs.Tab id="appearance">
 									{t("appearance")}
 									<Tabs.Indicator />
@@ -158,7 +163,9 @@ export default function SettingsPage() {
 					<Tabs.Panel id="agents">
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 							{availableAgents
-								.filter((agent) => agent.availability.is_available)
+								.filter(
+									(agent) => agent.availability.is_available,
+								)
 								.map((agent) => (
 									<AgentCard
 										key={agent.id}

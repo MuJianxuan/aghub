@@ -1,4 +1,5 @@
 import { Card, Switch } from "@heroui/react";
+import { useTranslation } from "react-i18next";
 import { AgentIcon } from "../lib/agent-icons";
 import type { AvailableAgent } from "../providers/agent-availability";
 
@@ -9,21 +10,22 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
+	const { t } = useTranslation();
 	const { has_global_directory, has_cli } = agent.availability;
 
 	const sources: string[] = [];
-	if (has_global_directory) sources.push("global config");
-	if (has_cli) sources.push("cli");
+	if (has_global_directory) sources.push(t("globalConfigFound"));
+	if (has_cli) sources.push(t("cliFound"));
 
 	return (
 		<Card>
-			<Card.Header>
+			<Card.Content className="flex items-center gap-3">
 				<AgentIcon id={agent.id} name={agent.display_name} />
 				<div className="flex-1 min-w-0">
 					<Card.Title>{agent.display_name}</Card.Title>
 					{sources.length > 0 && (
 						<Card.Description>
-							{sources.join(" / ")} found
+							{sources.join(" / ")} {t("detectionSourceFound")}
 						</Card.Description>
 					)}
 				</div>
@@ -31,13 +33,13 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 					isSelected={!agent.isDisabled}
 					onChange={() => onToggle(agent.id, agent.isDisabled)}
 					isDisabled={isUpdating}
-					aria-label={`Toggle ${agent.display_name}`}
+					aria-label={t("toggleAgent", { name: agent.display_name })}
 				>
 					<Switch.Control>
 						<Switch.Thumb />
 					</Switch.Control>
 				</Switch>
-			</Card.Header>
+			</Card.Content>
 		</Card>
 	);
 }

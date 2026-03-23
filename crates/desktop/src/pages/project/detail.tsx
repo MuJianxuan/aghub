@@ -18,21 +18,24 @@ interface StatCardProps {
 
 function StatCard({ icon, label, value, isLoading }: StatCardProps) {
 	return (
-		<div className="flex items-center gap-4 p-4 rounded-lg border border-border bg-surface-secondary">
+		<dl
+			className="flex items-center gap-4 p-4 rounded-lg border border-border bg-surface-secondary"
+			aria-label={`${label} statistic`}
+		>
 			<div className="flex items-center justify-center w-10 h-10 rounded-md bg-accent/10 text-accent shrink-0">
 				{icon}
 			</div>
 			<div className="min-w-0 flex-1">
-				<p className="text-xs text-muted uppercase tracking-wide truncate">
+				<dt className="text-xs text-muted uppercase tracking-wide truncate">
 					{label}
-				</p>
+				</dt>
 				{isLoading ? (
 					<Skeleton className="h-6 w-12 mt-1" />
 				) : (
-					<p className="text-2xl font-semibold mt-0.5">{value}</p>
+					<dd className="text-2xl font-semibold mt-0.5">{value}</dd>
 				)}
 			</div>
-		</div>
+		</dl>
 	);
 }
 
@@ -65,12 +68,12 @@ export default function ProjectDetailPage() {
 							{project.name}
 						</h1>
 					</div>
-					<p className="text-sm text-muted ml-13 pl-0.5 font-mono truncate">
+					<p className="text-sm text-muted ml-12 pl-0.5 font-mono truncate">
 						{project.path}
 					</p>
 				</div>
 
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<section aria-label={t("projectStats")} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<StatCard
 						icon={<CubeIcon className="size-5" />}
 						label={t("skills")}
@@ -83,7 +86,7 @@ export default function ProjectDetailPage() {
 						value={stats?.mcpsCount ?? 0}
 						isLoading={statsLoading}
 					/>
-				</div>
+				</section>
 			</div>
 		</div>
 	);

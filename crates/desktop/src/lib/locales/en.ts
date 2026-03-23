@@ -144,6 +144,7 @@ export default {
 	clickToBrowse: "Click to browse your files",
 	projectNotFound: "Project not found",
 	mcps: "MCPs",
+	projectStats: "Project Statistics",
 
 	// Env Editor
 	envEditor: {

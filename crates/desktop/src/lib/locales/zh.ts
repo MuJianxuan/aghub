@@ -141,6 +141,7 @@ export default {
 	clickToBrowse: "点击浏览文件",
 	projectNotFound: "项目未找到",
 	mcps: "MCP",
+	projectStats: "项目统计",
 
 	// Env Editor
 	envEditor: {

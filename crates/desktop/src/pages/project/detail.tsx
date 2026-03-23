@@ -52,13 +52,13 @@ export default function ProjectDetailPage() {
 		enabled: !!project?.path,
 	});
 
-	// Filter to project-scoped only
+	// Filter to project-scoped only (handle both "Project" and "project" from API)
 	const projectMcps = useMemo(
-		() => mcps.filter((m) => m.source === "Project"),
+		() => mcps.filter((m) => m.source?.toLowerCase() === "project"),
 		[mcps],
 	);
 	const projectSkills = useMemo(
-		() => skills.filter((s) => s.source === "Project"),
+		() => skills.filter((s) => s.source?.toLowerCase() === "project"),
 		[skills],
 	);
 

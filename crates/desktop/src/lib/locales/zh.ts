@@ -51,6 +51,18 @@ export default {
   deleteMcpServer: "删除 MCP 服务器",
   deleteMcpServerConfirm: "确定要删除 \"{{name}}\" 吗？此操作无法撤销。",
   deleting: "删除中...",
+  editMcpServer: "编辑 MCP 服务器",
+  name: "名称",
+  serverName: "服务器名称",
+  transportType: "传输类型",
+  env: "环境变量",
+  envHelp: "每行一个 KEY=value",
+  headers: "请求头",
+  headersHelp: "每行一个 Header: value",
+  argsHelp: "空格分隔的参数",
+  timeoutHelp: "秒数（可选）",
+  enabled: "启用",
+  saving: "保存中...",
 
   // Projects
   addProject: "添加项目",

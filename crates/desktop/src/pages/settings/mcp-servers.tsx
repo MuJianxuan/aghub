@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { PlusIcon, ArrowPathIcon, TrashIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid"
+import { PlusIcon, ArrowPathIcon, TrashIcon, ExclamationTriangleIcon, PencilIcon, CommandLineIcon, SignalIcon } from "@heroicons/react/24/solid"
 import { Button, Header, Label, ListBox, Modal, SearchField, Table, type Selection } from "@heroui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useMcps } from "../../hooks/use-mcps"
 import { useServer } from "../../providers/server"
 import { createApi } from "../../lib/api"
 import type { McpResponse } from "../../lib/api-types"
+import { EditMcpDialog } from "../../components/edit-mcp-dialog"
 
 export default function MCPServersPage() {
   const { t } = useTranslation()
@@ -19,12 +20,20 @@ export default function MCPServersPage() {
     new Set(mcps.length > 0 ? [`${mcps[0].name}-${mcps[0].agent ?? "default"}`] : [])
   )
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [serverToDelete, setServerToDelete] = useState<McpResponse | null>(null)
 
   const selectedKey = [...(selected as Set<string>)][0]
   const selectedServer = mcps.find(
     (s) => `${s.name}-${s.agent ?? "default"}` === selectedKey
   ) ?? null
+
+  const getTransportIcon = (server: McpResponse) => {
+    if (server.transport.type === "stdio") {
+      return <CommandLineIcon className="size-4 shrink-0" />
+    }
+    return <SignalIcon className="size-4 shrink-0" />
+  }
 
   const filteredServers = useMemo(
     () => mcps.filter(
@@ -122,7 +131,10 @@ export default function MCPServersPage() {
                 const id = `${server.name}-${server.agent ?? "default"}`
                 return (
                   <ListBox.Item key={id} id={id} textValue={server.name} className="data-[selected]:bg-accent/10">
-                    <Label className="truncate">{server.name}</Label>
+                    <div className="flex items-center gap-2">
+                      {getTransportIcon(server)}
+                      <Label className="truncate">{server.name}</Label>
+                    </div>
                   </ListBox.Item>
                 )
               })}
@@ -144,16 +156,28 @@ export default function MCPServersPage() {
               {/* Header */}
               <div className="flex items-center justify-between gap-3 mb-2">
                 <h2 className="text-xl font-semibold text-foreground truncate">{selectedServer.name}</h2>
-                <Button
-                  isIconOnly
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted hover:text-danger shrink-0"
-                  aria-label={t("remove")}
-                  onPress={() => handleDeleteClick(selectedServer)}
-                >
-                  <TrashIcon className="size-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    isIconOnly
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted hover:text-foreground shrink-0"
+                    aria-label={t("edit")}
+                    onPress={() => setEditDialogOpen(true)}
+                  >
+                    <PencilIcon className="size-4" />
+                  </Button>
+                  <Button
+                    isIconOnly
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted hover:text-danger shrink-0"
+                    aria-label={t("remove")}
+                    onPress={() => handleDeleteClick(selectedServer)}
+                  >
+                    <TrashIcon className="size-4" />
+                  </Button>
+                </div>
               </div>
 
               {/* Connection / Transport */}
@@ -252,6 +276,15 @@ export default function MCPServersPage() {
           </Modal.Dialog>
         </Modal.Container>
       </Modal.Backdrop>
+
+      {/* Edit Dialog */}
+      {selectedServer && (
+        <EditMcpDialog
+          server={selectedServer}
+          isOpen={editDialogOpen}
+          onClose={() => setEditDialogOpen(false)}
+        />
+      )}
     </div>
   )
 }

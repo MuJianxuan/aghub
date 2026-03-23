@@ -51,6 +51,18 @@ export default {
   deleteMcpServer: "Delete MCP Server",
   deleteMcpServerConfirm: "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
   deleting: "Deleting...",
+  editMcpServer: "Edit MCP Server",
+  name: "Name",
+  serverName: "Server name",
+  transportType: "Transport Type",
+  env: "Environment Variables",
+  envHelp: "One KEY=value per line",
+  headers: "Headers",
+  headersHelp: "One Header: value per line",
+  argsHelp: "Space-separated arguments",
+  timeoutHelp: "Seconds (optional)",
+  enabled: "Enabled",
+  saving: "Saving...",
 
   // Projects
   addProject: "Add Project",

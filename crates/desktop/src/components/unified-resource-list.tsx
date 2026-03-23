@@ -6,8 +6,15 @@ import {
 	ServerIcon,
 	WifiIcon,
 } from "@heroicons/react/24/solid";
-import { Button, Chip, Dropdown, Label, ListBox, SearchField } from "@heroui/react";
 import type { Key } from "@heroui/react";
+import {
+	Button,
+	Chip,
+	Dropdown,
+	Label,
+	ListBox,
+	SearchField,
+} from "@heroui/react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { McpResponse, SkillResponse } from "../lib/api-types";
@@ -124,7 +131,9 @@ export function UnifiedResourceList({
 		}
 	};
 
-	const selectedKeys: "all" | Set<Key> = selectedKey ? new Set<Key>([selectedKey]) : new Set<Key>();
+	const selectedKeys: "all" | Set<Key> = selectedKey
+		? new Set<Key>([selectedKey])
+		: new Set<Key>();
 
 	const hasMcps = groupedMcps.length > 0;
 	const hasSkills = groupedSkills.length > 0;
@@ -158,10 +167,12 @@ export function UnifiedResourceList({
 						<PlusIcon className="size-4" />
 					</Button>
 					<Dropdown.Popover placement="bottom end">
-						<Dropdown.Menu onAction={(key) => {
-							if (key === "mcp") onCreateMcp();
-							else if (key === "skill") onCreateSkill();
-						}}>
+						<Dropdown.Menu
+							onAction={(key) => {
+								if (key === "mcp") onCreateMcp();
+								else if (key === "skill") onCreateSkill();
+							}}
+						>
 							<Dropdown.Item id="mcp" textValue={t("mcpServers")}>
 								<div className="flex items-center gap-2">
 									<ServerIcon className="size-4" />
@@ -203,7 +214,9 @@ export function UnifiedResourceList({
 							aria-label="MCP Servers"
 							selectionMode="single"
 							selectedKeys={
-								selectedType === "mcp" ? selectedKeys : new Set<Key>()
+								selectedType === "mcp"
+									? selectedKeys
+									: new Set<Key>()
 							}
 							onSelectionChange={handleSelectionChange}
 							className="p-2 pt-1"

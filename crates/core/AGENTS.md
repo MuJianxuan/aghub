@@ -1,6 +1,6 @@
 # CORE CRATE KNOWLEDGE BASE
 
-**Crate**: `aghub-core` — Core library for agent configuration management  
+**Crate**: `aghub-core` — Core library for agent configuration management\
 **Domain**: Adapter pattern, config parsing, agent registry, skills discovery
 
 ## STRUCTURE
@@ -41,6 +41,7 @@ crates/core/src/
 ## KEY PATTERNS
 
 ### Adapter Pattern
+
 All agents implement `AgentAdapter` trait. No hand-wired structs — behavior defined by function pointers in `AgentDescriptor`:
 
 ```rust
@@ -56,31 +57,37 @@ pub struct AgentDescriptor {
 ```
 
 ### Normalized Model
+
 `AgentConfig` provides unified representation:
+
 - `Vec<Skill>` — with frontmatter metadata (name, description, author, version, tools)
 - `Vec<McpServer>` — with `McpTransport` variants (Stdio, Sse, StreamableHttp)
 
 ### ConfigManager
+
 Central abstraction coordinating adapter operations:
+
 - `load()` / `save()` — config I/O
 - `load_both()` — merge project + global configs
 - `scope: ResourceScope` — GlobalOnly, ProjectOnly, Both
 
 ### Skills Discovery
+
 Skills loaded from directories containing `SKILL.md` files:
+
 - Parses YAML frontmatter (between `---` markers)
 - `source_path` field records file path with `~` prefix
 
 ## WHERE TO LOOK
 
-| Task | Location |
-|------|----------|
-| Add new agent | `src/agents/<name>.rs` + `registry/mod.rs` + `models.rs` |
-| Modify agent behavior | Agent's descriptor file in `src/agents/` |
-| Config serialization | `src/format/` — format-specific modules |
-| Path handling | `src/paths.rs` |
-| Test utilities | `src/testing.rs` — `TestConfig`, `TestConfigBuilder` |
-| Agent detection | `src/availability.rs` |
+| Task                  | Location                                                 |
+| --------------------- | -------------------------------------------------------- |
+| Add new agent         | `src/agents/<name>.rs` + `registry/mod.rs` + `models.rs` |
+| Modify agent behavior | Agent's descriptor file in `src/agents/`                 |
+| Config serialization  | `src/format/` — format-specific modules                  |
+| Path handling         | `src/paths.rs`                                           |
+| Test utilities        | `src/testing.rs` — `TestConfig`, `TestConfigBuilder`     |
+| Agent detection       | `src/availability.rs`                                    |
 
 ## CONVENTIONS
 
@@ -110,4 +117,4 @@ Test utilities in `src/testing.rs` provide isolated temp directories per test.
 - NEVER add agent to `agents/` without registering in `registry/mod.rs`
 - NEVER ignore `source_path` — required for skill provenance tracking
 - NEVER use non-XDG paths — always use `dirs` crate helpers
-</content>
+  </content>

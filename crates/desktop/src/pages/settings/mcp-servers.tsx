@@ -141,7 +141,9 @@ export default function MCPServersPage() {
 				<ListBox
 					aria-label="MCP Servers"
 					selectionMode="single"
-					selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
+					selectedKeys={
+						selectedKey ? new Set([selectedKey]) : new Set()
+					}
 					onSelectionChange={handleSelectionChange}
 					className="flex-1 overflow-y-auto p-2"
 				>
@@ -190,18 +192,28 @@ export default function MCPServersPage() {
 						}
 					/>
 				)}
-			{panel.type === "create" && (
-				<CreateMcpPanel onDone={() => setPanel({ type: "empty" })} />
-			)}
-			{panel.type === "edit" && selectedGroup && (
-				<EditMcpPanel
-					group={selectedGroup}
-					onDone={() => setPanel({ type: "detail", selectedKey: selectedGroup.mergeKey })}
-				/>
-			)}
-				{(panel.type === "empty" || (panel.type === "detail" && !selectedGroup)) && (
+				{panel.type === "create" && (
+					<CreateMcpPanel
+						onDone={() => setPanel({ type: "empty" })}
+					/>
+				)}
+				{panel.type === "edit" && selectedGroup && (
+					<EditMcpPanel
+						group={selectedGroup}
+						onDone={() =>
+							setPanel({
+								type: "detail",
+								selectedKey: selectedGroup.mergeKey,
+							})
+						}
+					/>
+				)}
+				{(panel.type === "empty" ||
+					(panel.type === "detail" && !selectedGroup)) && (
 					<div className="flex items-center justify-center h-full">
-						<p className="text-sm text-muted">{t("selectServer")}</p>
+						<p className="text-sm text-muted">
+							{t("selectServer")}
+						</p>
 					</div>
 				)}
 			</div>

@@ -35,19 +35,13 @@ export default function ProjectDetailPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Fetch MCPs and Skills for this project
-	const {
-		data: mcps = [],
-		refetch: refetchMcps,
-	} = useQuery({
+	const { data: mcps = [], refetch: refetchMcps } = useQuery({
 		queryKey: ["project-mcps", project?.path],
 		queryFn: () => api.mcps.listAll("all", project?.path),
 		enabled: !!project?.path,
 	});
 
-	const {
-		data: skills = [],
-		refetch: refetchSkills,
-	} = useQuery({
+	const { data: skills = [], refetch: refetchSkills } = useQuery({
 		queryKey: ["project-skills", project?.path],
 		queryFn: () => api.skills.listAll("all", project?.path),
 		enabled: !!project?.path,
@@ -126,9 +120,7 @@ export default function ProjectDetailPage() {
 			<UnifiedResourceList
 				mcps={projectMcps}
 				skills={projectSkills}
-				selectedKey={
-					panel.type === "detail" ? panel.selectedKey : null
-				}
+				selectedKey={panel.type === "detail" ? panel.selectedKey : null}
 				selectedType={
 					panel.type === "detail" ? panel.resourceType : null
 				}
@@ -186,7 +178,9 @@ export default function ProjectDetailPage() {
 					/>
 				)}
 				{(panel.type === "empty" ||
-					(panel.type === "detail" && !selectedMcpGroup && !selectedSkillGroup)) && (
+					(panel.type === "detail" &&
+						!selectedMcpGroup &&
+						!selectedSkillGroup)) && (
 					<div className="flex flex-col items-center justify-center h-full gap-3">
 						<div className="flex items-center justify-center w-16 h-16 rounded-full bg-surface-secondary">
 							<FolderIcon className="size-8 text-muted" />

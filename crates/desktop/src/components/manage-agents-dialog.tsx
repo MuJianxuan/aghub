@@ -10,10 +10,10 @@ import {
 import {
 	Button,
 	Modal,
+	type Selection,
 	Spinner,
 	Tag,
 	TagGroup,
-	type Selection,
 } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
@@ -79,8 +79,12 @@ export function ManageAgentsDialog({
 
 	const currentAgentIds = initialAgentIdsRef.current ?? new Set<string>();
 
-	const toInstall = [...selectedAgents].filter((id) => !currentAgentIds.has(id));
-	const toUninstall = [...currentAgentIds].filter((id) => !selectedAgents.has(id));
+	const toInstall = [...selectedAgents].filter(
+		(id) => !currentAgentIds.has(id),
+	);
+	const toUninstall = [...currentAgentIds].filter(
+		(id) => !selectedAgents.has(id),
+	);
 	const hasChanges = toInstall.length > 0 || toUninstall.length > 0;
 
 	const handleSelectionChange = (keys: Selection) => {
@@ -170,11 +174,7 @@ export function ManageAgentsDialog({
 		onClose();
 	};
 
-	const stepLabels = [
-		t("selectAgents"),
-		t("confirmChanges"),
-		t("result"),
-	];
+	const stepLabels = [t("selectAgents"), t("confirmChanges"), t("result")];
 
 	return (
 		<Modal.Backdrop isOpen={isOpen} onOpenChange={handleClose}>
@@ -189,7 +189,10 @@ export function ManageAgentsDialog({
 						{/* Step Indicator */}
 						<div className="flex items-center justify-center gap-2 mb-6">
 							{[1, 2, 3].map((s, idx) => (
-								<div key={s} className="flex items-center gap-2">
+								<div
+									key={s}
+									className="flex items-center gap-2"
+								>
 									<div
 										className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
 											s < step
@@ -239,19 +242,31 @@ export function ManageAgentsDialog({
 									<TagGroup
 										selectionMode="multiple"
 										selectedKeys={selectedAgents}
-										onSelectionChange={handleSelectionChange}
+										onSelectionChange={
+											handleSelectionChange
+										}
 									>
 										<TagGroup.List className="flex-wrap">
 											{usableAgents.map((agent) => {
-												const isSelected = selectedAgents.has(
-													agent.id,
-												);
+												const isSelected =
+													selectedAgents.has(
+														agent.id,
+													);
 												const isCurrentAgent =
-													currentAgentIds.has(agent.id);
-												const isAdding = isSelected && !isCurrentAgent;
-												const isRemoving = !isSelected && isCurrentAgent;
+													currentAgentIds.has(
+														agent.id,
+													);
+												const isAdding =
+													isSelected &&
+													!isCurrentAgent;
+												const isRemoving =
+													!isSelected &&
+													isCurrentAgent;
 												return (
-													<Tag key={agent.id} id={agent.id}>
+													<Tag
+														key={agent.id}
+														id={agent.id}
+													>
 														<div className="flex items-center gap-1.5">
 															{agent.display_name}
 															{isAdding && (
@@ -270,57 +285,61 @@ export function ManageAgentsDialog({
 							</div>
 						)}
 
-					{/* Step 2: Diff Preview */}
-					{step === 2 && (
-						<div className="space-y-4">
-							{toInstall.length > 0 && (
-								<div>
-									<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
-										{t("toInstall")}
-									</p>
-									<TagGroup selectionMode="none">
-										<TagGroup.List className="flex-wrap">
-											{toInstall.map((id) => (
-												<Tag
-													key={id}
-													id={id}
-													className="bg-success/15 text-success border-success/30"
-												>
-													<div className="flex items-center gap-1.5">
-														{getAgentDisplayName(id)}
-														<PlusIcon className="size-3" />
-													</div>
-												</Tag>
-											))}
-										</TagGroup.List>
-									</TagGroup>
-								</div>
-							)}
-							{toUninstall.length > 0 && (
-								<div>
-									<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
-										{t("toUninstall")}
-									</p>
-									<TagGroup selectionMode="none">
-										<TagGroup.List className="flex-wrap">
-											{toUninstall.map((id) => (
-												<Tag
-													key={id}
-													id={id}
-													className="bg-danger/15 text-danger border-danger/30"
-												>
-													<div className="flex items-center gap-1.5">
-														{getAgentDisplayName(id)}
-														<MinusIcon className="size-3" />
-													</div>
-												</Tag>
-											))}
-										</TagGroup.List>
-									</TagGroup>
-								</div>
-							)}
-						</div>
-					)}
+						{/* Step 2: Diff Preview */}
+						{step === 2 && (
+							<div className="space-y-4">
+								{toInstall.length > 0 && (
+									<div>
+										<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+											{t("toInstall")}
+										</p>
+										<TagGroup selectionMode="none">
+											<TagGroup.List className="flex-wrap">
+												{toInstall.map((id) => (
+													<Tag
+														key={id}
+														id={id}
+														className="bg-success/15 text-success border-success/30"
+													>
+														<div className="flex items-center gap-1.5">
+															{getAgentDisplayName(
+																id,
+															)}
+															<PlusIcon className="size-3" />
+														</div>
+													</Tag>
+												))}
+											</TagGroup.List>
+										</TagGroup>
+									</div>
+								)}
+								{toUninstall.length > 0 && (
+									<div>
+										<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+											{t("toUninstall")}
+										</p>
+										<TagGroup selectionMode="none">
+											<TagGroup.List className="flex-wrap">
+												{toUninstall.map((id) => (
+													<Tag
+														key={id}
+														id={id}
+														className="bg-danger/15 text-danger border-danger/30"
+													>
+														<div className="flex items-center gap-1.5">
+															{getAgentDisplayName(
+																id,
+															)}
+															<MinusIcon className="size-3" />
+														</div>
+													</Tag>
+												))}
+											</TagGroup.List>
+										</TagGroup>
+									</div>
+								)}
+							</div>
+						)}
 
 						{/* Step 3: Result */}
 						{step === 3 && (
@@ -330,7 +349,9 @@ export function ManageAgentsDialog({
 										{t("noChanges")}
 									</p>
 								)}
-								{results.some((r) => r.status === "pending") && (
+								{results.some(
+									(r) => r.status === "pending",
+								) && (
 									<div className="flex items-center justify-center py-6">
 										<Spinner size="lg" />
 									</div>
@@ -355,13 +376,20 @@ export function ManageAgentsDialog({
 											</p>
 											<p className="text-xs text-muted">
 												{result.status === "pending"
-													? result.action === "install"
+													? result.action ===
+														"install"
 														? t("installing")
 														: t("uninstalling")
-													: result.status === "success"
-														? result.action === "install"
-															? t("installSuccess")
-															: t("uninstallSuccess")
+													: result.status ===
+															"success"
+														? result.action ===
+															"install"
+															? t(
+																	"installSuccess",
+																)
+															: t(
+																	"uninstallSuccess",
+																)
 														: result.error}
 											</p>
 										</div>
@@ -374,10 +402,7 @@ export function ManageAgentsDialog({
 					<Modal.Footer>
 						{step === 1 && (
 							<>
-								<Button
-									slot="close"
-									variant="secondary"
-								>
+								<Button slot="close" variant="secondary">
 									{t("cancel")}
 								</Button>
 								<Button
@@ -408,10 +433,7 @@ export function ManageAgentsDialog({
 							</>
 						)}
 						{step === 3 && (
-							<Button
-								slot="close"
-								variant="secondary"
-							>
+							<Button slot="close" variant="secondary">
 								{t("done")}
 							</Button>
 						)}

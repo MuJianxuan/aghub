@@ -1,3 +1,4 @@
+import { CodeBracketIcon } from "@heroicons/react/24/solid";
 import {
 	Button,
 	Description,
@@ -16,7 +17,6 @@ import {
 	TextField,
 	Tooltip,
 } from "@heroui/react";
-import { CodeBracketIcon } from "@heroicons/react/24/solid";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -207,9 +207,9 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 					setArgs(config.args.join(" "));
 				}
 				if (config.env && typeof config.env === "object") {
-					const envVarArray: EnvVar[] = Object.entries(config.env).map(
-						([key, value]) => ({ key, value }),
-					);
+					const envVarArray: EnvVar[] = Object.entries(
+						config.env,
+					).map(([key, value]) => ({ key, value }));
 					setEnvVars(envVarArray);
 				}
 			} else if (config.url) {
@@ -270,7 +270,6 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 									value={name}
 									onChange={(e) => setName(e.target.value)}
 									placeholder={t("serverName")}
-
 								/>
 							</TextField>
 						</Fieldset.Group>
@@ -281,11 +280,13 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 						<Fieldset.Group>
 							<Select
 								className="w-full"
-
 								selectedKey={transportType}
 								onSelectionChange={(key) =>
 									setTransportType(
-										key as "stdio" | "sse" | "streamable_http",
+										key as
+											| "stdio"
+											| "sse"
+											| "streamable_http",
 									)
 								}
 							>
@@ -296,7 +297,10 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 								</Select.Trigger>
 								<Select.Popover>
 									<ListBox>
-										<ListBox.Item id="stdio" textValue="stdio">
+										<ListBox.Item
+											id="stdio"
+											textValue="stdio"
+										>
 											stdio
 										</ListBox.Item>
 										<ListBox.Item id="sse" textValue="sse">
@@ -322,25 +326,29 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 									<Label>{t("command")}</Label>
 									<Input
 										value={command}
-										onChange={(e) => setCommand(e.target.value)}
+										onChange={(e) =>
+											setCommand(e.target.value)
+										}
 										placeholder="npx"
-
 									/>
 								</TextField>
 								<TextField className="w-full">
 									<Label>{t("args")}</Label>
 									<Input
 										value={args}
-										onChange={(e) => setArgs(e.target.value)}
+										onChange={(e) =>
+											setArgs(e.target.value)
+										}
 										placeholder="-y @modelcontextprotocol/server-filesystem"
-
-
 									/>
 									<Description>{t("argsHelp")}</Description>
 								</TextField>
 								<div className="flex flex-col gap-2">
 									<Label>{t("env")}</Label>
-									<EnvEditor value={envVars} onChange={setEnvVars} />
+									<EnvEditor
+										value={envVars}
+										onChange={setEnvVars}
+									/>
 									<Description>{t("envHelp")}</Description>
 								</div>
 							</Fieldset.Group>
@@ -358,25 +366,25 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 										value={url}
 										onChange={(e) => setUrl(e.target.value)}
 										placeholder="http://localhost:3000/sse"
-
-
 									/>
 								</TextField>
 								<TextField className="w-full">
 									<Label>{t("headers")}</Label>
 									<TextArea
 										value={headers}
-										onChange={(e) => setHeaders(e.target.value)}
+										onChange={(e) =>
+											setHeaders(e.target.value)
+										}
 										placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
 										className="min-h-[80px] font-mono"
-
-
 									/>
-									<Description>{t("headersHelp")}</Description>
+									<Description>
+										{t("headersHelp")}
+									</Description>
 								</TextField>
 							</Fieldset.Group>
 						</Fieldset>
-                  )}
+					)}
 
 					{/* Agent Selection */}
 					<Fieldset>
@@ -388,7 +396,9 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 										<p className="font-medium mb-1">
 											{t("noAgentsAvailable")}
 										</p>
-										<p className="text-xs">{t("noAgentsAvailableHelp")}</p>
+										<p className="text-xs">
+											{t("noAgentsAvailableHelp")}
+										</p>
 									</div>
 								</div>
 							) : (
@@ -423,10 +433,14 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 										<Input
 											type="number"
 											value={timeout}
-											onChange={(e) => setTimeoutValue(e.target.value)}
+											onChange={(e) =>
+												setTimeoutValue(e.target.value)
+											}
 											placeholder="60"
 										/>
-										<Description>{t("timeoutHelp")}</Description>
+										<Description>
+											{t("timeoutHelp")}
+										</Description>
 									</TextField>
 								</Fieldset.Group>
 							</Fieldset>
@@ -442,7 +456,9 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 							onPress={handleCreate}
 							isDisabled={!isValid() || createMutation.isPending}
 						>
-							{createMutation.isPending ? t("creating") : t("create")}
+							{createMutation.isPending
+								? t("creating")
+								: t("create")}
 						</Button>
 					</div>
 				</Form>
@@ -466,14 +482,22 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 										<Label>{t("jsonConfig")}</Label>
 										<TextArea
 											value={jsonText}
-											onChange={(e) => setJsonText(e.target.value)}
-											placeholder={t("jsonConfigPlaceholder")}
+											onChange={(e) =>
+												setJsonText(e.target.value)
+											}
+											placeholder={t(
+												"jsonConfigPlaceholder",
+											)}
 											className="min-h-[300px] font-mono text-sm"
 										/>
-										<Description>{t("jsonConfigHelp")}</Description>
+										<Description>
+											{t("jsonConfigHelp")}
+										</Description>
 									</TextField>
 									{parseError && (
-										<div className="text-sm text-danger">{parseError}</div>
+										<div className="text-sm text-danger">
+											{parseError}
+										</div>
 									)}
 								</Fieldset.Group>
 							</Fieldset>
@@ -489,7 +513,10 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 							>
 								{t("cancel")}
 							</Button>
-							<Button onPress={handleImportJson} isDisabled={!jsonText.trim()}>
+							<Button
+								onPress={handleImportJson}
+								isDisabled={!jsonText.trim()}
+							>
 								{t("import")}
 							</Button>
 						</Modal.Footer>

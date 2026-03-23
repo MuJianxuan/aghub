@@ -16,7 +16,10 @@ interface SkillDetailProps {
 	projectPath?: string;
 }
 
-export function SkillDetail({ group, projectPath: _projectPath }: SkillDetailProps) {
+export function SkillDetail({
+	group,
+	projectPath: _projectPath,
+}: SkillDetailProps) {
 	const { t } = useTranslation();
 	const skill = group.items[0];
 

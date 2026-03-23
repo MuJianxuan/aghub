@@ -1,7 +1,7 @@
 # DESKTOP CRATE KNOWLEDGE BASE
 
-**Crate**: `aghub-desktop` — Tauri v2 desktop application  
-**Stack**: React 19 + TypeScript 5.8 + HeroUI v3 + Tailwind CSS v4  
+**Crate**: `aghub-desktop` — Tauri v2 desktop application\
+**Stack**: React 19 + TypeScript 5.8 + HeroUI v3 + Tailwind CSS v4\
 **Package Manager**: bun (REQUIRED)
 
 ## STRUCTURE
@@ -32,12 +32,14 @@ crates/desktop/
 **STOP**: What you remember about HeroUI React v3 is WRONG for this project.
 
 ### v3 Differences (vs v2):
+
 - **NO Provider needed** — was required in v2
 - Compound components pattern (not flat props)
 - Tailwind CSS v4 (not v3)
 - Package: `@heroui/react@beta` (not `@heroui/system`)
 
 ### Before Any UI Task:
+
 1. Search docs in `./.heroui-docs/react/`
 2. If docs missing, run: `heroui agents-md --react --output AGENTS.md`
 
@@ -60,16 +62,19 @@ bun run tauri build  # Build Tauri app
 ## CONVENTIONS
 
 ### Package Management
+
 - **ALWAYS use `bun`** — never npm/yarn/pnpm
 - Documented in CLAUDE.md: "Always use `bun` for package management"
 
 ### UI Development
+
 - **ALWAYS use HeroUI v3** components
 - **ALWAYS check HeroUI v3 docs** before implementing
 - Tailwind v4 utility classes
 - Strict TypeScript (`strict: true`, `noUnusedLocals: true`)
 
 ### Vite Configuration
+
 - Port: 1420 (strict)
 - HMR port: 1421 (when TAURI_DEV_HOST set)
 - `src-tauri/**` excluded from file watching
@@ -77,6 +82,7 @@ bun run tauri build  # Build Tauri app
 ## TAURI CONFIGURATION
 
 From `tauri.conf.json`:
+
 - Product name: `aghub-desktop`
 - Window: 1280x800, overlay titlebar
 - Permissions: window controls, opener, dialog, store, decorum
@@ -84,16 +90,19 @@ From `tauri.conf.json`:
 ## ANTI-PATTERNS
 
 ### HeroUI
+
 - NEVER use v2 patterns (Provider, framer-motion)
 - NEVER assume v2 knowledge applies
 - ALWAYS verify component API in v3 docs
 
 ### Frontend
+
 - NEVER use npm/yarn/pnpm (bun only)
 - NEVER remove the `// @ts-expect-error process is a nodejs global` comment in vite.config.ts
 - NEVER use pure black (#000) or pure white (#fff) — always tint
 
 ### Desktop Integration
+
 - NEVER modify Tauri capabilities without security review
 - NEVER expose system APIs without explicit permissions in `capabilities/`
 
@@ -102,4 +111,4 @@ From `tauri.conf.json`:
 - Tauri backend (`src-tauri/src/`) calls into `aghub-core` crate
 - Window controls use `decorum` plugin for custom titlebar
 - VS Code extensions recommended: `tauri-apps.tauri-vscode`, `rust-lang.rust-analyzer`
-</content>
+  </content>

@@ -7,13 +7,7 @@ import {
 	UserGroupIcon,
 	WifiIcon,
 } from "@heroicons/react/24/solid";
-import {
-	Button,
-	Chip,
-	Modal,
-	Table,
-	Tooltip,
-} from "@heroui/react";
+import { Button, Chip, Modal, Table, Tooltip } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -203,7 +197,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 							<Table.ScrollContainer>
 								<Table.Content aria-label="Transport details">
 									<Table.Header>
-										<Table.Column isRowHeader className="w-24">
+										<Table.Column
+											isRowHeader
+											className="w-24"
+										>
 											{t("type")}
 										</Table.Column>
 										<Table.Column>Value</Table.Column>
@@ -222,12 +219,15 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 														{t("command")}
 													</Table.Cell>
 													<Table.Cell>
-														{group.transport.command}
+														{
+															group.transport
+																.command
+														}
 													</Table.Cell>
 												</Table.Row>
 												{group.transport.args &&
-													group.transport.args.length >
-														0 && (
+													group.transport.args
+														.length > 0 && (
 														<Table.Row>
 															<Table.Cell>
 																{t("args")}
@@ -247,7 +247,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 											group.transport.type ===
 												"streamable_http") && (
 											<Table.Row>
-												<Table.Cell>{t("url")}</Table.Cell>
+												<Table.Cell>
+													{t("url")}
+												</Table.Cell>
 												<Table.Cell>
 													<code className="font-mono text-xs break-all">
 														{group.transport.url}

@@ -30,7 +30,11 @@ interface EditMcpPanelProps {
 	projectPath?: string;
 }
 
-export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) {
+export function EditMcpPanel({
+	group,
+	onDone,
+	projectPath,
+}: EditMcpPanelProps) {
 	const { t } = useTranslation();
 	const { baseUrl } = useServer();
 	const api = createApi(baseUrl);
@@ -96,10 +100,12 @@ export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) 
 			setArgs(primary.transport.args?.join(" ") ?? "");
 			setEnvVars(
 				primary.transport.env
-					? Object.entries(primary.transport.env).map(([key, value]) => ({
-							key,
-							value,
-						}))
+					? Object.entries(primary.transport.env).map(
+							([key, value]) => ({
+								key,
+								value,
+							}),
+						)
 					: [],
 			);
 			setUrl("");
@@ -241,7 +247,7 @@ export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) 
 				)}
 
 				<Form>
-						<Fieldset>
+					<Fieldset>
 						<Fieldset.Group>
 							<TextField className="w-full">
 								<Label>{t("name")}</Label>
@@ -254,14 +260,17 @@ export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) 
 						</Fieldset.Group>
 					</Fieldset>
 
-						<Fieldset>
+					<Fieldset>
 						<Fieldset.Group>
 							<Select
 								className="w-full"
 								selectedKey={transportType}
 								onSelectionChange={(key) =>
 									setTransportType(
-										key as "stdio" | "sse" | "streamable_http",
+										key as
+											| "stdio"
+											| "sse"
+											| "streamable_http",
 									)
 								}
 							>
@@ -272,7 +281,10 @@ export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) 
 								</Select.Trigger>
 								<Select.Popover>
 									<ListBox>
-										<ListBox.Item id="stdio" textValue="stdio">
+										<ListBox.Item
+											id="stdio"
+											textValue="stdio"
+										>
 											stdio
 										</ListBox.Item>
 										<ListBox.Item id="sse" textValue="sse">
@@ -290,14 +302,16 @@ export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) 
 						</Fieldset.Group>
 					</Fieldset>
 
-						{transportType === "stdio" && (
+					{transportType === "stdio" && (
 						<Fieldset>
 							<Fieldset.Group>
 								<TextField className="w-full">
 									<Label>{t("command")}</Label>
 									<Input
 										value={command}
-										onChange={(e) => setCommand(e.target.value)}
+										onChange={(e) =>
+											setCommand(e.target.value)
+										}
 										placeholder="npx"
 									/>
 								</TextField>
@@ -305,21 +319,26 @@ export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) 
 									<Label>{t("args")}</Label>
 									<Input
 										value={args}
-										onChange={(e) => setArgs(e.target.value)}
+										onChange={(e) =>
+											setArgs(e.target.value)
+										}
 										placeholder="-y @modelcontextprotocol/server-filesystem"
 									/>
 									<Description>{t("argsHelp")}</Description>
 								</TextField>
 								<div className="flex flex-col gap-2">
 									<Label>{t("env")}</Label>
-									<EnvEditor value={envVars} onChange={setEnvVars} />
+									<EnvEditor
+										value={envVars}
+										onChange={setEnvVars}
+									/>
 									<Description>{t("envHelp")}</Description>
 								</div>
 							</Fieldset.Group>
 						</Fieldset>
 					)}
 
-						{(transportType === "sse" ||
+					{(transportType === "sse" ||
 						transportType === "streamable_http") && (
 						<Fieldset>
 							<Fieldset.Group>
@@ -335,17 +354,21 @@ export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) 
 									<Label>{t("headers")}</Label>
 									<TextArea
 										value={headers}
-										onChange={(e) => setHeaders(e.target.value)}
+										onChange={(e) =>
+											setHeaders(e.target.value)
+										}
 										placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
 										className="min-h-[80px] font-mono"
 									/>
-									<Description>{t("headersHelp")}</Description>
+									<Description>
+										{t("headersHelp")}
+									</Description>
 								</TextField>
 							</Fieldset.Group>
 						</Fieldset>
 					)}
 
-						<Disclosure className="pt-4">
+					<Disclosure className="pt-4">
 						<Disclosure.Trigger className="flex items-center justify-between w-full">
 							{t("advanced")}
 							<Disclosure.Indicator />
@@ -363,14 +386,16 @@ export function EditMcpPanel({ group, onDone, projectPath }: EditMcpPanelProps) 
 											}
 											placeholder="60"
 										/>
-										<Description>{t("timeoutHelp")}</Description>
+										<Description>
+											{t("timeoutHelp")}
+										</Description>
 									</TextField>
 								</Fieldset.Group>
 							</Fieldset>
 						</Disclosure.Content>
 					</Disclosure>
 
-						<div className="flex justify-end gap-2 pt-2">
+					<div className="flex justify-end gap-2 pt-2">
 						<Button variant="secondary" onPress={onDone}>
 							{t("cancel")}
 						</Button>

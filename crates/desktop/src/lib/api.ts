@@ -55,7 +55,9 @@ export function createApi(baseUrl: string) {
 					.get("agents/all/skills", {
 						searchParams: {
 							scope,
-							...(projectRoot ? { project_root: projectRoot } : {}),
+							...(projectRoot
+								? { project_root: projectRoot }
+								: {}),
 						},
 					})
 					.json();
@@ -70,7 +72,9 @@ export function createApi(baseUrl: string) {
 					.post(`agents/${agent}/skills`, {
 						searchParams: {
 							scope,
-							...(projectRoot ? { project_root: projectRoot } : {}),
+							...(projectRoot
+								? { project_root: projectRoot }
+								: {}),
 						},
 						json: data,
 					})
@@ -86,7 +90,9 @@ export function createApi(baseUrl: string) {
 					.get("agents/all/mcps", {
 						searchParams: {
 							scope,
-							...(projectRoot ? { project_root: projectRoot } : {}),
+							...(projectRoot
+								? { project_root: projectRoot }
+								: {}),
 						},
 					})
 					.json();
@@ -116,7 +122,9 @@ export function createApi(baseUrl: string) {
 					.post(`agents/${agent}/mcps`, {
 						searchParams: {
 							scope,
-							...(projectRoot ? { project_root: projectRoot } : {}),
+							...(projectRoot
+								? { project_root: projectRoot }
+								: {}),
 						},
 						json: body,
 					})
@@ -133,7 +141,9 @@ export function createApi(baseUrl: string) {
 					.put(`agents/${agent}/mcps/${name}`, {
 						searchParams: {
 							scope,
-							...(projectRoot ? { project_root: projectRoot } : {}),
+							...(projectRoot
+								? { project_root: projectRoot }
+								: {}),
 						},
 						json: body,
 					})
@@ -149,7 +159,9 @@ export function createApi(baseUrl: string) {
 					.delete(`agents/${agent}/mcps/${name}`, {
 						searchParams: {
 							scope,
-							...(projectRoot ? { project_root: projectRoot } : {}),
+							...(projectRoot
+								? { project_root: projectRoot }
+								: {}),
 						},
 					})
 					.then(() => undefined);

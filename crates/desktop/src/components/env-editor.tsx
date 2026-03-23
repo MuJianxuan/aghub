@@ -1,8 +1,12 @@
-import { useTranslation } from "react-i18next";
-import { produce } from "immer";
+import {
+	ClipboardDocumentIcon,
+	PlusIcon,
+	XMarkIcon,
+} from "@heroicons/react/24/solid";
 import { Button, Input } from "@heroui/react";
-import { XMarkIcon, PlusIcon, ClipboardDocumentIcon } from "@heroicons/react/24/solid";
 import * as dotenv from "dotenv";
+import { produce } from "immer";
+import { useTranslation } from "react-i18next";
 
 export interface EnvVar {
 	key: string;
@@ -75,14 +79,18 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 						variant="secondary"
 						placeholder={t("envEditor.keyPlaceholder")}
 						value={pair.key}
-						onChange={(e) => handleChange(index, "key", e.target.value)}
+						onChange={(e) =>
+							handleChange(index, "key", e.target.value)
+						}
 						className="flex-1"
 					/>
 					<Input
 						variant="secondary"
 						placeholder={t("envEditor.valuePlaceholder")}
 						value={pair.value}
-						onChange={(e) => handleChange(index, "value", e.target.value)}
+						onChange={(e) =>
+							handleChange(index, "value", e.target.value)
+						}
 						className="flex-1"
 					/>
 					<Button
@@ -101,7 +109,11 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 					<PlusIcon className="w-4 h-4" />
 					{t("envEditor.addKeypair")}
 				</Button>
-				<Button variant="ghost" size="sm" onPress={handleImportFromClipboard}>
+				<Button
+					variant="ghost"
+					size="sm"
+					onPress={handleImportFromClipboard}
+				>
 					<ClipboardDocumentIcon className="w-4 h-4" />
 					{t("envEditor.importFromClipboard")}
 				</Button>

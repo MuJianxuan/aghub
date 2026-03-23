@@ -1,5 +1,11 @@
 import { ArrowPathIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { Button, Label, ListBox, SearchField, type Selection } from "@heroui/react";
+import {
+	Button,
+	Label,
+	ListBox,
+	SearchField,
+	type Selection,
+} from "@heroui/react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreateSkillPanel } from "../../components/create-skill-panel";

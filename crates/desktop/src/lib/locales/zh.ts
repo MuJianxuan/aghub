@@ -103,6 +103,32 @@ export default {
 	jsonConfigPlaceholder:
 		'{\n  "mcpServers": {\n    "server-name": {\n      "command": "npx",\n      "args": ["-y", "package-name"]\n    }\n  }\n}',
 
+	// Manage Agents Dialog
+	manageAgents: "管理代理",
+	manageAgentsTooltip: "管理哪些代理安装了此 MCP 服务器",
+	selectAgents: "选择代理",
+	confirmChanges: "确认更改",
+	result: "结果",
+	next: "下一步",
+	back: "返回",
+	apply: "应用",
+	applying: "应用中...",
+	done: "完成",
+	toInstall: "将要安装",
+	toUninstall: "将要卸载",
+	noChanges: "没有需要应用的更改。",
+	installing: "安装中...",
+	uninstalling: "卸载中...",
+	installSuccess: "安装成功",
+	uninstallSuccess: "卸载成功",
+	installFailed: "安装失败",
+	uninstallFailed: "卸载失败",
+	selectAgentsForMcp: "选择哪些代理应安装此 MCP 服务器：",
+	noTargetAgents: "没有可用的代理。",
+	copyTooltip: "复制配置",
+	editTooltip: "编辑",
+	deleteTooltip: "删除",
+
 	// Projects
 	addProject: "添加项目",
 	editProject: "编辑项目",

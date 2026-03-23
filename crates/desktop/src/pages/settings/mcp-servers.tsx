@@ -6,6 +6,7 @@ import {
 	PencilIcon,
 	PlusIcon,
 	TrashIcon,
+	UserGroupIcon,
 	WifiIcon,
 } from "@heroicons/react/24/solid";
 import {
@@ -17,12 +18,14 @@ import {
 	SearchField,
 	type Selection,
 	Table,
+	Tooltip,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
 import { EditMcpDialog } from "../../components/edit-mcp-dialog";
+import { ManageAgentsDialog } from "../../components/manage-agents-dialog";
 import { useMcps } from "../../hooks/use-mcps";
 import { createApi } from "../../lib/api";
 import type { McpResponse } from "../../lib/api-types";
@@ -207,6 +210,7 @@ function McpDetail({ group }: { group: McpGroup }) {
 	const { t } = useTranslation();
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [manageDialogOpen, setManageDialogOpen] = useState(false);
 	const { baseUrl } = useServer();
 	const api = createApi(baseUrl);
 	const queryClient = useQueryClient();
@@ -254,36 +258,66 @@ function McpDetail({ group }: { group: McpGroup }) {
 							{group.items[0].name}
 						</h2>
 						<div className="flex items-center gap-1">
-							<Button
-								isIconOnly
-								variant="ghost"
-								size="sm"
-								className="text-muted hover:text-foreground shrink-0"
-								aria-label={t("copy")}
-								onPress={handleCopy}
-							>
-								<DocumentDuplicateIcon className="size-4" />
-							</Button>
-							<Button
-								isIconOnly
-								variant="ghost"
-								size="sm"
-								className="text-muted hover:text-foreground shrink-0"
-								aria-label={t("edit")}
-								onPress={() => setEditDialogOpen(true)}
-							>
-								<PencilIcon className="size-4" />
-							</Button>
-							<Button
-								isIconOnly
-								variant="ghost"
-								size="sm"
-								className="text-muted hover:text-danger shrink-0"
-								aria-label={t("remove")}
-								onPress={() => setDeleteDialogOpen(true)}
-							>
-								<TrashIcon className="size-4" />
-							</Button>
+							<Tooltip delay={0}>
+								<Button
+									isIconOnly
+									variant="ghost"
+									size="sm"
+									className="text-muted hover:text-foreground shrink-0"
+									aria-label={t("manageAgents")}
+									onPress={() => setManageDialogOpen(true)}
+								>
+									<UserGroupIcon className="size-4" />
+								</Button>
+								<Tooltip.Content>
+									{t("manageAgentsTooltip")}
+								</Tooltip.Content>
+							</Tooltip>
+							<Tooltip delay={0}>
+								<Button
+									isIconOnly
+									variant="ghost"
+									size="sm"
+									className="text-muted hover:text-foreground shrink-0"
+									aria-label={t("copy")}
+									onPress={handleCopy}
+								>
+									<DocumentDuplicateIcon className="size-4" />
+								</Button>
+								<Tooltip.Content>
+									{t("copyTooltip")}
+								</Tooltip.Content>
+							</Tooltip>
+							<Tooltip delay={0}>
+								<Button
+									isIconOnly
+									variant="ghost"
+									size="sm"
+									className="text-muted hover:text-foreground shrink-0"
+									aria-label={t("edit")}
+									onPress={() => setEditDialogOpen(true)}
+								>
+									<PencilIcon className="size-4" />
+								</Button>
+								<Tooltip.Content>
+									{t("editTooltip")}
+								</Tooltip.Content>
+							</Tooltip>
+							<Tooltip delay={0}>
+								<Button
+									isIconOnly
+									variant="ghost"
+									size="sm"
+									className="text-muted hover:text-danger shrink-0"
+									aria-label={t("remove")}
+									onPress={() => setDeleteDialogOpen(true)}
+								>
+									<TrashIcon className="size-4" />
+								</Button>
+								<Tooltip.Content>
+									{t("deleteTooltip")}
+								</Tooltip.Content>
+							</Tooltip>
 						</div>
 					</div>
 
@@ -458,6 +492,13 @@ function McpDetail({ group }: { group: McpGroup }) {
 				group={group}
 				isOpen={editDialogOpen}
 				onClose={() => setEditDialogOpen(false)}
+			/>
+
+			{/* Manage Agents Dialog */}
+			<ManageAgentsDialog
+				group={group}
+				isOpen={manageDialogOpen}
+				onClose={() => setManageDialogOpen(false)}
 			/>
 		</>
 	);

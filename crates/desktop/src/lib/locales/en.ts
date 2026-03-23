@@ -106,6 +106,32 @@ export default {
 	jsonConfigPlaceholder:
 		'{\n  "mcpServers": {\n    "server-name": {\n      "command": "npx",\n      "args": ["-y", "package-name"]\n    }\n  }\n}',
 
+	// Manage Agents Dialog
+	manageAgents: "Manage Agents",
+	manageAgentsTooltip: "Manage which agents have this MCP server",
+	selectAgents: "Select Agents",
+	confirmChanges: "Confirm Changes",
+	result: "Result",
+	next: "Next",
+	back: "Back",
+	apply: "Apply",
+	applying: "Applying...",
+	done: "Done",
+	toInstall: "To install",
+	toUninstall: "To uninstall",
+	noChanges: "No changes to apply.",
+	installing: "Installing...",
+	uninstalling: "Uninstalling...",
+	installSuccess: "Installed successfully",
+	uninstallSuccess: "Uninstalled successfully",
+	installFailed: "Failed to install",
+	uninstallFailed: "Failed to uninstall",
+	selectAgentsForMcp: "Select which agents should have this MCP server:",
+	noTargetAgents: "No available agents.",
+	copyTooltip: "Copy config",
+	editTooltip: "Edit",
+	deleteTooltip: "Delete",
+
 	// Projects
 	addProject: "Add Project",
 	editProject: "Edit Project",

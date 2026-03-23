@@ -4,8 +4,8 @@ import {
 	ExclamationTriangleIcon,
 	PencilIcon,
 	PlusIcon,
-	WifiIcon,
 	TrashIcon,
+	WifiIcon,
 } from "@heroicons/react/24/solid";
 import {
 	Button,

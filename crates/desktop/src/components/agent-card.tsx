@@ -1,5 +1,6 @@
 import { Card, Switch } from "@heroui/react";
 import { useTranslation } from "react-i18next";
+import clsx from "clsx";
 import { AgentIcon } from "../lib/agent-icons";
 import type { AvailableAgent } from "../providers/agent-availability";
 
@@ -18,7 +19,7 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 	if (has_cli) sources.push(t("cli"));
 
 	return (
-		<Card className={agent.isDisabled ? "opacity-50" : ""}>
+		<Card className={clsx(agent.isDisabled && "opacity-50")}>
 			<Card.Content className="flex flex-row items-center gap-3">
 				<AgentIcon id={agent.id} name={agent.display_name} />
 				<div className="flex-1 min-w-0">

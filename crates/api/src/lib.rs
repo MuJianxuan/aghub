@@ -30,6 +30,7 @@ pub async fn start(options: ApiOptions) -> Result<(), rocket::Error> {
     }
     .to_cors().unwrap();
     rocket::custom(config)
+        .attach(cors)
         .mount(
             "/api/v1",
             routes![
@@ -62,7 +63,6 @@ pub async fn start(options: ApiOptions) -> Result<(), rocket::Error> {
             ],
         )
         .mount("/", rocket_cors::catch_all_options_routes())
-        .attach(cors)
         .launch()
         .await
         .map(|_| ())

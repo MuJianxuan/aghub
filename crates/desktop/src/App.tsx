@@ -1,4 +1,4 @@
-import { Suspense } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Router, Route, Switch } from "wouter"
 import { Spinner } from "@heroui/react"
@@ -6,6 +6,7 @@ import { ServerProvider } from "./providers/server"
 import { ThemeProvider } from "./providers/theme"
 import { SettingsLayout } from "./layouts/settings-layout"
 import { ErrorBoundary } from "./components/ui/error-boundary"
+import { initStore } from "./lib/store"
 import "./lib/i18n"
 import HomePage from "./pages/home"
 import SkillsPage from "./pages/settings/skills"
@@ -35,6 +36,24 @@ function SkillsPageSkeleton() {
 }
 
 function App() {
+  const [isStoreReady, setIsStoreReady] = useState(false)
+
+  useEffect(() => {
+    initStore()
+      .then(() => setIsStoreReady(true))
+      .catch((err) => {
+        console.error("Failed to initialize store:", err)
+      })
+  }, [])
+
+  if (!isStoreReady) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>

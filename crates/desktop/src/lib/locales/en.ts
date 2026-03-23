@@ -11,6 +11,7 @@ export default {
   edit: "Edit",
   save: "Save",
   cancel: "Cancel",
+  create: "Create",
 
   // Settings
   appearance: "Appearance",

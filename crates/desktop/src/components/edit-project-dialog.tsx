@@ -106,7 +106,13 @@ export function CreateProjectDialog({ isOpen, onClose }: CreateProjectDialogProp
     if (name.trim() && path.trim()) {
       addProject.mutate(
         { name: name.trim(), path: path.trim() },
-        { onSuccess: onClose }
+        {
+          onSuccess: onClose,
+          onError: (error) => {
+            console.error("Failed to create project:", error)
+            alert(`Failed to create project: ${error}`)
+          }
+        }
       )
     }
   }
@@ -154,7 +160,7 @@ export function CreateProjectDialog({ isOpen, onClose }: CreateProjectDialogProp
               {t("cancel")}
             </Button>
             <Button onPress={handleSave} isDisabled={!name.trim() || !path.trim()}>
-              {t("save")}
+              {t("create")}
             </Button>
           </Modal.Footer>
         </Modal.Dialog>

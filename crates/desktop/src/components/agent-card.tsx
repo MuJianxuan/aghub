@@ -1,4 +1,4 @@
-import { Card, Switch } from "@heroui/react";
+import { Card, Chip, Switch } from "@heroui/react";
 import { AgentIcon } from "../lib/agent-icons";
 import type { AvailableAgent } from "../providers/agent-availability";
 
@@ -9,17 +9,31 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
+	const { has_global_directory, has_cli } = agent.availability;
+
 	return (
-		<Card variant="default">
-			<Card.Content className="p-3">
+		<Card>
+			<Card.Content>
 				<div className="flex items-center gap-3">
 					{/* Icon */}
 					<AgentIcon id={agent.id} name={agent.display_name} />
 
-					{/* Name */}
+					{/* Name and detection source */}
 					<div className="flex-1 min-w-0">
 						<div className="font-medium text-foreground truncate">
 							{agent.display_name}
+						</div>
+						<div className="flex items-center gap-1.5 mt-0.5">
+							{has_global_directory && (
+								<Chip size="sm" variant="soft">
+									config
+								</Chip>
+							)}
+							{has_cli && (
+								<Chip size="sm" variant="soft">
+									cli
+								</Chip>
+							)}
 						</div>
 					</div>
 

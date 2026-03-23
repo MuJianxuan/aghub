@@ -1,11 +1,12 @@
 import {
+	CommandLineIcon,
 	DocumentDuplicateIcon,
 	ExclamationTriangleIcon,
 	PencilIcon,
 	TrashIcon,
 	UserGroupIcon,
+	WifiIcon,
 } from "@heroicons/react/24/solid";
-import { CommandLineIcon, WifiIcon } from "@heroicons/react/24/solid";
 import {
 	Button,
 	Chip,
@@ -21,7 +22,7 @@ import type { McpResponse, TransportDto } from "../lib/api-types";
 import { useServer } from "../providers/server";
 import { ManageAgentsDialog } from "./manage-agents-dialog";
 
-// Export icon getters for reuse
+// Export icon getter for reuse - uses transport-specific icons for visual distinction
 export function getMcpTransportIcon(transport: TransportDto) {
 	if (transport.type === "stdio") {
 		return <CommandLineIcon className="size-4 shrink-0" />;

@@ -22,6 +22,7 @@ interface ProjectListItemProps {
 function ProjectListItem({ project, isActive, onEdit }: ProjectListItemProps) {
   const { t } = useTranslation();
   const removeProject = useRemoveProject();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleAction = (key: React.Key) => {
     const keyStr = String(key);
@@ -32,22 +33,27 @@ function ProjectListItem({ project, isActive, onEdit }: ProjectListItemProps) {
     }
   };
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsOpen(true);
+  };
+
   return (
-    <Dropdown>
-      <Link href={`/projects/${project.id}`}>
-        <div
-          className={cn(
-            "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors cursor-pointer select-none",
-            isActive
-              ? "bg-accent/10 text-foreground font-medium"
-              : "text-muted hover:bg-surface-secondary hover:text-foreground",
-          )}
-        >
-          <FolderIcon className="size-4 shrink-0" />
-          <span className="truncate">{project.name}</span>
-        </div>
+    <Dropdown isOpen={isOpen} onOpenChange={setIsOpen}>
+      <Link
+        href={`/projects/${project.id}`}
+        onContextMenu={handleContextMenu}
+        className={cn(
+          "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors cursor-pointer select-none",
+          isActive
+            ? "bg-accent/10 text-foreground font-medium"
+            : "text-muted hover:bg-surface-secondary hover:text-foreground",
+        )}
+      >
+        <FolderIcon className="size-4 shrink-0" />
+        <span className="truncate">{project.name}</span>
       </Link>
-      <Dropdown.Popover>
+      <Dropdown.Popover placement="bottom start">
         <Dropdown.Menu onAction={handleAction}>
           <Dropdown.Item id="edit" textValue={t("edit")}>
             <Label>{t("edit")}</Label>

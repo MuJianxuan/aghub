@@ -8,6 +8,7 @@ pub struct CapabilitiesDto {
 	pub mcp_remote: bool,
 	pub mcp_enable_disable: bool,
 	pub skills: bool,
+	pub skills_mutable: bool,
 	pub universal_skills: bool,
 }
 
@@ -37,6 +38,8 @@ pub fn list_agents() -> Json<Vec<AgentInfo>> {
 				mcp_remote: d.capabilities.mcp_remote,
 				mcp_enable_disable: d.capabilities.mcp_enable_disable,
 				skills: d.capabilities.skills,
+				skills_mutable: d.capabilities.skills
+					&& d.global_skills_path.is_none(),
 				universal_skills: d.capabilities.universal_skills,
 			},
 		})

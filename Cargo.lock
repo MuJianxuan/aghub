@@ -45,6 +45,7 @@ dependencies = [
  "rocket_cors",
  "serde",
  "serde_json",
+ "skills-sh",
  "thiserror 1.0.69",
  "tokio",
 ]

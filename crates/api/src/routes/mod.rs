@@ -1,5 +1,6 @@
 pub mod agents;
 pub mod catchers;
+pub mod market;
 pub mod mcps;
 pub mod skills;
 

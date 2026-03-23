@@ -1,10 +1,12 @@
 import {
 	ArrowPathIcon,
+	BookOpenIcon,
 	CommandLineIcon,
-	CubeIcon,
+	PlusIcon,
+	ServerIcon,
 	WifiIcon,
 } from "@heroicons/react/24/solid";
-import { Button, Chip, Label, ListBox, SearchField } from "@heroui/react";
+import { Button, Chip, Dropdown, Label, ListBox, SearchField } from "@heroui/react";
 import type { Key } from "@heroui/react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -145,26 +147,36 @@ export function UnifiedResourceList({
 						<SearchField.ClearButton />
 					</SearchField.Group>
 				</SearchField>
-				<Button
-					isIconOnly
-					variant="ghost"
-					size="sm"
-					className="shrink-0"
-					aria-label={t("addMcpServer")}
-					onPress={onCreateMcp}
-				>
-					<CommandLineIcon className="size-4" />
-				</Button>
-				<Button
-					isIconOnly
-					variant="ghost"
-					size="sm"
-					className="shrink-0"
-					aria-label={t("addSkill")}
-					onPress={onCreateSkill}
-				>
-					<CubeIcon className="size-4" />
-				</Button>
+				<Dropdown>
+					<Button
+						isIconOnly
+						variant="ghost"
+						size="sm"
+						className="shrink-0"
+						aria-label={t("add")}
+					>
+						<PlusIcon className="size-4" />
+					</Button>
+					<Dropdown.Popover placement="bottom end">
+						<Dropdown.Menu onAction={(key) => {
+							if (key === "mcp") onCreateMcp();
+							else if (key === "skill") onCreateSkill();
+						}}>
+							<Dropdown.Item id="mcp" textValue={t("mcpServers")}>
+								<div className="flex items-center gap-2">
+									<ServerIcon className="size-4" />
+									<span>{t("mcpServers")}</span>
+								</div>
+							</Dropdown.Item>
+							<Dropdown.Item id="skill" textValue={t("skills")}>
+								<div className="flex items-center gap-2">
+									<BookOpenIcon className="size-4" />
+									<span>{t("skills")}</span>
+								</div>
+							</Dropdown.Item>
+						</Dropdown.Menu>
+					</Dropdown.Popover>
+				</Dropdown>
 				<Button
 					isIconOnly
 					variant="ghost"
@@ -185,7 +197,7 @@ export function UnifiedResourceList({
 						<ResourceSectionHeader
 							title={t("mcpServers")}
 							count={groupedMcps.length}
-							icon={<CommandLineIcon className="size-3.5" />}
+							icon={<ServerIcon className="size-3.5" />}
 						/>
 						<ListBox
 							aria-label="MCP Servers"
@@ -230,7 +242,7 @@ export function UnifiedResourceList({
 						<ResourceSectionHeader
 							title={t("skills")}
 							count={groupedSkills.length}
-							icon={<CubeIcon className="size-3.5" />}
+							icon={<BookOpenIcon className="size-3.5" />}
 						/>
 						<ListBox
 							aria-label="Skills"
@@ -251,7 +263,7 @@ export function UnifiedResourceList({
 									className="data-[selected]:bg-accent/10"
 								>
 									<div className="flex items-center gap-2 w-full">
-										<CubeIcon className="size-3.5 shrink-0 text-muted" />
+										<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
 										<Label className="truncate flex-1">
 											{group.name}
 										</Label>

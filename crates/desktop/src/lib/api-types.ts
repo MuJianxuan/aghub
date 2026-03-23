@@ -58,4 +58,5 @@ export interface MarketSkill {
 	slug: string;
 	source: string;
 	installs: number;
+	author?: string;
 }

@@ -23,7 +23,10 @@ interface CreateSkillPanelProps {
 	projectPath?: string;
 }
 
-export function CreateSkillPanel({ onDone, projectPath }: CreateSkillPanelProps) {
+export function CreateSkillPanel({
+	onDone,
+	projectPath,
+}: CreateSkillPanelProps) {
 	const { t } = useTranslation();
 	const { baseUrl } = useServer();
 	const api = createApi(baseUrl);
@@ -54,6 +57,7 @@ export function CreateSkillPanel({ onDone, projectPath }: CreateSkillPanelProps)
 	const handleMarketSelect = (skill: MarketSkill) => {
 		setName(skill.name);
 		setDescription(`Source: ${skill.source}`);
+		setAuthor(skill.author ?? "");
 		setMarketQuery("");
 	};
 

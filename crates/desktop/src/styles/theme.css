@@ -19,9 +19,11 @@
 	--danger-foreground: oklch(99.11% 0 0);
 	--default: oklch(94.00% 0.0015 155.00);
 	--default-foreground: oklch(21.03% 0.0059 155.00);
-	--field-background: oklch(100.00% 0.0008 155.00);
+	--field-background: oklch(98.80% 0.0010 155.00);
 	--field-foreground: oklch(21.03% 0.0015 155.00);
 	--field-placeholder: oklch(55.17% 0.0030 155.00);
+	--field-border-width: 1px;
+	--field-border: var(--border);
 	--focus: oklch(82.00% 0.1200 155.00);
 	--foreground: oklch(21.03% 0.0015 155.00);
 	--muted: oklch(55.17% 0.0030 155.00);
@@ -63,9 +65,11 @@
 	--danger-foreground: oklch(99.11% 0 0);
 	--default: oklch(27.40% 0.0015 155.00);
 	--default-foreground: oklch(99.11% 0 0);
-	--field-background: oklch(21.03% 0.0030 155.00);
+	--field-background: oklch(24.50% 0.0030 155.00);
 	--field-foreground: oklch(99.11% 0.0015 155.00);
 	--field-placeholder: oklch(70.50% 0.0030 155.00);
+	--field-border-width: 1px;
+	--field-border: var(--border);
 	--focus: oklch(82.00% 0.1200 155.00);
 	--foreground: oklch(99.11% 0.0015 155.00);
 	--muted: oklch(70.50% 0.0030 155.00);

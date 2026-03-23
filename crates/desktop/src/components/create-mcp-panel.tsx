@@ -8,6 +8,9 @@ import {
 	ListBox,
 	Modal,
 	Select,
+	type Selection,
+	Tag,
+	TagGroup,
 	TextArea,
 	TextField,
 } from "@heroui/react";
@@ -174,16 +177,8 @@ export function CreateMcpPanel({ onDone }: CreateMcpPanelProps) {
 		return true;
 	};
 
-	const toggleAgent = (agentId: string) => {
-		setSelectedAgents((prev) => {
-			const next = new Set(prev);
-			if (next.has(agentId)) {
-				next.delete(agentId);
-			} else {
-				next.add(agentId);
-			}
-			return next;
-		});
+	const handleSelectionChange = (keys: Selection) => {
+		setSelectedAgents(keys as Set<string>);
 	};
 
 	const handleImportJson = () => {
@@ -393,38 +388,32 @@ export function CreateMcpPanel({ onDone }: CreateMcpPanelProps) {
 					{/* Agent Selection */}
 					<Fieldset>
 						<Fieldset.Group>
-							<div className="flex flex-col gap-2">
-								<Label>{t("agents")}</Label>
-								{usableAgents.length === 0 ? (
+							{usableAgents.length === 0 ? (
+								<div className="flex flex-col gap-2">
+									<Label>{t("agents")}</Label>
 									<div className="text-sm text-muted">
 										<p className="font-medium mb-1">
 											{t("noAgentsAvailable")}
 										</p>
 										<p className="text-xs">{t("noAgentsAvailableHelp")}</p>
 									</div>
-								) : (
-									<div className="flex flex-wrap gap-2">
-										{usableAgents.map((agent) => {
-											const isSelected =
-												selectedAgents.has(agent.id);
-											return (
-												<button
-													key={agent.id}
-													type="button"
-													onClick={() => toggleAgent(agent.id)}
-													className={`px-2.5 py-1 text-sm rounded-full border transition-colors ${
-														isSelected
-															? "bg-accent text-accent-foreground border-accent"
-															: "bg-transparent text-muted border-default-200 hover:border-default-300"
-													}`}
-												>
-													{agent.display_name}
-												</button>
-											);
-										})}
-									</div>
-								)}
-							</div>
+								</div>
+							) : (
+								<TagGroup
+									selectionMode="multiple"
+									selectedKeys={selectedAgents}
+									onSelectionChange={handleSelectionChange}
+								>
+									<Label>{t("agents")}</Label>
+									<TagGroup.List className="flex-wrap">
+										{usableAgents.map((agent) => (
+											<Tag key={agent.id} id={agent.id}>
+												{agent.display_name}
+											</Tag>
+										))}
+									</TagGroup.List>
+								</TagGroup>
+							)}
 						</Fieldset.Group>
 					</Fieldset>
 

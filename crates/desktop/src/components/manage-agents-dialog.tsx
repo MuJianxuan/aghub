@@ -7,7 +7,14 @@ import {
 	PlusIcon,
 	XCircleIcon,
 } from "@heroicons/react/24/solid";
-import { Button, Chip, Modal, Spinner } from "@heroui/react";
+import {
+	Button,
+	Modal,
+	Spinner,
+	Tag,
+	TagGroup,
+	type Selection,
+} from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -71,17 +78,11 @@ export function ManageAgentsDialog({
 	const toUninstall = [...currentAgentIds].filter((id) => !selectedAgents.has(id));
 	const hasChanges = toInstall.length > 0 || toUninstall.length > 0;
 
-	const toggleAgent = (agentId: string) => {
-		setSelectedAgents((prev) => {
-			const next = new Set(prev);
-			if (next.has(agentId)) {
-				if (next.size <= 1) return prev;
-				next.delete(agentId);
-			} else {
-				next.add(agentId);
-			}
-			return next;
-		});
+	const handleSelectionChange = (keys: Selection) => {
+		const newKeys = keys as Set<string>;
+		if (newKeys.size >= 1) {
+			setSelectedAgents(newKeys);
+		}
 	};
 
 	const getAgentDisplayName = useCallback(
@@ -223,92 +224,91 @@ export function ManageAgentsDialog({
 										{t("noTargetAgents")}
 									</p>
 								) : (
-									<div className="flex flex-wrap gap-2">
-										{usableAgents.map((agent) => {
-											const isSelected = selectedAgents.has(
-												agent.id,
-											);
-											const isCurrentAgent =
-												currentAgentIds.has(agent.id);
-											const isLastSelected =
-												isSelected &&
-												selectedAgents.size === 1;
-											return (
-												<button
-													key={agent.id}
-													type="button"
-													disabled={isLastSelected}
-													onClick={() =>
-														toggleAgent(agent.id)
-													}
-													className={`flex items-center gap-1.5 px-2.5 py-1 text-sm rounded-full border transition-colors ${
-														isLastSelected
-															? "bg-accent text-accent-foreground border-accent opacity-60 cursor-not-allowed"
-															: isSelected
-																? "bg-accent text-accent-foreground border-accent"
-																: "bg-transparent text-muted border-default-200 hover:border-default-300"
-													}`}
-												>
-													{agent.display_name}
-													{isSelected &&
-														!isCurrentAgent && (
-															<PlusIcon className="size-3" />
-														)}
-												</button>
-											);
-										})}
-									</div>
+									<TagGroup
+										selectionMode="multiple"
+										selectedKeys={selectedAgents}
+										onSelectionChange={handleSelectionChange}
+									>
+										<TagGroup.List className="flex-wrap">
+											{usableAgents.map((agent) => {
+												const isSelected = selectedAgents.has(
+													agent.id,
+												);
+												const isCurrentAgent =
+													currentAgentIds.has(agent.id);
+												const isAdding = isSelected && !isCurrentAgent;
+												const isRemoving = !isSelected && isCurrentAgent;
+												return (
+													<Tag key={agent.id} id={agent.id}>
+														<div className="flex items-center gap-1.5">
+															{agent.display_name}
+															{isAdding && (
+																<PlusIcon className="size-3" />
+															)}
+															{isRemoving && (
+																<MinusIcon className="size-3" />
+															)}
+														</div>
+													</Tag>
+												);
+											})}
+										</TagGroup.List>
+									</TagGroup>
 								)}
 							</div>
 						)}
 
-						{/* Step 2: Diff Preview */}
-						{step === 2 && (
-							<div className="space-y-4">
-								{toInstall.length > 0 && (
-									<div>
-										<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
-											{t("toInstall")}
-										</p>
-										<div className="flex flex-wrap gap-1.5">
+					{/* Step 2: Diff Preview */}
+					{step === 2 && (
+						<div className="space-y-4">
+							{toInstall.length > 0 && (
+								<div>
+									<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+										{t("toInstall")}
+									</p>
+									<TagGroup selectionMode="none">
+										<TagGroup.List className="flex-wrap">
 											{toInstall.map((id) => (
-												<Chip
+												<Tag
 													key={id}
-													size="sm"
-													color="success"
+													id={id}
+													className="bg-success/15 text-success border-success/30"
 												>
-													<div className="flex items-center gap-1">
+													<div className="flex items-center gap-1.5">
+														{getAgentDisplayName(id)}
 														<PlusIcon className="size-3" />
-														{getAgentDisplayName(id)}
 													</div>
-												</Chip>
+												</Tag>
 											))}
-										</div>
-									</div>
-								)}
-								{toUninstall.length > 0 && (
-									<div>
-										<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
-											{t("toUninstall")}
-										</p>
-										<div className="flex flex-wrap gap-1.5">
+										</TagGroup.List>
+									</TagGroup>
+								</div>
+							)}
+							{toUninstall.length > 0 && (
+								<div>
+									<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+										{t("toUninstall")}
+									</p>
+									<TagGroup selectionMode="none">
+										<TagGroup.List className="flex-wrap">
 											{toUninstall.map((id) => (
-												<Chip
+												<Tag
 													key={id}
-													size="sm"
-													color="danger"
+													id={id}
+													className="bg-danger/15 text-danger border-danger/30"
 												>
-													<div className="flex items-center gap-1">
-														<MinusIcon className="size-3" />
+													<div className="flex items-center gap-1.5">
 														{getAgentDisplayName(id)}
+														<MinusIcon className="size-3" />
 													</div>
-												</Chip>
+												</Tag>
 											))}
-										</div>
-									</div>
-								)}
-							</div>
-						)}
+										</TagGroup.List>
+									</TagGroup>
+								</div>
+							)}
+						</div>
+					)}
 
 						{/* Step 3: Result */}
 						{step === 3 && (

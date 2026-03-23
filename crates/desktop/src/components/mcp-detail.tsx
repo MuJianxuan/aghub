@@ -55,7 +55,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 			return Promise.all(
 				g.items.map((item) => {
 					const scope =
-						item.source === "Project" ? "project" : "global";
+						item.source === "project" ? "project" : "global";
 					return api.mcps.delete(
 						item.name,
 						item.agent ?? "default",

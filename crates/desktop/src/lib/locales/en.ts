@@ -142,6 +142,8 @@ export default {
 	projectPathPlaceholder: "/path/to/your/project",
 	selectProjectFolder: "Select Project Folder",
 	clickToBrowse: "Click to browse your files",
+	projectNotFound: "Project not found",
+	mcps: "MCPs",
 
 	// Env Editor
 	envEditor: {

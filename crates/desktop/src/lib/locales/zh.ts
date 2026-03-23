@@ -139,6 +139,8 @@ export default {
 	projectPathPlaceholder: "/path/to/your/project",
 	selectProjectFolder: "选择项目文件夹",
 	clickToBrowse: "点击浏览文件",
+	projectNotFound: "项目未找到",
+	mcps: "MCP",
 
 	// Env Editor
 	envEditor: {

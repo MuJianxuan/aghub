@@ -49,9 +49,15 @@ export function createApi(baseUrl: string) {
 		skills: {
 			listAll(
 				scope: "global" | "project" | "all" = "global",
+				projectRoot?: string,
 			): Promise<SkillResponse[]> {
 				return client
-					.get("agents/all/skills", { searchParams: { scope } })
+					.get("agents/all/skills", {
+						searchParams: {
+							scope,
+							...(projectRoot ? { project_root: projectRoot } : {}),
+						},
+					})
 					.json();
 			},
 			create(
@@ -69,9 +75,15 @@ export function createApi(baseUrl: string) {
 		mcps: {
 			listAll(
 				scope: "global" | "project" | "all" = "global",
+				projectRoot?: string,
 			): Promise<McpResponse[]> {
 				return client
-					.get("agents/all/mcps", { searchParams: { scope } })
+					.get("agents/all/mcps", {
+						searchParams: {
+							scope,
+							...(projectRoot ? { project_root: projectRoot } : {}),
+						},
+					})
 					.json();
 			},
 			get(

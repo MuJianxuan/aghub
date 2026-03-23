@@ -266,7 +266,10 @@ export function CreateMcpDialog({ isOpen, onClose }: CreateMcpDialogProps) {
 
               {/* Enabled */}
               <Label>
-                <Checkbox isSelected={enabled} onChange={setEnabled} />
+                <Checkbox
+                  isSelected={enabled}
+                  onChange={setEnabled}
+                />
                 {t("enabled")}
               </Label>
 

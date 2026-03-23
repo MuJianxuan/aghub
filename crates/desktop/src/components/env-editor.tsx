@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { produce } from "immer";
-import { Button, Input, Chip } from "@heroui/react";
-import { XMarkIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { Button, Input } from "@heroui/react";
+import { XMarkIcon, PlusIcon, ClipboardDocumentIcon } from "@heroicons/react/24/solid";
 import * as dotenv from "dotenv";
 
 export interface EnvVar {
@@ -48,22 +48,22 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 		);
 	};
 
-	// Parse .env format on blur
-	const handleKeyBlur = (keyValue: string) => {
-		// Check if it looks like .env format
-		if (keyValue.includes("=") || keyValue.includes("\n")) {
-			try {
-				const parsed = dotenv.parse(keyValue);
-				const pairs = Object.entries(parsed).map(([key, value]) => ({
-					key,
-					value,
-				}));
-				if (pairs.length > 0) {
-					onChange(pairs);
-				}
-			} catch (e) {
-				// If parsing fails, keep the value as-is
+	// Import from clipboard
+	const handleImportFromClipboard = async () => {
+		try {
+			const clipboardText = await navigator.clipboard.readText();
+			if (!clipboardText.trim()) return;
+
+			const parsed = dotenv.parse(clipboardText);
+			const pairs = Object.entries(parsed).map(([key, value]) => ({
+				key,
+				value,
+			}));
+			if (pairs.length > 0) {
+				onChange(pairs);
 			}
+		} catch (e) {
+			// If parsing or clipboard read fails, do nothing
 		}
 	};
 
@@ -76,7 +76,6 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 						placeholder={t("envEditor.keyPlaceholder")}
 						value={pair.key}
 						onChange={(e) => handleChange(index, "key", e.target.value)}
-						onBlur={(e) => handleKeyBlur(e.target.value)}
 						className="flex-1"
 					/>
 					<Input
@@ -102,9 +101,10 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 					<PlusIcon className="w-4 h-4" />
 					{t("envEditor.addKeypair")}
 				</Button>
-				<Chip variant="tertiary" color="default" size="sm">
-					{t("envEditor.supportsEnvPaste")}
-				</Chip>
+				<Button variant="ghost" size="sm" onPress={handleImportFromClipboard}>
+					<ClipboardDocumentIcon className="w-4 h-4" />
+					{t("envEditor.importFromClipboard")}
+				</Button>
 			</div>
 		</div>
 	);

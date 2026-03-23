@@ -120,6 +120,6 @@ export default {
 		addKeypair: "Add Keypair",
 		keyPlaceholder: "Key",
 		valuePlaceholder: "Value",
-		supportsEnvPaste: "Supports .env paste",
+		importFromClipboard: "Import from Clipboard",
 	},
 };

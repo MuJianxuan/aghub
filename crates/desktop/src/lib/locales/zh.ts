@@ -117,6 +117,6 @@ export default {
 		addKeypair: "添加键值对",
 		keyPlaceholder: "键",
 		valuePlaceholder: "值",
-		supportsEnvPaste: "支持 .env 粘贴",
+		importFromClipboard: "从剪贴板导入",
 	},
 };

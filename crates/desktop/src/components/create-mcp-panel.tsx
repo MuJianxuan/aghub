@@ -18,6 +18,7 @@ import { createApi } from "../lib/api";
 import type { TransportDto } from "../lib/api-types";
 import { useAgentAvailability } from "../providers/agent-availability";
 import { useServer } from "../providers/server";
+import { EnvEditor, type EnvVar } from "./env-editor";
 
 interface CreateMcpPanelProps {
 	onDone: () => void;
@@ -58,7 +59,7 @@ export function CreateMcpPanel({ onDone }: CreateMcpPanelProps) {
 	// stdio fields
 	const [command, setCommand] = useState("");
 	const [args, setArgs] = useState("");
-	const [env, setEnv] = useState("");
+	const [envVars, setEnvVars] = useState<EnvVar[]>([]);
 
 	// http fields
 	const [url, setUrl] = useState("");
@@ -76,7 +77,7 @@ export function CreateMcpPanel({ onDone }: CreateMcpPanelProps) {
 		setTimeoutValue("");
 		setCommand("");
 		setArgs("");
-		setEnv("");
+		setEnvVars([]);
 		setUrl("");
 		setHeaders("");
 		setSelectedAgents(new Set(["default"]));
@@ -102,21 +103,12 @@ export function CreateMcpPanel({ onDone }: CreateMcpPanelProps) {
 
 		if (transportType === "stdio") {
 			const argsArray = args.trim() ? args.trim().split(/\s+/) : [];
-			const envRecord: Record<string, string> | undefined = env.trim()
-				? Object.fromEntries(
-						env
-							.trim()
-							.split("\n")
-							.map((line) => {
-								const eqIndex = line.indexOf("=");
-								if (eqIndex === -1) return [line, ""];
-								return [
-									line.slice(0, eqIndex),
-									line.slice(eqIndex + 1),
-								];
-							}),
-					)
-				: undefined;
+			const envRecord: Record<string, string> | undefined =
+				envVars.length > 0
+					? Object.fromEntries(
+							envVars.map((pair) => [pair.key, pair.value]),
+						)
+					: undefined;
 
 			return {
 				type: "stdio",
@@ -226,10 +218,10 @@ export function CreateMcpPanel({ onDone }: CreateMcpPanelProps) {
 					setArgs(config.args.join(" "));
 				}
 				if (config.env && typeof config.env === "object") {
-					const envLines = Object.entries(config.env).map(
-						([key, value]) => `${key}=${value}`,
+					const envVarArray: EnvVar[] = Object.entries(config.env).map(
+						([key, value]) => ({ key, value }),
 					);
-					setEnv(envLines.join("\n"));
+					setEnvVars(envVarArray);
 				}
 			} else if (config.url) {
 				// Determine if SSE or streamable_http based on URL or default to sse
@@ -340,18 +332,11 @@ export function CreateMcpPanel({ onDone }: CreateMcpPanelProps) {
 									/>
 									<Description>{t("argsHelp")}</Description>
 								</TextField>
-								<TextField className="w-full">
+								<div className="flex flex-col gap-2">
 									<Label>{t("env")}</Label>
-									<TextArea
-										value={env}
-										onChange={(e) => setEnv(e.target.value)}
-										placeholder="KEY=value&#10;ANOTHER_KEY=value"
-										className="min-h-[80px] font-mono"
-
-
-									/>
+									<EnvEditor value={envVars} onChange={setEnvVars} />
 									<Description>{t("envHelp")}</Description>
-								</TextField>
+								</div>
 							</Fieldset.Group>
 						</Fieldset>
 					)}

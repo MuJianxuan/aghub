@@ -186,7 +186,10 @@ fn test_opencode_full_mcp_workflow() {
 	let url_ref = config.mcps.iter().find(|m| m.name == "url-mcp").unwrap();
 
 	assert!(matches!(cmd_ref.transport, McpTransport::Stdio { .. }));
-	assert!(matches!(url_ref.transport, McpTransport::StreamableHttp { .. }));
+	assert!(matches!(
+		url_ref.transport,
+		McpTransport::StreamableHttp { .. }
+	));
 
 	// Verify URL headers preserved
 	match &url_ref.transport {
@@ -739,7 +742,6 @@ fn test_kiro_mcp_workflow() {
 	assert!(manager.config().unwrap().mcps.is_empty());
 }
 
-
 #[test]
 fn test_zed_mcp_workflow() {
 	let test = TestConfig::new(AgentType::Zed).unwrap();
@@ -820,7 +822,10 @@ fn test_copilot_mcp_workflow() {
 
 	// Verify it uses "servers" key
 	let content = test.read_config().unwrap();
-	assert!(content.contains("\"servers\""), "Copilot must use 'servers' key");
+	assert!(
+		content.contains("\"servers\""),
+		"Copilot must use 'servers' key"
+	);
 
 	// Reload and verify
 	manager.load().unwrap();
@@ -1111,8 +1116,10 @@ fn test_jetbrains_ai_mcp_workflow() {
 fn test_multiple_skills_loaded() {
 	let test = TestConfig::new(AgentType::Claude).unwrap();
 
-	test.create_test_skill("skill-1", Some("First skill")).unwrap();
-	test.create_test_skill("skill-2", Some("Second skill")).unwrap();
+	test.create_test_skill("skill-1", Some("First skill"))
+		.unwrap();
+	test.create_test_skill("skill-2", Some("Second skill"))
+		.unwrap();
 
 	let mut manager = test.create_manager();
 	manager.load().unwrap();
@@ -1131,7 +1138,8 @@ fn test_dir_without_skill_md_ignored() {
 	let test = TestConfig::new(AgentType::Claude).unwrap();
 
 	// Create a valid skill
-	test.create_test_skill("valid-skill", Some("Valid skill")).unwrap();
+	test.create_test_skill("valid-skill", Some("Valid skill"))
+		.unwrap();
 
 	// Create a directory without SKILL.md (should be ignored)
 	let empty_dir = test.skills_dir().join("not-a-skill");
@@ -1155,7 +1163,8 @@ fn test_invalid_skill_md_graceful() {
 	let test = TestConfig::new(AgentType::Claude).unwrap();
 
 	// Create a valid skill
-	test.create_test_skill("valid-skill", Some("Valid skill")).unwrap();
+	test.create_test_skill("valid-skill", Some("Valid skill"))
+		.unwrap();
 
 	// Create a skill dir with a SKILL.md that has no frontmatter
 	let invalid_dir = test.skills_dir().join("invalid-skill");
@@ -1192,4 +1201,3 @@ fn test_empty_skills_dir_loads_zero_skills() {
 		"Empty skills dir should yield no skills"
 	);
 }
-

@@ -1,70 +1,87 @@
-import React from "react"
-import { useTranslation } from "react-i18next"
-import { Link, useLocation } from "wouter"
-import { Surface } from "@heroui/react"
 import {
-  BookOpenIcon,
-  ServerIcon,
-  Cog6ToothIcon,
-} from "@heroicons/react/24/solid"
-import { cn } from "../lib/utils"
-import { ProjectList } from "./project-list"
+	BookOpenIcon,
+	Cog6ToothIcon,
+	ServerIcon,
+} from "@heroicons/react/24/solid";
+import { Surface } from "@heroui/react";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Link, useLocation } from "wouter";
+import { cn } from "../lib/utils";
+import { ProjectList } from "./project-list";
 
-type MenuItem =
-  | { type: "link"; labelKey: string; href: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>> }
+type MenuItem = {
+	type: "link";
+	labelKey: string;
+	href: string;
+	icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
 
 const menuItems: MenuItem[] = [
-  { type: "link", labelKey: "skills", href: "/settings/skills", icon: BookOpenIcon },
-  { type: "link", labelKey: "mcpServers", href: "/settings/mcp-servers", icon: ServerIcon },
-]
+	{
+		type: "link",
+		labelKey: "skills",
+		href: "/settings/skills",
+		icon: BookOpenIcon,
+	},
+	{
+		type: "link",
+		labelKey: "mcpServers",
+		href: "/settings/mcp-servers",
+		icon: ServerIcon,
+	},
+];
 
 export function SettingsSidebar() {
-  const { t } = useTranslation()
-  const [pathname] = useLocation()
+	const { t } = useTranslation();
+	const [pathname] = useLocation();
 
-  return (
-    <Surface variant="default" className="w-60 shrink-0 border-r border-border p-3 rounded-none flex flex-col">
-      <aside className="flex flex-col h-full">
-        <nav className="flex flex-col gap-0.5">
-          {menuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
+	return (
+		<Surface
+			variant="default"
+			className="w-60 shrink-0 border-r border-border p-3 rounded-none flex flex-col"
+		>
+			<aside className="flex flex-col h-full">
+				<nav className="flex flex-col gap-0.5">
+					{menuItems.map((item) => {
+						const Icon = item.icon;
+						const isActive = pathname === item.href;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
-                  isActive
-                    ? "bg-accent/10 text-foreground font-medium"
-                    : "text-muted hover:bg-surface-secondary hover:text-foreground"
-                )}
-              >
-                <Icon className="size-4" />
-                <span>{t(item.labelKey)}</span>
-              </Link>
-            )
-          })}
-        </nav>
-        {/* Project List */}
-        <ProjectList />
+						return (
+							<Link
+								key={item.href}
+								href={item.href}
+								className={cn(
+									"flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+									isActive
+										? "bg-accent/10 text-foreground font-medium"
+										: "text-muted hover:bg-surface-secondary hover:text-foreground",
+								)}
+							>
+								<Icon className="size-4" />
+								<span>{t(item.labelKey)}</span>
+							</Link>
+						);
+					})}
+				</nav>
+				{/* Project List */}
+				<ProjectList />
 
-        <nav className="mt-auto">
-          <Link
-            href="/settings"
-            className={cn(
-              "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
-              pathname === "/settings"
-                ? "bg-accent/10 text-foreground font-medium"
-                : "text-muted hover:bg-surface-secondary hover:text-foreground"
-            )}
-          >
-            <Cog6ToothIcon className="size-4" />
-            <span>{t("settings")}</span>
-          </Link>
-        </nav>
-      </aside>
-    </Surface>
-  )
+				<nav className="mt-auto">
+					<Link
+						href="/settings"
+						className={cn(
+							"flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+							pathname === "/settings"
+								? "bg-accent/10 text-foreground font-medium"
+								: "text-muted hover:bg-surface-secondary hover:text-foreground",
+						)}
+					>
+						<Cog6ToothIcon className="size-4" />
+						<span>{t("settings")}</span>
+					</Link>
+				</nav>
+			</aside>
+		</Surface>
+	);
 }

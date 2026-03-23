@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    aghub_desktop_lib::run()
+	aghub_desktop_lib::run()
 }

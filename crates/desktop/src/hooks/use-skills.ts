@@ -1,15 +1,15 @@
-import { useSuspenseQuery } from "@tanstack/react-query"
-import { useServer } from "../providers/server"
-import { createApi } from "../lib/api"
-import type { SkillResponse } from "../lib/api-types"
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createApi } from "../lib/api";
+import type { SkillResponse } from "../lib/api-types";
+import { useServer } from "../providers/server";
 
 export function useSkills() {
-  const { baseUrl } = useServer()
-  const api = createApi(baseUrl)
+	const { baseUrl } = useServer();
+	const api = createApi(baseUrl);
 
-  return useSuspenseQuery<SkillResponse[]>({
-    queryKey: ["skills", "all", "global"],
-    queryFn: () => api.skills.listAll("global"),
-    staleTime: 30_000,
-  })
+	return useSuspenseQuery<SkillResponse[]>({
+		queryKey: ["skills", "all", "global"],
+		queryFn: () => api.skills.listAll("global"),
+		staleTime: 30_000,
+	});
 }

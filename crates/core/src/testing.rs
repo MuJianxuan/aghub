@@ -2,8 +2,7 @@ use crate::{
 	adapters::{create_adapter, AgentAdapter},
 	errors::{ConfigError, Result},
 	manager::ConfigManager,
-	registry,
-	AgentType,
+	registry, AgentType,
 };
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -32,7 +31,8 @@ impl TestConfig {
 		let temp_dir = TempDir::new().map_err(ConfigError::Io)?;
 
 		// Determine config file format based on agent type
-		let is_toml = matches!(agent_type, AgentType::Codex | AgentType::Mistral);
+		let is_toml =
+			matches!(agent_type, AgentType::Codex | AgentType::Mistral);
 		let is_json_list = matches!(agent_type, AgentType::OpenCode);
 
 		let config_path = if is_toml {
@@ -173,7 +173,8 @@ impl TestConfigBuilder {
 		let temp_dir = TempDir::new().map_err(ConfigError::Io)?;
 
 		// Determine config file format based on agent type
-		let is_toml = matches!(self.agent_type, AgentType::Codex | AgentType::Mistral);
+		let is_toml =
+			matches!(self.agent_type, AgentType::Codex | AgentType::Mistral);
 		let is_json_list = matches!(self.agent_type, AgentType::OpenCode);
 
 		let config_path = if is_toml {

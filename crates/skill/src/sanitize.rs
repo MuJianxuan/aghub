@@ -76,7 +76,10 @@ mod tests {
 	#[test]
 	fn test_replaces_spaces_with_hyphens() {
 		assert_eq!(sanitize_name("my skill"), "my-skill");
-		assert_eq!(sanitize_name("Convex Best Practices"), "convex-best-practices");
+		assert_eq!(
+			sanitize_name("Convex Best Practices"),
+			"convex-best-practices"
+		);
 	}
 
 	#[test]
@@ -125,7 +128,10 @@ mod tests {
 	#[test]
 	fn test_handles_absolute_paths() {
 		assert_eq!(sanitize_name("/etc/passwd"), "etc-passwd");
-		assert_eq!(sanitize_name("C:\\Windows\\System32"), "c-windows-system32");
+		assert_eq!(
+			sanitize_name("C:\\Windows\\System32"),
+			"c-windows-system32"
+		);
 	}
 
 	#[test]

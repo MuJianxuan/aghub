@@ -98,21 +98,15 @@ mod tests {
 	#[test]
 	fn test_external_agent_paths_are_correct() {
 		let dir = Path::new("/test_project");
-		let cursor =
-			crate::registry::get(super::super::AgentType::Cursor);
-		let windsurf =
-			crate::registry::get(super::super::AgentType::Windsurf);
-		let copilot =
-			crate::registry::get(super::super::AgentType::Copilot);
-		let roocode =
-			crate::registry::get(super::super::AgentType::RooCode);
-		let gemini =
-			crate::registry::get(super::super::AgentType::Gemini);
+		let cursor = crate::registry::get(super::super::AgentType::Cursor);
+		let windsurf = crate::registry::get(super::super::AgentType::Windsurf);
+		let copilot = crate::registry::get(super::super::AgentType::Copilot);
+		let roocode = crate::registry::get(super::super::AgentType::RooCode);
+		let gemini = crate::registry::get(super::super::AgentType::Gemini);
 		let codex = crate::registry::get(super::super::AgentType::Codex);
 		let antigravity =
 			crate::registry::get(super::super::AgentType::Antigravity);
-		let openclaw =
-			crate::registry::get(super::super::AgentType::Openclaw);
+		let openclaw = crate::registry::get(super::super::AgentType::Openclaw);
 		let cline = crate::registry::get(super::super::AgentType::Cline);
 
 		assert_eq!(

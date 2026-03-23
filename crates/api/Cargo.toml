@@ -13,13 +13,13 @@ path = "src/main.rs"
 [lib]
 name = "aghub_api"
 path = "src/lib.rs"
-crate-type = ["rlib"]
+crate-type = [ "rlib" ]
 
 [dependencies]
 aghub-core = { path = "../core" }
-rocket = { version = "0.5", features = ["json"] }
+rocket = { version = "0.5", features = [ "json" ] }
 rocket_cors = "0.6.0"
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1", features = [ "rt-multi-thread", "macros" ] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }

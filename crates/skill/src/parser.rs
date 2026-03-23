@@ -382,7 +382,8 @@ mod tests {
 
 	#[test]
 	fn test_boolean_name_rejected() {
-		let content = "---\nname: true\ndescription: A valid description\n---\n";
+		let content =
+			"---\nname: true\ndescription: A valid description\n---\n";
 		let result = parse_skill_md(content);
 		assert!(result.is_err(), "Expected error for boolean name");
 	}

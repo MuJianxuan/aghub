@@ -26,7 +26,10 @@ use std::collections::HashMap;
 fn mcp_stdio(name: &str) -> McpServer {
 	McpServer::new(
 		name,
-		McpTransport::stdio("echo", vec!["test".to_string(), "args".to_string()]),
+		McpTransport::stdio(
+			"echo",
+			vec!["test".to_string(), "args".to_string()],
+		),
 	)
 }
 
@@ -144,10 +147,7 @@ fn test_gemini_mcp_uses_mcpservers_key() {
 	manager
 		.add_mcp(McpServer::new(
 			"example",
-			McpTransport::stdio(
-				"node",
-				vec!["server.js".to_string()],
-			),
+			McpTransport::stdio("node", vec!["server.js".to_string()]),
 		))
 		.unwrap();
 
@@ -251,7 +251,10 @@ fn test_opencode_stdio_format_is_local_type() {
 	let json: serde_json::Value = serde_json::from_str(&content).unwrap();
 	let server = &json["mcp"]["my-local-server"];
 
-	assert_eq!(server["type"], "local", "Stdio should serialize as type 'local'");
+	assert_eq!(
+		server["type"], "local",
+		"Stdio should serialize as type 'local'"
+	);
 	assert_eq!(server["command"][0], "bun");
 	assert_eq!(server["command"][1], "x");
 	assert_eq!(server["command"][2], "my-mcp-command");
@@ -270,10 +273,8 @@ fn test_opencode_sse_format_is_remote_type() {
 	manager.load().unwrap();
 
 	let mut headers = HashMap::new();
-	headers.insert(
-		"Authorization".to_string(),
-		"Bearer MY_API_KEY".to_string(),
-	);
+	headers
+		.insert("Authorization".to_string(), "Bearer MY_API_KEY".to_string());
 	let mcp = McpServer::new(
 		"my-remote-server",
 		McpTransport::sse_with_headers("https://my-mcp-server.com", headers),
@@ -305,10 +306,8 @@ fn test_opencode_http_format_is_remote_type() {
 	manager.load().unwrap();
 
 	let mut headers = HashMap::new();
-	headers.insert(
-		"Authorization".to_string(),
-		"Bearer MY_API_KEY".to_string(),
-	);
+	headers
+		.insert("Authorization".to_string(), "Bearer MY_API_KEY".to_string());
 	let mcp = McpServer::new(
 		"my-http-server",
 		McpTransport::streamable_http_with_headers(
@@ -535,10 +534,7 @@ fn test_kilocode_mcp_add() {
 
 	assert!(json["mcpServers"].get("filesystem").is_some());
 	assert_eq!(json["mcpServers"]["filesystem"]["command"], "npx");
-	assert_eq!(
-		json["mcpServers"]["filesystem"]["args"][0],
-		"-y"
-	);
+	assert_eq!(json["mcpServers"]["filesystem"]["args"][0], "-y");
 }
 
 /// KiloCode: read existing MCP configuration
@@ -562,11 +558,7 @@ fn test_kilocode_mcp_read_after_add() {
 	// Re-load and verify
 	manager.load().unwrap();
 	let config = manager.config().unwrap();
-	let mcp = config
-		.mcps
-		.iter()
-		.find(|m| m.name == "existing")
-		.unwrap();
+	let mcp = config.mcps.iter().find(|m| m.name == "existing").unwrap();
 
 	match &mcp.transport {
 		McpTransport::Stdio { command, args, .. } => {
@@ -588,10 +580,7 @@ fn test_kilocode_mcp_update_same_name_replaces() {
 	manager
 		.add_mcp(McpServer::new(
 			"filesystem",
-			McpTransport::stdio(
-				"old-command",
-				vec!["old-arg".to_string()],
-			),
+			McpTransport::stdio("old-command", vec!["old-arg".to_string()]),
 		))
 		.unwrap();
 
@@ -601,21 +590,14 @@ fn test_kilocode_mcp_update_same_name_replaces() {
 			"filesystem",
 			McpServer::new(
 				"filesystem",
-				McpTransport::stdio(
-					"new-command",
-					vec!["new-arg".to_string()],
-				),
+				McpTransport::stdio("new-command", vec!["new-arg".to_string()]),
 			),
 		)
 		.unwrap();
 
 	manager.load().unwrap();
 	let config = manager.config().unwrap();
-	let mcp = config
-		.mcps
-		.iter()
-		.find(|m| m.name == "filesystem")
-		.unwrap();
+	let mcp = config.mcps.iter().find(|m| m.name == "filesystem").unwrap();
 
 	match &mcp.transport {
 		McpTransport::Stdio { command, args, .. } => {
@@ -638,7 +620,10 @@ fn test_kilocode_mcp_update_preserves_other() {
 	manager
 		.add_mcp(McpServer::new(
 			"existing",
-			McpTransport::stdio("existing-cmd", vec!["existing-arg".to_string()]),
+			McpTransport::stdio(
+				"existing-cmd",
+				vec!["existing-arg".to_string()],
+			),
 		))
 		.unwrap();
 	manager
@@ -654,7 +639,10 @@ fn test_kilocode_mcp_update_preserves_other() {
 			"filesystem",
 			McpServer::new(
 				"filesystem",
-				McpTransport::stdio("npx", vec!["mcp-filesystem-v2".to_string()]),
+				McpTransport::stdio(
+					"npx",
+					vec!["mcp-filesystem-v2".to_string()],
+				),
 			),
 		)
 		.unwrap();
@@ -666,7 +654,9 @@ fn test_kilocode_mcp_update_preserves_other() {
 	// Both servers present
 	let existing = config.mcps.iter().find(|m| m.name == "existing").unwrap();
 	match &existing.transport {
-		McpTransport::Stdio { command, .. } => assert_eq!(command, "existing-cmd"),
+		McpTransport::Stdio { command, .. } => {
+			assert_eq!(command, "existing-cmd")
+		}
 		_ => panic!("Expected Stdio"),
 	}
 	let fs = config.mcps.iter().find(|m| m.name == "filesystem").unwrap();
@@ -749,7 +739,9 @@ fn test_cursor_mcp_crud() {
 	let config = manager.config().unwrap();
 	let mcp = config.mcps.iter().find(|m| m.name == "cursor-mcp").unwrap();
 	match &mcp.transport {
-		McpTransport::Stdio { command, .. } => assert_eq!(command, "updated-cmd"),
+		McpTransport::Stdio { command, .. } => {
+			assert_eq!(command, "updated-cmd")
+		}
 		_ => panic!("Expected Stdio"),
 	}
 
@@ -935,11 +927,22 @@ fn test_cursor_supports_stdio_and_remote() {
 	let config = manager.config().unwrap();
 	assert_eq!(config.mcps.len(), 2);
 
-	let stdio = config.mcps.iter().find(|m| m.name == "stdio-server").unwrap();
+	let stdio = config
+		.mcps
+		.iter()
+		.find(|m| m.name == "stdio-server")
+		.unwrap();
 	assert!(matches!(stdio.transport, McpTransport::Stdio { .. }));
 
-	let remote = config.mcps.iter().find(|m| m.name == "remote-server").unwrap();
-	assert!(matches!(remote.transport, McpTransport::StreamableHttp { .. }));
+	let remote = config
+		.mcps
+		.iter()
+		.find(|m| m.name == "remote-server")
+		.unwrap();
+	assert!(matches!(
+		remote.transport,
+		McpTransport::StreamableHttp { .. }
+	));
 }
 
 // ==================== Group 5: TOML format agents ====================
@@ -1127,14 +1130,18 @@ fn test_mcp_merge_preserves_existing_servers() {
 
 	manager.load().unwrap();
 	let config = manager.config().unwrap();
-	let names: Vec<&str> = config.mcps.iter().map(|m| m.name.as_str()).collect();
+	let names: Vec<&str> =
+		config.mcps.iter().map(|m| m.name.as_str()).collect();
 
 	// Both servers should be present
 	assert!(
 		names.contains(&"native-server"),
 		"Original server should still be present"
 	);
-	assert!(names.contains(&"new-server"), "New server should be present");
+	assert!(
+		names.contains(&"new-server"),
+		"New server should be present"
+	);
 }
 
 /// Updating only the target server, others remain unchanged
@@ -1157,10 +1164,7 @@ fn test_mcp_update_replaces_target_only() {
 	manager
 		.update_mcp(
 			"foo",
-			McpServer::new(
-				"foo",
-				McpTransport::stdio("foo-updated", vec![]),
-			),
+			McpServer::new("foo", McpTransport::stdio("foo-updated", vec![])),
 		)
 		.unwrap();
 
@@ -1170,7 +1174,9 @@ fn test_mcp_update_replaces_target_only() {
 
 	let foo = config.mcps.iter().find(|m| m.name == "foo").unwrap();
 	match &foo.transport {
-		McpTransport::Stdio { command, .. } => assert_eq!(command, "foo-updated"),
+		McpTransport::Stdio { command, .. } => {
+			assert_eq!(command, "foo-updated")
+		}
 		_ => panic!("Expected Stdio"),
 	}
 
@@ -1201,7 +1207,8 @@ fn test_mcp_overwrite_via_remove_then_add() {
 
 	manager.load().unwrap();
 	let config = manager.config().unwrap();
-	let names: Vec<&str> = config.mcps.iter().map(|m| m.name.as_str()).collect();
+	let names: Vec<&str> =
+		config.mcps.iter().map(|m| m.name.as_str()).collect();
 
 	assert_eq!(names, vec!["foo"], "Only foo should remain");
 }
@@ -1266,11 +1273,7 @@ fn test_mcp_empty_args_vec() {
 
 	manager.load().unwrap();
 	let config = manager.config().unwrap();
-	let saved = config
-		.mcps
-		.iter()
-		.find(|m| m.name == "empty-args")
-		.unwrap();
+	let saved = config.mcps.iter().find(|m| m.name == "empty-args").unwrap();
 
 	match &saved.transport {
 		McpTransport::Stdio { command, args, .. } => {
@@ -1294,10 +1297,7 @@ fn test_mcp_headers_preserved_on_roundtrip() {
 		"Authorization".to_string(),
 		"Bearer secret-token-123".to_string(),
 	);
-	headers.insert(
-		"X-API-Version".to_string(),
-		"v1".to_string(),
-	);
+	headers.insert("X-API-Version".to_string(), "v1".to_string());
 	let mcp = McpServer::new(
 		"auth-server",
 		McpTransport::streamable_http_with_headers(
@@ -1320,7 +1320,10 @@ fn test_mcp_headers_preserved_on_roundtrip() {
 		McpTransport::StreamableHttp { url, headers, .. } => {
 			assert_eq!(url, "https://secure.example.com/mcp");
 			let h = headers.as_ref().unwrap();
-			assert_eq!(h.get("Authorization"), Some(&"Bearer secret-token-123".to_string()));
+			assert_eq!(
+				h.get("Authorization"),
+				Some(&"Bearer secret-token-123".to_string())
+			);
 			assert_eq!(h.get("X-API-Version"), Some(&"v1".to_string()));
 		}
 		_ => panic!("Expected StreamableHttp"),
@@ -1420,11 +1423,7 @@ fn test_claude_sse_mcp_roundtrip() {
 	// Reload and verify roundtrip
 	manager.load().unwrap();
 	let config = manager.config().unwrap();
-	let server = config
-		.mcps
-		.iter()
-		.find(|m| m.name == "sse-server")
-		.unwrap();
+	let server = config.mcps.iter().find(|m| m.name == "sse-server").unwrap();
 	match &server.transport {
 		McpTransport::Sse { url, headers, .. } => {
 			assert_eq!(url, "http://localhost:3000/sse");

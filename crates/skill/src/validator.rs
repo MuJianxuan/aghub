@@ -320,10 +320,7 @@ mod tests {
 		let skill =
 			make_skill_with_resources(vec![], vec![], vec!["assets/../secret"]);
 		let errors = validate_skill_structure(&skill);
-		assert!(
-			!errors.is_empty(),
-			"Expected error for traversal in assets"
-		);
+		assert!(!errors.is_empty(), "Expected error for traversal in assets");
 		assert!(errors.iter().any(|e| e.contains("..")));
 	}
 

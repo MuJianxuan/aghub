@@ -23,7 +23,12 @@ impl ConfigManager {
 		global: bool,
 		project_root: Option<&Path>,
 	) -> Self {
-		Self::with_scope(adapter, global, project_root, ResourceScope::GlobalOnly)
+		Self::with_scope(
+			adapter,
+			global,
+			project_root,
+			ResourceScope::GlobalOnly,
+		)
 	}
 
 	/// Create a new ConfigManager with resource scope
@@ -99,10 +104,11 @@ impl ConfigManager {
 		// Project first (takes precedence for skills)
 		if let Some(root) = self.project_root.clone() {
 			let project_path = self.adapter.project_config_path(&root);
-			if let Ok(project) =
-				self.adapter
-					.load_config(&project_path, Some(&root), ResourceScope::ProjectOnly)
-			{
+			if let Ok(project) = self.adapter.load_config(
+				&project_path,
+				Some(&root),
+				ResourceScope::ProjectOnly,
+			) {
 				for mut skill in project.skills {
 					seen.insert(skill.name.clone());
 					skill.config_source = Some(ConfigSource::Project);
@@ -117,10 +123,11 @@ impl ConfigManager {
 
 		// Global second
 		let global_path = self.adapter.global_config_path();
-		if let Ok(global) =
-			self.adapter
-				.load_config(&global_path, None, ResourceScope::GlobalOnly)
-		{
+		if let Ok(global) = self.adapter.load_config(
+			&global_path,
+			None,
+			ResourceScope::GlobalOnly,
+		) {
 			for mut skill in global.skills {
 				if !seen.contains(&skill.name) {
 					skill.config_source = Some(ConfigSource::Global);

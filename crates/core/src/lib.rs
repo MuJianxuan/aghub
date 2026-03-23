@@ -3,9 +3,9 @@
 //! Core library for managing Code Agent configurations.
 
 pub mod adapter;
-pub mod all_agents;
 pub mod adapters;
 pub mod agents;
+pub mod all_agents;
 pub mod errors;
 pub mod format;
 pub mod manager;
@@ -28,11 +28,15 @@ pub fn convert_skill(skill_pkg: skill::Skill) -> models::Skill {
 	use skill::SkillSource;
 
 	let source_path = match &skill_pkg.source {
-		SkillSource::SkillMd(p) if !p.as_os_str().is_empty() => format_path_with_tilde(p),
+		SkillSource::SkillMd(p) if !p.as_os_str().is_empty() => {
+			format_path_with_tilde(p)
+		}
 		SkillSource::Directory(p) if !p.as_os_str().is_empty() => {
 			format_path_with_tilde(&p.join("SKILL.md"))
 		}
-		SkillSource::SkillFile(p) | SkillSource::ZipFile(p) if !p.as_os_str().is_empty() => {
+		SkillSource::SkillFile(p) | SkillSource::ZipFile(p)
+			if !p.as_os_str().is_empty() =>
+		{
 			format_path_with_tilde(p)
 		}
 		_ => None,

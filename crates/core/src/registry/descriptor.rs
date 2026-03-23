@@ -72,7 +72,9 @@ pub mod mcp_strategy {
 	}
 
 	// JsonMap with "context_servers" key (Zed)
-	pub fn parse_json_map_context_servers(content: &str) -> Result<AgentConfig> {
+	pub fn parse_json_map_context_servers(
+		content: &str,
+	) -> Result<AgentConfig> {
 		json_map::parse(content, "context_servers")
 	}
 	pub fn serialize_json_map_context_servers(

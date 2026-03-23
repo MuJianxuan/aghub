@@ -1,4 +1,7 @@
-use crate::{errors::Result, models::{AgentConfig, ResourceScope}};
+use crate::{
+	errors::Result,
+	models::{AgentConfig, ResourceScope},
+};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 

@@ -40,7 +40,8 @@ fn get_skills_paths(
 	let mut paths = Vec::new();
 
 	// Check thread-local override first (for testing)
-	if let Some((id, path)) = SKILLS_PATH_OVERRIDE.with(|p| p.borrow().clone()) {
+	if let Some((id, path)) = SKILLS_PATH_OVERRIDE.with(|p| p.borrow().clone())
+	{
 		if id == descriptor.id {
 			paths.push(path);
 			return paths;

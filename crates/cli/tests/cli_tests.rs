@@ -28,8 +28,8 @@ fn test_agent_all_get_skills_is_valid_json_array() {
 		String::from_utf8_lossy(&out.stderr)
 	);
 
-	let json: Value = serde_json::from_slice(&out.stdout)
-		.expect("stdout must be valid JSON");
+	let json: Value =
+		serde_json::from_slice(&out.stdout).expect("stdout must be valid JSON");
 	let arr = json.as_array().expect("output must be a JSON array");
 	assert!(!arr.is_empty(), "array must not be empty");
 
@@ -43,7 +43,8 @@ fn test_agent_all_get_skills_is_valid_json_array() {
 	// fixtures/.cline/ makes fixtures/ the project root, so cline sees:
 	// fixtures/.agents/skills/vercel-react-best-practices/SKILL.md
 	assert!(
-		arr.iter().any(|s| s["agent"] == "cline" && s["name"] == "vercel-react-best-practices"),
+		arr.iter().any(|s| s["agent"] == "cline"
+			&& s["name"] == "vercel-react-best-practices"),
 		"must have cline entry with vercel-react-best-practices skill"
 	);
 }
@@ -63,8 +64,8 @@ fn test_agent_all_get_mcps_is_valid_json_array() {
 		String::from_utf8_lossy(&out.stderr)
 	);
 
-	let json: Value = serde_json::from_slice(&out.stdout)
-		.expect("stdout must be valid JSON");
+	let json: Value =
+		serde_json::from_slice(&out.stdout).expect("stdout must be valid JSON");
 	let arr = json.as_array().expect("output must be a JSON array");
 	assert!(!arr.is_empty(), "array must not be empty");
 
@@ -83,10 +84,7 @@ fn test_agent_all_non_get_command_fails() {
 		.output()
 		.unwrap();
 
-	assert!(
-		!out.status.success(),
-		"--agent all with add should fail"
-	);
+	assert!(!out.status.success(), "--agent all with add should fail");
 	let stderr = String::from_utf8_lossy(&out.stderr);
 	assert!(
 		stderr.contains("all") || stderr.contains("get"),

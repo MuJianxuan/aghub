@@ -55,6 +55,7 @@ body {
 ```
 
 **Enable viewport-fit** in your meta tag:
+
 ```html
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 ```
@@ -77,6 +78,7 @@ body {
 ```
 
 **How it works**:
+
 - `srcset` lists available images with their actual widths (`w` descriptors)
 - `sizes` tells the browser how wide the image will display
 - Browser picks the best file based on viewport width AND device pixel ratio

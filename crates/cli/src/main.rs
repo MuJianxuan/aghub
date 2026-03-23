@@ -241,7 +241,9 @@ fn main() -> Result<()> {
 	};
 
 	// Determine project root if needed for scope
-	let project_root = if scope == ResourceScope::ProjectOnly || scope == ResourceScope::Both {
+	let project_root = if scope == ResourceScope::ProjectOnly
+		|| scope == ResourceScope::Both
+	{
 		let current_dir = std::env::current_dir()?;
 		find_project_root(&current_dir)
 	} else {

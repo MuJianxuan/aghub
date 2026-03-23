@@ -230,3 +230,63 @@ fn test_source_path_update_targets_original_directory() {
 		"Skill should be updated at original source path"
 	);
 }
+
+#[test]
+fn test_rename_skill_migrates_sanitized_directory() {
+	let test =
+		aghub_core::testing::TestConfig::new(aghub_core::AgentType::Claude)
+			.unwrap();
+
+	test.create_test_skill("alpha-skill", Some("original"))
+		.unwrap();
+
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let skill = manager.get_skill("alpha-skill").unwrap().clone();
+	let mut renamed = skill;
+	renamed.name = "beta-skill".to_string();
+	renamed.description = Some("renamed".to_string());
+	manager.update_skill("alpha-skill", renamed).unwrap();
+
+	assert!(
+		!test.skills_dir().join("alpha-skill").exists(),
+		"Old directory should be removed after rename"
+	);
+
+	let content =
+		std::fs::read_to_string(test.skills_dir().join("beta-skill/SKILL.md"))
+			.unwrap();
+	assert!(content.contains("beta-skill"));
+	assert!(content.contains("renamed"));
+}
+
+#[test]
+fn test_delete_skill_with_slash_removes_sanitized_directory() {
+	let test =
+		aghub_core::testing::TestConfig::new(aghub_core::AgentType::Claude)
+			.unwrap();
+
+	let skill_dir = test.skills_dir().join("owner-repo");
+	std::fs::create_dir_all(&skill_dir).unwrap();
+	std::fs::write(
+		skill_dir.join("SKILL.md"),
+		"---\nname: owner/repo\ndescription: test\n---\n\n# Skill\n",
+	)
+	.unwrap();
+
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	assert!(
+		manager.get_skill("owner/repo").is_some(),
+		"Should discover skill with slash in name"
+	);
+
+	manager.remove_skill("owner/repo").unwrap();
+
+	assert!(
+		!skill_dir.exists(),
+		"Sanitized directory should be removed on delete"
+	);
+}

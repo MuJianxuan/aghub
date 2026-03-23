@@ -57,6 +57,7 @@ dependencies = [
  "dirs 5.0.1",
  "serde",
  "serde_json",
+ "serde_yaml",
  "skill",
  "tempfile",
  "thiserror 1.0.69",

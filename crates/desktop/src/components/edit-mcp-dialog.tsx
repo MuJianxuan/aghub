@@ -277,13 +277,15 @@ export function EditMcpDialog({ server, isOpen, onClose }: EditMcpDialogProps) {
               </TextField>
 
               {/* Enabled */}
-              <Label>
-                <Checkbox
-                  isSelected={enabled}
-                  onChange={setEnabled}
-                />
-                {t("enabled")}
-              </Label>
+              <Checkbox
+                isSelected={enabled}
+                onChange={setEnabled}
+              >
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Label>{t("enabled")}</Label>
+              </Checkbox>
             </Fieldset>
           </Modal.Body>
           <Modal.Footer>

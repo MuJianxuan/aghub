@@ -265,13 +265,15 @@ export function CreateMcpDialog({ isOpen, onClose }: CreateMcpDialogProps) {
               </TextField>
 
               {/* Enabled */}
-              <Label>
-                <Checkbox
-                  isSelected={enabled}
-                  onChange={setEnabled}
-                />
-                {t("enabled")}
-              </Label>
+              <Checkbox
+                isSelected={enabled}
+                onChange={setEnabled}
+              >
+                <Checkbox.Control>
+                  <Checkbox.Indicator />
+                </Checkbox.Control>
+                <Label>{t("enabled")}</Label>
+              </Checkbox>
 
               {/* Agent Selection */}
               <div className="flex flex-col gap-2">

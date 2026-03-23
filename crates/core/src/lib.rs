@@ -6,6 +6,7 @@ pub mod adapter;
 pub mod adapters;
 pub mod agents;
 pub mod all_agents;
+pub mod availability;
 pub mod errors;
 pub mod format;
 pub mod manager;

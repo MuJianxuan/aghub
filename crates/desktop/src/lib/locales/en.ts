@@ -3,6 +3,7 @@ export default {
 	settings: "Settings",
 	skills: "Skills",
 	mcpServers: "MCP Servers",
+	agentManagement: "Agent Management",
 	projects: "Projects",
 	search: "Search",
 	add: "Add",
@@ -22,6 +23,16 @@ export default {
 	system: "System",
 	english: "English",
 	chinese: "中文",
+
+	// Agent Management
+	agentManagementDescription:
+		"Manage which agents are available for creating skills and MCP servers. Disable agents you don't use.",
+	globalConfig: "Global Config",
+	cli: "CLI",
+	available: "Available",
+	notAvailable: "Not Available",
+	disabledByUser: "Disabled",
+	toggleAgent: "Toggle {{name}}",
 
 	// Skills Page
 	searchSkills: "Search skills...",
@@ -68,6 +79,9 @@ export default {
 	createMcpServer: "Create MCP Server",
 	creating: "Creating...",
 	agents: "Agents",
+	noAgentsAvailable: "No agents available",
+	noAgentsAvailableHelp:
+		"Install or enable at least one agent to create MCP servers.",
 
 	// Projects
 	addProject: "Add Project",

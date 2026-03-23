@@ -1,11 +1,6 @@
 import { Store } from "@tauri-apps/plugin-store";
 
-const CURRENT_VERSION = 1;
-
-interface StoreData {
-	version: number;
-	projects: Project[];
-}
+const CURRENT_VERSION = 2;
 
 export interface Project {
 	id: string;
@@ -32,11 +27,10 @@ async function migrate(store: Store): Promise<void> {
 		await store.set("projects", []);
 	}
 
-	// Future migrations:
-	// if (version < 2) {
-	//   const projects = await store.get<Project[]>("projects") ?? []
-	//   await store.set("projects", projects.map(p => ({ ...p, newField: defaultValue })))
-	// }
+	// Migration v1 -> v2: add disabledAgents
+	if (version < 2) {
+		await store.set("disabledAgents", []);
+	}
 
 	await store.set("version", CURRENT_VERSION);
 	await store.save();
@@ -87,4 +81,30 @@ export async function updateProject(
 		projects.map((p) => (p.id === id ? { ...p, ...updates } : p)),
 	);
 	await store.save();
+}
+
+// Disabled agents management
+export async function getDisabledAgents(): Promise<string[]> {
+	const store = await getStore();
+	return (await store.get<string[]>("disabledAgents")) ?? [];
+}
+
+export async function setDisabledAgents(
+	agentIds: string[],
+): Promise<void> {
+	const store = await getStore();
+	await store.set("disabledAgents", agentIds);
+	await store.save();
+}
+
+export async function disableAgent(agentId: string): Promise<void> {
+	const disabled = await getDisabledAgents();
+	if (!disabled.includes(agentId)) {
+		await setDisabledAgents([...disabled, agentId]);
+	}
+}
+
+export async function enableAgent(agentId: string): Promise<void> {
+	const disabled = await getDisabledAgents();
+	await setDisabledAgents(disabled.filter((id) => id !== agentId));
 }

@@ -45,6 +45,7 @@ pub async fn start(options: ApiOptions) -> Result<(), rocket::Error> {
 			"/api/v1",
 			routes![
 				routes::agents::list_agents,
+				routes::agents::check_availability,
 				routes::skills::list_all_agents_skills,
 				routes::skills::list_skills,
 				routes::skills::create_skill,

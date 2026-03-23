@@ -20,6 +20,13 @@ export interface AgentInfo {
 	};
 }
 
+export interface AgentAvailability {
+	id: string;
+	has_global_directory: boolean;
+	has_cli: boolean;
+	is_available: boolean;
+}
+
 export function createApi(baseUrl: string) {
 	const client = ky.create({ prefixUrl: baseUrl });
 
@@ -27,6 +34,9 @@ export function createApi(baseUrl: string) {
 		agents: {
 			list(): Promise<AgentInfo[]> {
 				return client.get("agents").json();
+			},
+			availability(): Promise<AgentAvailability[]> {
+				return client.get("agents/availability").json();
 			},
 		},
 		skills: {

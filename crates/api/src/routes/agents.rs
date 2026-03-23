@@ -1,4 +1,4 @@
-use aghub_core::registry;
+use aghub_core::{availability, registry};
 use rocket::serde::json::Json;
 use serde::Serialize;
 
@@ -18,6 +18,14 @@ pub struct AgentInfo {
 	pub capabilities: CapabilitiesDto,
 }
 
+#[derive(Debug, Serialize)]
+pub struct AgentAvailabilityDto {
+	pub id: &'static str,
+	pub has_global_directory: bool,
+	pub has_cli: bool,
+	pub is_available: bool,
+}
+
 #[get("/agents")]
 pub fn list_agents() -> Json<Vec<AgentInfo>> {
 	let agents = registry::iter_all()
@@ -34,4 +42,21 @@ pub fn list_agents() -> Json<Vec<AgentInfo>> {
 		})
 		.collect();
 	Json(agents)
+}
+
+#[get("/agents/availability")]
+pub fn check_availability() -> Json<Vec<AgentAvailabilityDto>> {
+	let availability_info = availability::check_all_agents_availability();
+
+	let dtos: Vec<AgentAvailabilityDto> = availability_info
+		.into_iter()
+		.map(|info| AgentAvailabilityDto {
+			id: info.agent_id,
+			has_global_directory: info.has_global_directory,
+			has_cli: info.has_cli,
+			is_available: info.is_available,
+		})
+		.collect();
+
+	Json(dtos)
 }

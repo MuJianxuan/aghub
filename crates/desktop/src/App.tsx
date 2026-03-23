@@ -5,12 +5,14 @@ import { Route, Router, Switch } from "wouter";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { SettingsLayout } from "./layouts/settings-layout";
 import { initStore } from "./lib/store";
+import { AgentAvailabilityProvider } from "./providers/agent-availability";
 import { ServerProvider } from "./providers/server";
 import { ThemeProvider } from "./providers/theme";
 import "./lib/i18n";
 import HomePage from "./pages/home";
 import ProjectDetailPage from "./pages/project/detail";
 import SettingsPage from "./pages/settings";
+import AgentManagementPage from "./pages/settings/agent-management";
 import CustomAgentsPage from "./pages/settings/custom-agents";
 import MCPServersPage from "./pages/settings/mcp-servers";
 import SkillsPage from "./pages/settings/skills";
@@ -58,59 +60,66 @@ function App() {
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider>
 				<ServerProvider>
-					<Router>
-						<Switch>
-							<Route path="/" component={HomePage} />
-							<Route path="/settings/skills">
-								<SettingsLayout>
-									<ErrorBoundary>
-										<Suspense
-											fallback={<SkillsPageSkeleton />}
-										>
-											<SkillsPage />
-										</Suspense>
-									</ErrorBoundary>
-								</SettingsLayout>
-							</Route>
-							<Route path="/settings/mcp-servers">
-								<SettingsLayout>
-									<ErrorBoundary>
-										<Suspense
-											fallback={<SkillsPageSkeleton />}
-										>
-											<MCPServersPage />
-										</Suspense>
-									</ErrorBoundary>
-								</SettingsLayout>
-							</Route>
-							<Route path="/settings/custom-agents">
-								<SettingsLayout>
-									<CustomAgentsPage />
-								</SettingsLayout>
-							</Route>
-							<Route path="/settings">
-								<SettingsLayout>
-									<SettingsPage />
-								</SettingsLayout>
-							</Route>
-							<Route path="/projects/:id">
-								<SettingsLayout>
-									<ProjectDetailPage />
-								</SettingsLayout>
-							</Route>
-							<Route>
-								<SettingsLayout>
-									<ErrorBoundary>
-										<Suspense
-											fallback={<SkillsPageSkeleton />}
-										>
-											<SkillsPage />
-										</Suspense>
-									</ErrorBoundary>
-								</SettingsLayout>
-							</Route>
-						</Switch>
-					</Router>
+					<AgentAvailabilityProvider>
+						<Router>
+							<Switch>
+								<Route path="/" component={HomePage} />
+								<Route path="/settings/skills">
+									<SettingsLayout>
+										<ErrorBoundary>
+											<Suspense
+												fallback={<SkillsPageSkeleton />}
+											>
+												<SkillsPage />
+											</Suspense>
+										</ErrorBoundary>
+									</SettingsLayout>
+								</Route>
+								<Route path="/settings/mcp-servers">
+									<SettingsLayout>
+										<ErrorBoundary>
+											<Suspense
+												fallback={<SkillsPageSkeleton />}
+											>
+												<MCPServersPage />
+											</Suspense>
+										</ErrorBoundary>
+									</SettingsLayout>
+								</Route>
+								<Route path="/settings/agents">
+									<SettingsLayout>
+										<AgentManagementPage />
+									</SettingsLayout>
+								</Route>
+								<Route path="/settings/custom-agents">
+									<SettingsLayout>
+										<CustomAgentsPage />
+									</SettingsLayout>
+								</Route>
+								<Route path="/settings">
+									<SettingsLayout>
+										<SettingsPage />
+									</SettingsLayout>
+								</Route>
+								<Route path="/projects/:id">
+									<SettingsLayout>
+										<ProjectDetailPage />
+									</SettingsLayout>
+								</Route>
+								<Route>
+									<SettingsLayout>
+										<ErrorBoundary>
+											<Suspense
+												fallback={<SkillsPageSkeleton />}
+											>
+												<SkillsPage />
+											</Suspense>
+										</ErrorBoundary>
+									</SettingsLayout>
+								</Route>
+							</Switch>
+						</Router>
+					</AgentAvailabilityProvider>
 				</ServerProvider>
 			</ThemeProvider>
 		</QueryClientProvider>

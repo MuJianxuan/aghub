@@ -11,12 +11,13 @@ import {
 	TextArea,
 	TextField,
 } from "@heroui/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createApi } from "../lib/api";
 import type { TransportDto } from "../lib/api-types";
 import { useServer } from "../providers/server";
+import { useAgentAvailability } from "../providers/agent-availability";
 
 interface CreateMcpDialogProps {
 	isOpen: boolean;
@@ -28,12 +29,10 @@ export function CreateMcpDialog({ isOpen, onClose }: CreateMcpDialogProps) {
 	const { baseUrl } = useServer();
 	const api = createApi(baseUrl);
 	const queryClient = useQueryClient();
+	const { availableAgents } = useAgentAvailability();
 
-	// Fetch available agents
-	const { data: agents = [] } = useQuery({
-		queryKey: ["agents"],
-		queryFn: () => api.agents.list(),
-	});
+	// Get only usable agents (available and not disabled)
+	const usableAgents = availableAgents.filter((a) => a.isUsable);
 
 	const [name, setName] = useState("");
 	const [transportType, setTransportType] = useState<
@@ -164,6 +163,7 @@ export function CreateMcpDialog({ isOpen, onClose }: CreateMcpDialogProps) {
 		if (transportType === "stdio" && !command.trim()) return false;
 		if (transportType !== "stdio" && !url.trim()) return false;
 		if (selectedAgents.size === 0) return false;
+		if (usableAgents.length === 0) return false;
 		return true;
 	};
 
@@ -354,32 +354,43 @@ export function CreateMcpDialog({ isOpen, onClose }: CreateMcpDialogProps) {
 								<Fieldset.Group>
 									<div className="flex flex-col gap-2">
 										<Label>{t("agents")}</Label>
-										<div className="flex flex-wrap gap-2">
-											{agents.map((agent) => {
-												const isSelected =
-													selectedAgents.has(
-														agent.id,
+										{usableAgents.length === 0 ? (
+											<div className="text-sm text-muted">
+												<p className="font-medium mb-1">
+													{t("noAgentsAvailable")}
+												</p>
+												<p className="text-xs">
+													{t("noAgentsAvailableHelp")}
+												</p>
+											</div>
+										) : (
+											<div className="flex flex-wrap gap-2">
+												{usableAgents.map((agent) => {
+													const isSelected =
+														selectedAgents.has(
+															agent.id,
+														);
+													return (
+														<button
+															key={agent.id}
+															type="button"
+															onClick={() =>
+																toggleAgent(
+																	agent.id,
+																)
+															}
+															className={`px-2.5 py-1 text-sm rounded-full border transition-colors ${
+																isSelected
+																	? "bg-accent text-accent-foreground border-accent"
+																	: "bg-transparent text-muted border-default-200 hover:border-default-300"
+															}`}
+														>
+															{agent.display_name}
+														</button>
 													);
-												return (
-													<button
-														key={agent.id}
-														type="button"
-														onClick={() =>
-															toggleAgent(
-																agent.id,
-															)
-														}
-														className={`px-2.5 py-1 text-sm rounded-full border transition-colors ${
-															isSelected
-																? "bg-accent text-accent-foreground border-accent"
-																: "bg-transparent text-muted border-default-200 hover:border-default-300"
-														}`}
-													>
-														{agent.display_name}
-													</button>
-												);
-											})}
-										</div>
+												})}
+											</div>
+										)}
 									</div>
 								</Fieldset.Group>
 							</Fieldset>

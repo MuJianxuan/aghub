@@ -3,6 +3,7 @@ export default {
 	settings: "设置",
 	skills: "技能",
 	mcpServers: "MCP 服务器",
+	agentManagement: "代理管理",
 	projects: "项目",
 	search: "搜索",
 	add: "添加",
@@ -22,6 +23,16 @@ export default {
 	system: "跟随系统",
 	english: "English",
 	chinese: "中文",
+
+	// Agent Management
+	agentManagementDescription:
+		"管理哪些代理可用于创建技能和 MCP 服务器。禁用你不使用的代理。",
+	globalConfig: "全局配置",
+	cli: "命令行工具",
+	available: "可用",
+	notAvailable: "不可用",
+	disabledByUser: "已禁用",
+	toggleAgent: "切换 {{name}}",
 
 	// Skills Page
 	searchSkills: "搜索技能...",
@@ -67,6 +78,8 @@ export default {
 	createMcpServer: "创建 MCP 服务器",
 	creating: "创建中...",
 	agents: "代理",
+	noAgentsAvailable: "没有可用的代理",
+	noAgentsAvailableHelp: "安装或启用至少一个代理以创建 MCP 服务器。",
 
 	// Projects
 	addProject: "添加项目",

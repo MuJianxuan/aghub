@@ -20,7 +20,7 @@ import { AgentCard } from "../../components/agent-card";
 export default function SettingsPage() {
 	const { t, i18n } = useTranslation();
 	const { theme, setTheme } = useTheme();
-	const { availableAgents, refetch } = useAgentAvailability();
+	const { availableAgents, refreshDisabledAgents } = useAgentAvailability();
 	const [updating, setUpdating] = useState<string | null>(null);
 	const [selectedTab, setSelectedTab] = useState<string>("appearance");
 
@@ -40,7 +40,7 @@ export default function SettingsPage() {
 			} else {
 				await disableAgent(agentId);
 			}
-			refetch();
+			await refreshDisabledAgents();
 		} finally {
 			setUpdating(null);
 		}

@@ -22,6 +22,7 @@ interface AgentAvailabilityContext {
 	allAgents: AgentInfo[];
 	isLoading: boolean;
 	refetch: () => void;
+	refreshDisabledAgents: () => Promise<void>;
 }
 
 const AgentAvailabilityContext = createContext<AgentAvailabilityContext | null>(
@@ -73,6 +74,12 @@ export function AgentAvailabilityProvider({
 		});
 	}, []);
 
+	// Function to refresh disabled agents from store
+	const refreshDisabledAgents = async () => {
+		const disabled = await getDisabledAgents();
+		setDisabledAgents(new Set(disabled));
+	};
+
 	// Combine data
 	const availableAgents: AvailableAgent[] = allAgents.map((agent: AgentInfo) => {
 		const availability: AgentAvailability =
@@ -117,6 +124,7 @@ export function AgentAvailabilityProvider({
 				allAgents,
 				isLoading,
 				refetch,
+				refreshDisabledAgents,
 			}}
 		>
 			{children}

@@ -19,10 +19,12 @@ pub async fn start(options: ApiOptions) -> Result<(), rocket::Error> {
         ..rocket::Config::default()
     };
     let cors = rocket_cors::CorsOptions {
-        // TODO: Make this configurable before release
         allowed_origins: rocket_cors::AllOrSome::All,
-        allowed_methods: vec![rocket::http::Method::Get].into_iter().map(From::from).collect(),
-        allowed_headers: rocket_cors::AllowedHeaders::some(&["Authorization", "Accept"]),
+        allowed_methods: vec![rocket::http::Method::Get, rocket::http::Method::Post, rocket::http::Method::Put, rocket::http::Method::Delete]
+            .into_iter()
+            .map(From::from)
+            .collect(),
+        allowed_headers: rocket_cors::AllowedHeaders::some(&["Authorization", "Accept", "Content-Type"]),
         allow_credentials: true,
         ..Default::default()
     }

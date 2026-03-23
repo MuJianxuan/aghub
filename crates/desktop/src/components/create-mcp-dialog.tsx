@@ -163,142 +163,166 @@ export function CreateMcpDialog({ isOpen, onClose }: CreateMcpDialogProps) {
             <Modal.Heading>{t("createMcpServer")}</Modal.Heading>
           </Modal.Header>
           <Modal.Body>
-            <Fieldset>
+            <div className="flex flex-col gap-4">
               {/* Name */}
-              <TextField className="w-full">
-                <Label>{t("name")}</Label>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder={t("serverName")}
-                />
-              </TextField>
+              <Fieldset>
+                <Fieldset.Group>
+                  <TextField className="w-full">
+                    <Label>{t("name")}</Label>
+                    <Input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder={t("serverName")}
+                    />
+                  </TextField>
+                </Fieldset.Group>
+              </Fieldset>
 
               {/* Transport Type */}
-              <TextField className="w-full">
-                <Label>{t("transportType")}</Label>
-                <Select
-                  selectedKey={transportType}
-                  onSelectionChange={(key) => setTransportType(key as "stdio" | "sse" | "streamable_http")}
-                >
-                  <Select.Trigger>
-                    <Select.Value />
-                    <Select.Indicator />
-                  </Select.Trigger>
-                  <Select.Popover>
-                    <ListBox>
-                      <ListBox.Item id="stdio" textValue="stdio">stdio</ListBox.Item>
-                      <ListBox.Item id="sse" textValue="sse">sse</ListBox.Item>
-                      <ListBox.Item id="streamable_http" textValue="streamable_http">streamable_http</ListBox.Item>
-                    </ListBox>
-                  </Select.Popover>
-                </Select>
-              </TextField>
+              <Fieldset>
+                <Fieldset.Group>
+                  <TextField className="w-full">
+                    <Label>{t("transportType")}</Label>
+                    <Select
+                      selectedKey={transportType}
+                      onSelectionChange={(key) => setTransportType(key as "stdio" | "sse" | "streamable_http")}
+                    >
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox>
+                          <ListBox.Item id="stdio" textValue="stdio">stdio</ListBox.Item>
+                          <ListBox.Item id="sse" textValue="sse">sse</ListBox.Item>
+                          <ListBox.Item id="streamable_http" textValue="streamable_http">streamable_http</ListBox.Item>
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  </TextField>
+                </Fieldset.Group>
+              </Fieldset>
 
               {/* Stdio fields */}
               {transportType === "stdio" && (
-                <>
-                  <TextField className="w-full">
-                    <Label>{t("command")}</Label>
-                    <Input
-                      value={command}
-                      onChange={(e) => setCommand(e.target.value)}
-                      placeholder="npx"
-                    />
-                  </TextField>
-                  <TextField className="w-full">
-                    <Label>{t("args")}</Label>
-                    <Input
-                      value={args}
-                      onChange={(e) => setArgs(e.target.value)}
-                      placeholder="-y @modelcontextprotocol/server-filesystem"
-                    />
-                    <Description>{t("argsHelp")}</Description>
-                  </TextField>
-                  <TextField className="w-full">
-                    <Label>{t("env")}</Label>
-                    <textarea
-                      value={env}
-                      onChange={(e) => setEnv(e.target.value)}
-                      placeholder="KEY=value&#10;ANOTHER_KEY=value"
-                      className="w-full min-h-[80px] px-3 py-2 text-sm border border-default-200 rounded-md bg-background text-foreground resize-y font-mono"
-                    />
-                    <Description>{t("envHelp")}</Description>
-                  </TextField>
-                </>
+                <Fieldset>
+                  <Fieldset.Group>
+                    <TextField className="w-full">
+                      <Label>{t("command")}</Label>
+                      <Input
+                        value={command}
+                        onChange={(e) => setCommand(e.target.value)}
+                        placeholder="npx"
+                      />
+                    </TextField>
+                    <TextField className="w-full">
+                      <Label>{t("args")}</Label>
+                      <Input
+                        value={args}
+                        onChange={(e) => setArgs(e.target.value)}
+                        placeholder="-y @modelcontextprotocol/server-filesystem"
+                      />
+                      <Description>{t("argsHelp")}</Description>
+                    </TextField>
+                    <TextField className="w-full">
+                      <Label>{t("env")}</Label>
+                      <textarea
+                        value={env}
+                        onChange={(e) => setEnv(e.target.value)}
+                        placeholder="KEY=value&#10;ANOTHER_KEY=value"
+                        className="w-full min-h-[80px] px-3 py-2 text-sm border border-default-200 rounded-md bg-background text-foreground resize-y font-mono"
+                      />
+                      <Description>{t("envHelp")}</Description>
+                    </TextField>
+                  </Fieldset.Group>
+                </Fieldset>
               )}
 
               {/* HTTP fields */}
               {(transportType === "sse" || transportType === "streamable_http") && (
-                <>
-                  <TextField className="w-full">
-                    <Label>URL</Label>
-                    <Input
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      placeholder="http://localhost:3000/sse"
-                    />
-                  </TextField>
-                  <TextField className="w-full">
-                    <Label>{t("headers")}</Label>
-                    <textarea
-                      value={headers}
-                      onChange={(e) => setHeaders(e.target.value)}
-                      placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
-                      className="w-full min-h-[80px] px-3 py-2 text-sm border border-default-200 rounded-md bg-background text-foreground resize-y font-mono"
-                    />
-                    <Description>{t("headersHelp")}</Description>
-                  </TextField>
-                </>
+                <Fieldset>
+                  <Fieldset.Group>
+                    <TextField className="w-full">
+                      <Label>URL</Label>
+                      <Input
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder="http://localhost:3000/sse"
+                      />
+                    </TextField>
+                    <TextField className="w-full">
+                      <Label>{t("headers")}</Label>
+                      <textarea
+                        value={headers}
+                        onChange={(e) => setHeaders(e.target.value)}
+                        placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
+                        className="w-full min-h-[80px] px-3 py-2 text-sm border border-default-200 rounded-md bg-background text-foreground resize-y font-mono"
+                      />
+                      <Description>{t("headersHelp")}</Description>
+                    </TextField>
+                  </Fieldset.Group>
+                </Fieldset>
               )}
 
               {/* Timeout */}
-              <TextField className="w-full">
-                <Label>{t("timeout")}</Label>
-                <Input
-                  type="number"
-                  value={timeout}
-                  onChange={(e) => setTimeoutValue(e.target.value)}
-                  placeholder="60"
-                />
-                <Description>{t("timeoutHelp")}</Description>
-              </TextField>
+              <Fieldset>
+                <Fieldset.Group>
+                  <TextField className="w-full">
+                    <Label>{t("timeout")}</Label>
+                    <Input
+                      type="number"
+                      value={timeout}
+                      onChange={(e) => setTimeoutValue(e.target.value)}
+                      placeholder="60"
+                    />
+                    <Description>{t("timeoutHelp")}</Description>
+                  </TextField>
+                </Fieldset.Group>
+              </Fieldset>
 
               {/* Enabled */}
-              <Checkbox
-                isSelected={enabled}
-                onChange={setEnabled}
-              >
-                <Checkbox.Control>
-                  <Checkbox.Indicator />
-                </Checkbox.Control>
-                <Label>{t("enabled")}</Label>
-              </Checkbox>
+              <Fieldset>
+                <Fieldset.Group>
+                  <Checkbox
+                    isSelected={enabled}
+                    onChange={setEnabled}
+                  >
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <Label>{t("enabled")}</Label>
+                  </Checkbox>
+                </Fieldset.Group>
+              </Fieldset>
 
               {/* Agent Selection */}
-              <div className="flex flex-col gap-2">
-                <Label>{t("agents")}</Label>
-                <div className="flex flex-wrap gap-2">
-                  {agents.map((agent) => {
-                    const isSelected = selectedAgents.has(agent.id)
-                    return (
-                      <button
-                        key={agent.id}
-                        type="button"
-                        onClick={() => toggleAgent(agent.id)}
-                        className={`px-2.5 py-1 text-sm rounded-full border transition-colors ${
-                          isSelected
-                            ? "bg-accent text-accent-foreground border-accent"
-                            : "bg-transparent text-muted border-default-200 hover:border-default-300"
-                        }`}
-                      >
-                        {agent.display_name}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </Fieldset>
+              <Fieldset>
+                <Fieldset.Group>
+                  <div className="flex flex-col gap-2">
+                    <Label>{t("agents")}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {agents.map((agent) => {
+                        const isSelected = selectedAgents.has(agent.id)
+                        return (
+                          <button
+                            key={agent.id}
+                            type="button"
+                            onClick={() => toggleAgent(agent.id)}
+                            className={`px-2.5 py-1 text-sm rounded-full border transition-colors ${
+                              isSelected
+                                ? "bg-accent text-accent-foreground border-accent"
+                                : "bg-transparent text-muted border-default-200 hover:border-default-300"
+                            }`}
+                          >
+                            {agent.display_name}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </Fieldset.Group>
+              </Fieldset>
+            </div>
           </Modal.Body>
           <Modal.Footer>
             <Button slot="close" variant="secondary" onPress={onClose}>

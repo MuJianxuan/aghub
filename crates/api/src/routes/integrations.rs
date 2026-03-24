@@ -1,28 +1,15 @@
 use std::process::Command;
 
 use rocket::serde::json::Json;
+use which::which;
 
 use crate::dto::integrations::{
 	CodeEditorType, OpenInTerminalRequest, OpenWithEditorRequest, TerminalType,
 	ToolInfoDto, ToolTypeDto,
 };
 
-fn is_command_available(command: &str) -> bool {
-	Command::new("which")
-		.arg(command)
-		.output()
-		.map(|output| output.status.success())
-		.unwrap_or(false)
-}
-
 fn get_code_editor_info(editor: &CodeEditorType) -> ToolInfoDto {
-	let installed = is_command_available(editor.cli_command());
-
-	let path = if installed {
-		Some(format!("$(which {})", editor.cli_command()))
-	} else {
-		None
-	};
+	let path = which(editor.cli_command()).ok().map(|p| p.to_string_lossy().to_string());
 
 	ToolInfoDto {
 		id: serde_json::to_string(editor)
@@ -30,24 +17,17 @@ fn get_code_editor_info(editor: &CodeEditorType) -> ToolInfoDto {
 			.trim_matches('"')
 			.to_string(),
 		name: editor.display_name().to_string(),
-		installed,
+		installed: path.is_some(),
 		path,
 		tool_type: ToolTypeDto::CodeEditor,
 	}
 }
 
 fn get_terminal_info(terminal: &TerminalType) -> ToolInfoDto {
-	let installed = terminal
+	let path = terminal
 		.cli_command()
-		.map_or(false, |cmd| is_command_available(cmd));
-
-	let path = if installed {
-		terminal
-			.cli_command()
-			.map(|cmd| format!("$(which {})", cmd))
-	} else {
-		None
-	};
+		.and_then(|cmd| which(cmd).ok())
+		.map(|p| p.to_string_lossy().to_string());
 
 	ToolInfoDto {
 		id: serde_json::to_string(terminal)
@@ -55,7 +35,7 @@ fn get_terminal_info(terminal: &TerminalType) -> ToolInfoDto {
 			.trim_matches('"')
 			.to_string(),
 		name: terminal.display_name().to_string(),
-		installed,
+		installed: path.is_some(),
 		path,
 		tool_type: ToolTypeDto::Terminal,
 	}

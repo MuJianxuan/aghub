@@ -15,6 +15,8 @@ export default {
 	create: "Create",
 	copy: "Copy",
 	disabled: "Disabled",
+	all: "All",
+	enabled: "Enabled",
 
 	// Settings
 	appearance: "Appearance",
@@ -28,6 +30,8 @@ export default {
 	english: "English",
 	chinese: "中文",
 	noAgentsDescription: "Install AI coding agents to manage them here.",
+	searchAgents: "Search agents...",
+	adjustFiltersDescription: "Try adjusting your search or filters.",
 
 	// Integrations
 	integrations: "Integrations",
@@ -44,6 +48,10 @@ export default {
 	notAvailable: "Not Available",
 	disabledByUser: "Disabled",
 	toggleAgent: "Toggle {{name}}",
+	enableAgentTooltip: "Enable {{name}} to use it in projects",
+	disableAgentTooltip: "Disable {{name}} to hide it from project options",
+	supports: "Supports",
+	cliName: "CLI command",
 
 	// Skills Page
 	searchSkills: "Search skills...",

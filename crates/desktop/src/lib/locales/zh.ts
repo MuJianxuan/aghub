@@ -28,6 +28,11 @@ export default {
 	english: "English",
 	chinese: "中文",
 	noAgentsDescription: "安装 AI 编码代理以在此管理它们。",
+	searchAgents: "搜索代理...",
+	adjustFiltersDescription: "尝试调整搜索或筛选条件。",
+	all: "全部",
+	enabled: "已启用",
+	disabled: "已禁用",
 
 	// Integrations
 	integrations: "集成",
@@ -44,6 +49,10 @@ export default {
 	notAvailable: "不可用",
 	disabledByUser: "已禁用",
 	toggleAgent: "切换 {{name}}",
+	enableAgentTooltip: "启用 {{name}} 以在项目中使用",
+	disableAgentTooltip: "禁用 {{name}} 以从项目选项中隐藏",
+	supports: "支持",
+	cliName: "CLI 命令",
 
 	// Skills Page
 	searchSkills: "搜索技能...",

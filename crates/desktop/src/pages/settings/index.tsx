@@ -1,10 +1,13 @@
 import {
 	ComputerDesktopIcon,
+	MagnifyingGlassIcon,
 	MoonIcon,
 	SunIcon,
 	UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import {
+	Button,
+	Input,
 	ListBox,
 	Select,
 	Tabs,
@@ -28,6 +31,8 @@ export default function SettingsPage() {
 	const [selectedTab, setSelectedTab] = useQueryState("tab", {
 		defaultValue: "appearance",
 	});
+	const [agentFilter, setAgentFilter] = useState<"all" | "enabled" | "disabled">("all");
+	const [agentSearch, setAgentSearch] = useState("");
 
 	const changeLanguage = (lng: string) => {
 		i18n.changeLanguage(lng);
@@ -191,36 +196,94 @@ export default function SettingsPage() {
 
 					<Tabs.Panel id="agents">
 						{(() => {
-							const filteredAgents = availableAgents.filter(
+							let filteredAgents = availableAgents.filter(
 								(agent) => agent.availability.is_available,
 							);
 
-							if (filteredAgents.length === 0) {
-								return (
-									<div className="flex flex-col items-center justify-center rounded-lg bg-[var(--surface)] py-16 text-center">
-										<div className="mb-4 text-[var(--muted)]">
-											<UserGroupIcon className="mx-auto size-12" />
-										</div>
-										<p className="text-sm font-medium text-[var(--foreground)]">
-											{t("noAgentsAvailable")}
-										</p>
-										<p className="mt-1 max-w-sm text-xs text-[var(--muted)]">
-											{t("noAgentsDescription")}
-										</p>
-									</div>
+							// Apply search filter
+							if (agentSearch.trim()) {
+								const search = agentSearch.toLowerCase();
+								filteredAgents = filteredAgents.filter(
+									(agent) =>
+										agent.display_name.toLowerCase().includes(search) ||
+										agent.id.toLowerCase().includes(search),
 								);
 							}
 
+							// Apply status filter
+							if (agentFilter === "enabled") {
+								filteredAgents = filteredAgents.filter((agent) => !agent.isDisabled);
+							} else if (agentFilter === "disabled") {
+								filteredAgents = filteredAgents.filter((agent) => agent.isDisabled);
+							}
+
 							return (
-								<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-									{filteredAgents.map((agent) => (
-										<AgentCard
-											key={agent.id}
-											agent={agent}
-											isUpdating={updating === agent.id}
-											onToggle={handleToggleAgent}
+								<div className="space-y-3">
+									{/* Search and Filter Bar */}
+									<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+										<Input
+											placeholder={t("searchAgents")}
+											value={agentSearch}
+											onChange={(e) => setAgentSearch(e.target.value)}
+											startContent={
+												<MagnifyingGlassIcon className="size-4 text-[var(--muted)]" />
+											}
+											className="w-full sm:w-64"
 										/>
-									))}
+										<div className="flex gap-1">
+											<Button
+												size="sm"
+												variant={agentFilter === "all" ? "solid" : "ghost"}
+												onPress={() => setAgentFilter("all")}
+											>
+												{t("all")}
+											</Button>
+											<Button
+												size="sm"
+												variant={agentFilter === "enabled" ? "solid" : "ghost"}
+												onPress={() => setAgentFilter("enabled")}
+											>
+												{t("enabled")}
+											</Button>
+											<Button
+												size="sm"
+												variant={agentFilter === "disabled" ? "solid" : "ghost"}
+												onPress={() => setAgentFilter("disabled")}
+											>
+												{t("disabled")}
+											</Button>
+										</div>
+									</div>
+
+									{/* Agents Grid */}
+									{filteredAgents.length === 0 ? (
+										<div className="flex flex-col items-center justify-center rounded-lg bg-[var(--surface)] py-16 text-center">
+											<div className="mb-4 text-[var(--muted)]">
+												<UserGroupIcon className="mx-auto size-12" />
+											</div>
+											<p className="text-sm font-medium text-[var(--foreground)]">
+												{agentSearch || agentFilter !== "all"
+													? t("noAgentsMatch")
+													: t("noAgentsAvailable")}
+											</p>
+											<p className="mt-1 max-w-sm text-xs text-[var(--muted)]">
+												{agentSearch || agentFilter !== "all"
+													? t("adjustFiltersDescription")
+													: t("noAgentsDescription")}
+											</p>
+										</div>
+									) : (
+										<div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+											{filteredAgents.map((agent) => (
+												<AgentCard
+													key={agent.id}
+													agent={agent}
+													isUpdating={updating === agent.id}
+													onToggle={handleToggleAgent}
+												/>
+											))}
+										</div>
+									)}
 								</div>
 							);
 						})()}

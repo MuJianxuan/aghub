@@ -80,7 +80,6 @@ export default function MCPServersPage() {
 						value={searchQuery}
 						onChange={setSearchQuery}
 						aria-label={t("searchServers")}
-						variant="secondary"
 						className="min-w-0 flex-1"
 					>
 						<SearchField.Group>

@@ -77,7 +77,6 @@ export function UnifiedResourceList({
 					value={searchQuery}
 					onChange={onSearchChange}
 					aria-label={t("searchResources")}
-					variant="secondary"
 					className="min-w-0 flex-1"
 				>
 					<SearchField.Group>

@@ -54,7 +54,6 @@ export default function SkillsPage() {
 						value={searchQuery}
 						onChange={setSearchQuery}
 						aria-label={t("searchSkills")}
-						variant="secondary"
 						className="min-w-0 flex-1"
 					>
 						<SearchField.Group>

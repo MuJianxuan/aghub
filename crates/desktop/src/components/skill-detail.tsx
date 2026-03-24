@@ -163,8 +163,8 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 					)}
 
 					<div className="mb-6">
-						<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
-							{t("locations")} ({group.items.length})
+						<						h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
+							{t("locations")} ({globalLocationGroups.length + projectLocationGroups.length})
 						</h3>
 
 						<CollapsibleLocations

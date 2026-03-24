@@ -66,15 +66,20 @@ export function CreateProjectDialog({
 						<Modal.Heading>{t("addProject")}</Modal.Heading>
 					</Modal.Header>
 					<Modal.Body>
-					<Fieldset>
-						<div className="flex flex-col gap-2">
+						<Fieldset>
+							<div className="flex flex-col gap-2">
 								<Label>{t("projectPath")}</Label>
 								<button
 									type="button"
 									onClick={handleFolderSelect}
-									className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-default-200 rounded-lg cursor-pointer hover:bg-default-50 transition-colors"
+									className="
+           border-default-200
+           hover:bg-default-50
+           flex h-32 w-full cursor-pointer flex-col items-center justify-center
+           rounded-lg border-2 border-dashed transition-colors
+         "
 								>
-									<FolderIcon className="w-10 h-10 text-muted mb-2" />
+									<FolderIcon className="mb-2 size-10 text-muted" />
 									<span className="text-sm font-medium text-foreground">
 										{t("selectProjectFolder")}
 									</span>

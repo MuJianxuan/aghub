@@ -3,19 +3,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { Suspense, useEffect, useState } from "react";
 import { Route, Router, Switch } from "wouter";
+import { Redirect } from "./components/redirect";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { SettingsLayout } from "./layouts/settings-layout";
 import { initStore } from "./lib/store";
-import { AgentAvailabilityProvider } from "./providers/agent-availability";
-import { ServerProvider } from "./providers/server";
-import { ThemeProvider } from "./providers/theme";
-import "./lib/i18n";
-import { Redirect } from "./components/redirect";
 import ProjectDetailPage from "./pages/project/detail";
 import SettingsPage from "./pages/settings";
 import CustomAgentsPage from "./pages/settings/custom-agents";
 import MCPServersPage from "./pages/settings/mcp-servers";
 import SkillsPage from "./pages/settings/skills";
+import { AgentAvailabilityProvider } from "./providers/agent-availability";
+import { ServerProvider } from "./providers/server";
+import { ThemeProvider } from "./providers/theme";
+import "./lib/i18n";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -29,7 +29,9 @@ const queryClient = new QueryClient({
 function SkillsPageSkeleton() {
 	return (
 		<div className="flex h-full">
-			<div className="w-80 shrink-0 border-r border-border flex items-center justify-center">
+			<div className="
+     flex w-80 shrink-0 items-center justify-center border-r border-border
+   ">
 				<Spinner />
 			</div>
 			<div className="flex-1" />

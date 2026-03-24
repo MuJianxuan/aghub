@@ -1,5 +1,5 @@
-import type { TransportDto } from "./api-types";
 import type { EnvVar } from "../components/env-editor";
+import type { TransportDto } from "./api-types";
 
 export function buildTransportFromForm(
 	transportType: "stdio" | "sse" | "streamable_http",
@@ -12,7 +12,9 @@ export function buildTransportFromForm(
 		timeout?: string;
 	},
 ): TransportDto | undefined {
-	const timeoutNum = data.timeout ? parseInt(data.timeout, 10) : undefined;
+	const timeoutNum = data.timeout
+		? Number.parseInt(data.timeout, 10)
+		: undefined;
 
 	if (transportType === "stdio") {
 		const argsArray = data.args?.trim()
@@ -34,9 +36,8 @@ export function buildTransportFromForm(
 		};
 	}
 
-	const headersRecord: Record<string, string> | undefined = data.headers?.trim()
-		? parseHeaderText(data.headers)
-		: undefined;
+	const headersRecord: Record<string, string> | undefined =
+		data.headers?.trim() ? parseHeaderText(data.headers) : undefined;
 
 	return {
 		type: transportType,
@@ -67,7 +68,7 @@ export function capitalize(str: string): string {
 }
 
 export function parseTimeout(timeout: string): number | undefined {
-	return timeout ? parseInt(timeout, 10) : undefined;
+	return timeout ? Number.parseInt(timeout, 10) : undefined;
 }
 
 export function parseArgsString(args: string): string[] {

@@ -25,7 +25,7 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 		>
 			<Card.Content className="flex flex-row items-center gap-3">
 				<AgentIcon id={agent.id} name={agent.display_name} />
-				<div className="flex-1 min-w-0">
+				<div className="min-w-0 flex-1">
 					<Card.Title>{agent.display_name}</Card.Title>
 					{sources.length > 0 && (
 						<Card.Description>

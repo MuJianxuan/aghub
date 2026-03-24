@@ -139,7 +139,8 @@ export default {
 	selectSourceAndAgents: "Select Source & Agents",
 	installation: "Installation",
 	install: "Install",
-	searchSkillMarketDescription: "Search for a skill in the marketplace to install.",
+	searchSkillMarketDescription:
+		"Search for a skill in the marketplace to install.",
 	searchResults: "Search Results",
 	selectedSkill: "Selected Skill",
 	installingSkill: "Installing Skill",

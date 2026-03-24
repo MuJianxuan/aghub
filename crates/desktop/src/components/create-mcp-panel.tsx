@@ -1,4 +1,5 @@
 import { CodeBracketIcon } from "@heroicons/react/24/solid";
+import type { Selection } from "@heroui/react";
 import {
 	Button,
 	Description,
@@ -10,7 +11,6 @@ import {
 	ListBox,
 	Modal,
 	Select,
-	type Selection,
 	Tag,
 	TagGroup,
 	TextArea,
@@ -25,7 +25,8 @@ import type { TransportDto } from "../lib/api-types";
 import { buildTransportFromForm } from "../lib/mcp-utils";
 import { useAgentAvailability } from "../providers/agent-availability";
 import { useServer } from "../providers/server";
-import { EnvEditor, type EnvVar } from "./env-editor";
+import type { EnvVar } from "./env-editor";
+import { EnvEditor } from "./env-editor";
 
 interface CreateMcpPanelProps {
 	onDone: () => void;
@@ -115,7 +116,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 		const body = {
 			name: name.trim(),
 			transport,
-			timeout: timeout ? parseInt(timeout, 10) : undefined,
+			timeout: timeout ? Number.parseInt(timeout, 10) : undefined,
 		};
 
 		// Create MCP for each selected agent
@@ -135,7 +136,14 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 		if (selectedAgents.size === 0) return false;
 		if (usableAgents.length === 0) return false;
 		return true;
-	}, [name, transportType, command, url, selectedAgents.size, usableAgents.length]);
+	}, [
+		name,
+		transportType,
+		command,
+		url,
+		selectedAgents.size,
+		usableAgents.length,
+	]);
 
 	const handleSelectionChange = (keys: Selection) => {
 		setSelectedAgents(keys as Set<string>);
@@ -203,8 +211,8 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 	};
 
 	return (
-		<div className="h-full overflow-y-auto p-6 max-w-3xl">
-			<div className="flex items-center justify-between gap-3 mb-6">
+		<div className="h-full max-w-3xl overflow-y-auto p-6">
+			<div className="mb-6 flex items-center justify-between gap-3">
 				<h2 className="text-xl font-semibold text-foreground">
 					{t("createMcpServer")}
 				</h2>
@@ -213,7 +221,10 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 						isIconOnly
 						variant="ghost"
 						size="sm"
-						className="text-muted hover:text-foreground shrink-0"
+						className="
+        shrink-0 text-muted
+        hover:text-foreground
+      "
 						aria-label={t("importFromJson")}
 						onPress={() => setShowImportDialog(true)}
 					>
@@ -246,10 +257,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 							selectedKey={transportType}
 							onSelectionChange={(key) =>
 								setTransportType(
-									key as
-										| "stdio"
-										| "sse"
-										| "streamable_http",
+									key as "stdio" | "sse" | "streamable_http",
 								)
 							}
 						>
@@ -260,10 +268,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 							</Select.Trigger>
 							<Select.Popover>
 								<ListBox>
-									<ListBox.Item
-										id="stdio"
-										textValue="stdio"
-									>
+									<ListBox.Item id="stdio" textValue="stdio">
 										stdio
 									</ListBox.Item>
 									<ListBox.Item id="sse" textValue="sse">
@@ -288,9 +293,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 								<Label>{t("command")}</Label>
 								<Input
 									value={command}
-									onChange={(e) =>
-										setCommand(e.target.value)
-									}
+									onChange={(e) => setCommand(e.target.value)}
 									placeholder="npx"
 								/>
 							</TextField>
@@ -298,9 +301,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 								<Label>{t("args")}</Label>
 								<Input
 									value={args}
-									onChange={(e) =>
-										setArgs(e.target.value)
-									}
+									onChange={(e) => setArgs(e.target.value)}
 									placeholder="-y @modelcontextprotocol/server-filesystem"
 								/>
 								<Description>{t("argsHelp")}</Description>
@@ -332,9 +333,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 								<Label>{t("headers")}</Label>
 								<TextArea
 									value={headers}
-									onChange={(e) =>
-										setHeaders(e.target.value)
-									}
+									onChange={(e) => setHeaders(e.target.value)}
 									placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
 									className="min-h-20 font-mono"
 								/>
@@ -349,7 +348,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 							<div className="flex flex-col gap-2">
 								<Label>{t("agents")}</Label>
 								<div className="text-sm text-muted">
-									<p className="font-medium mb-1">
+									<p className="mb-1 font-medium">
 										{t("noAgentsAvailable")}
 									</p>
 									<p className="text-xs">
@@ -376,48 +375,46 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 					</Fieldset.Group>
 				</Fieldset>
 
-					<Disclosure className="pt-4">
-						<Disclosure.Trigger className="flex items-center justify-between w-full">
-							{t("advanced")}
-							<Disclosure.Indicator />
-						</Disclosure.Trigger>
-						<Disclosure.Content>
-							<Fieldset>
-								<Fieldset.Group>
-									<TextField className="w-full">
-										<Label>{t("timeout")}</Label>
-										<Input
-											type="number"
-											value={timeout}
-											onChange={(e) =>
-												setTimeoutValue(e.target.value)
-											}
-											placeholder="60"
-										/>
-										<Description>
-											{t("timeoutHelp")}
-										</Description>
-									</TextField>
-								</Fieldset.Group>
-							</Fieldset>
-						</Disclosure.Content>
-					</Disclosure>
+				<Disclosure className="pt-4">
+					<Disclosure.Trigger className="flex w-full items-center justify-between">
+						{t("advanced")}
+						<Disclosure.Indicator />
+					</Disclosure.Trigger>
+					<Disclosure.Content>
+						<Fieldset>
+							<Fieldset.Group>
+								<TextField className="w-full">
+									<Label>{t("timeout")}</Label>
+									<Input
+										type="number"
+										value={timeout}
+										onChange={(e) =>
+											setTimeoutValue(e.target.value)
+										}
+										placeholder="60"
+									/>
+									<Description>
+										{t("timeoutHelp")}
+									</Description>
+								</TextField>
+							</Fieldset.Group>
+						</Fieldset>
+					</Disclosure.Content>
+				</Disclosure>
 
-					{/* Actions */}
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="secondary" onPress={onDone}>
-							{t("cancel")}
-						</Button>
-						<Button
-							onPress={handleCreate}
-							isDisabled={!isValid || createMutation.isPending}
-						>
-							{createMutation.isPending
-								? t("creating")
-								: t("create")}
-						</Button>
-					</div>
-				</Form>
+				{/* Actions */}
+				<div className="flex justify-end gap-2 pt-2">
+					<Button variant="secondary" onPress={onDone}>
+						{t("cancel")}
+					</Button>
+					<Button
+						onPress={handleCreate}
+						isDisabled={!isValid || createMutation.isPending}
+					>
+						{createMutation.isPending ? t("creating") : t("create")}
+					</Button>
+				</div>
+			</Form>
 
 			{/* Import JSON Dialog */}
 			<Modal.Backdrop

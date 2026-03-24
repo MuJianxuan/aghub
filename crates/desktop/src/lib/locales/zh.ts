@@ -166,8 +166,7 @@ export default {
 
 	// Skill Detail
 	deleteSkill: "删除技能",
-	deleteSkillWarning:
-		"这将删除 {{count}} 个技能安装。此操作无法撤销。",
+	deleteSkillWarning: "这将删除 {{count}} 个技能安装。此操作无法撤销。",
 	deleteAll: "全部删除",
 	locations: "位置",
 	globalSkills: "全局技能",

@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import type { Key } from "react-aria-components";
 import { ListBox, Select, Spinner } from "@heroui/react";
+import { useEffect, useState } from "react";
+import type { Key } from "react-aria-components";
+import { useTranslation } from "react-i18next";
 import { useCodeEditors } from "../../hooks/use-integrations";
+import type { CodeEditorType } from "../../lib/api-types";
 import {
 	getIntegrationPreferences,
 	saveIntegrationPreferences,
 } from "../../lib/store";
-import type { CodeEditorType } from "../../lib/api-types";
 
 export default function IntegrationsPanel() {
 	const { t } = useTranslation();

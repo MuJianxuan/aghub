@@ -5,7 +5,11 @@ function Empty({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			data-slot="empty"
 			className={cn(
-				"flex min-w-0 flex-1 flex-col items-center justify-center gap-6 rounded-lg border border-dashed border-border p-6 text-center text-balance md:p-12",
+				`
+      flex min-w-0 flex-1 flex-col items-center justify-center gap-6 rounded-lg
+      border border-dashed border-border p-6 text-center text-balance
+      md:p-12
+    `,
 				className,
 			)}
 			{...props}
@@ -36,9 +40,15 @@ function EmptyMedia({
 			data-slot="empty-icon"
 			data-variant={variant}
 			className={cn(
-				"flex shrink-0 items-center justify-center mb-2 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+				`
+      mb-2 flex shrink-0 items-center justify-center
+      [&_svg]:pointer-events-none [&_svg]:shrink-0
+    `,
 				variant === "icon" &&
-					'bg-surface-secondary text-foreground size-10 rounded-lg [&_svg:not([class*="size-"])]:size-6',
+					`
+       size-10 rounded-lg bg-surface-secondary text-foreground
+       [&_svg:not([class*="size-"])]:size-6
+     `,
 				className,
 			)}
 			{...props}
@@ -64,7 +74,11 @@ function EmptyDescription({ className, ...props }: React.ComponentProps<"p">) {
 		<div
 			data-slot="empty-description"
 			className={cn(
-				"text-muted [&>a:hover]:text-accent text-sm/relaxed [&>a]:underline [&>a]:underline-offset-4",
+				`
+      text-sm/relaxed text-muted
+      [&>a]:underline [&>a]:underline-offset-4
+      [&>a:hover]:text-accent
+    `,
 				className,
 			)}
 			{...props}
@@ -77,7 +91,10 @@ function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			data-slot="empty-content"
 			className={cn(
-				"flex w-full max-w-sm min-w-0 flex-col items-center gap-4 text-sm text-balance",
+				`
+      flex w-full max-w-sm min-w-0 flex-col items-center gap-4 text-sm
+      text-balance
+    `,
 				className,
 			)}
 			{...props}
@@ -87,9 +104,9 @@ function EmptyContent({ className, ...props }: React.ComponentProps<"div">) {
 
 export {
 	Empty,
-	EmptyHeader,
-	EmptyTitle,
-	EmptyDescription,
 	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
 	EmptyMedia,
+	EmptyTitle,
 };

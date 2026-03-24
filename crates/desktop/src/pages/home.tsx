@@ -11,9 +11,9 @@ export default function HomePage() {
 	return (
 		<Surface
 			variant="default"
-			className="min-h-screen flex items-center justify-center"
+			className="flex min-h-screen items-center justify-center"
 		>
-			<div className="text-center space-y-8">
+			<div className="space-y-8 text-center">
 				<div className="space-y-2">
 					<h1 className="text-3xl font-semibold tracking-tight text-foreground">
 						Settings Dashboard
@@ -23,12 +23,12 @@ export default function HomePage() {
 					</p>
 				</div>
 
-				<div className="flex flex-col gap-3 max-w-xs mx-auto">
+				<div className="mx-auto flex max-w-xs flex-col gap-3">
 					<Link href="/settings/skills">
 						<Button
 							variant="outline"
 							fullWidth
-							className="justify-start gap-3 h-12"
+							className="h-12 justify-start gap-3"
 						>
 							<BookOpenIcon className="size-5" />
 							<span>Skills</span>
@@ -39,7 +39,7 @@ export default function HomePage() {
 						<Button
 							variant="outline"
 							fullWidth
-							className="justify-start gap-3 h-12"
+							className="h-12 justify-start gap-3"
 						>
 							<CpuChipIcon className="size-5" />
 							<span>Custom Agents</span>
@@ -50,7 +50,7 @@ export default function HomePage() {
 						<Button
 							variant="outline"
 							fullWidth
-							className="justify-start gap-3 h-12"
+							className="h-12 justify-start gap-3"
 						>
 							<ServerIcon className="size-5" />
 							<span>MCP Servers</span>
@@ -61,7 +61,7 @@ export default function HomePage() {
 						<Button
 							variant="primary"
 							fullWidth
-							className="justify-start gap-3 h-12"
+							className="h-12 justify-start gap-3"
 						>
 							<Cog6ToothIcon className="size-5" />
 							<span>Open Settings</span>

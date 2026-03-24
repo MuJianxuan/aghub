@@ -50,7 +50,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 			return Promise.all(
 				g.items.map((item) => {
 					const scope =
-						item.source === ConfigSource.Project ? "project" : "global";
+						item.source === ConfigSource.Project
+							? "project"
+							: "global";
 					return api.mcps.delete(
 						item.name,
 						item.agent ?? "default",
@@ -83,10 +85,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="p-6 max-w-3xl">
+				<div className="max-w-3xl p-6">
 					{/* Header */}
-					<div className="flex items-center justify-between gap-3 mb-2">
-						<h2 className="text-xl font-semibold text-foreground truncate">
+					<div className="mb-2 flex items-center justify-between gap-3">
+						<h2 className="truncate text-xl font-semibold text-foreground">
 							{group.items[0].name}
 						</h2>
 						<div className="flex items-center gap-1">
@@ -95,7 +97,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									isIconOnly
 									variant="ghost"
 									size="sm"
-									className="text-muted hover:text-foreground shrink-0"
+									className="
+           shrink-0 text-muted
+           hover:text-foreground
+         "
 									aria-label={t("manageAgents")}
 									onPress={() => setManageDialogOpen(true)}
 								>
@@ -110,7 +115,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									isIconOnly
 									variant="ghost"
 									size="sm"
-									className="text-muted hover:text-foreground shrink-0"
+									className="
+           shrink-0 text-muted
+           hover:text-foreground
+         "
 									aria-label={t("copy")}
 									onPress={handleCopy}
 								>
@@ -125,7 +133,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									isIconOnly
 									variant="ghost"
 									size="sm"
-									className="text-muted hover:text-foreground shrink-0"
+									className="
+           shrink-0 text-muted
+           hover:text-foreground
+         "
 									aria-label={t("edit")}
 									onPress={onEdit}
 								>
@@ -140,7 +151,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									isIconOnly
 									variant="ghost"
 									size="sm"
-									className="text-muted hover:text-danger shrink-0"
+									className="
+           shrink-0 text-muted
+           hover:text-danger
+         "
 									aria-label={t("remove")}
 									onPress={() => setDeleteDialogOpen(true)}
 								>
@@ -155,7 +169,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 					{/* Agents Section */}
 					<div className="mb-6">
-						<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+						<h3 className="
+        mb-2 text-xs font-medium tracking-wide text-muted uppercase
+      ">
 							{t("agents")} ({group.items.length})
 						</h3>
 						<div className="flex flex-wrap gap-1.5">
@@ -190,7 +206,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 					{/* Connection / Transport */}
 					<div className="mb-6">
-						<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
+						<h3 className="
+        mb-3 text-xs font-medium tracking-wide text-muted uppercase
+      ">
 							{t("transport")}
 						</h3>
 						<Table>

@@ -1,12 +1,7 @@
 import { Spinner } from "@heroui/react";
 import { invoke } from "@tauri-apps/api/core";
-import {
-	createContext,
-	type ReactNode,
-	useContext,
-	useEffect,
-	useState,
-} from "react";
+import type { ReactNode } from "react";
+import { createContext, useEffect, useState } from "react";
 
 interface ServerContext {
 	port: number;
@@ -16,7 +11,7 @@ interface ServerContext {
 const ServerContext = createContext<ServerContext | null>(null);
 
 export function useServer(): ServerContext {
-	const ctx = useContext(ServerContext);
+	const ctx = use(ServerContext);
 	if (!ctx) throw new Error("useServer must be used within <ServerProvider>");
 	return ctx;
 }
@@ -33,7 +28,7 @@ export function ServerProvider({ children }: { children: ReactNode }) {
 
 	if (error) {
 		return (
-			<div className="flex items-center justify-center h-screen">
+			<div className="flex h-screen items-center justify-center">
 				<p className="text-sm text-danger">
 					Failed to start server: {error}
 				</p>
@@ -43,7 +38,7 @@ export function ServerProvider({ children }: { children: ReactNode }) {
 
 	if (port === null) {
 		return (
-			<div className="flex items-center justify-center h-screen">
+			<div className="flex h-screen items-center justify-center">
 				<Spinner size="lg" />
 			</div>
 		);

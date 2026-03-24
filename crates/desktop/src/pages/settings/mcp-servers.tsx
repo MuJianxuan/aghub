@@ -1,17 +1,12 @@
-import {
-	ArrowPathIcon,
-	PlusIcon,
-} from "@heroicons/react/24/solid";
-import {
-	Button,
-	SearchField,
-} from "@heroui/react";
+import { ArrowPathIcon, PlusIcon } from "@heroicons/react/24/solid";
+import { Button, SearchField } from "@heroui/react";
 import { useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
 import { EditMcpPanel } from "../../components/edit-mcp-panel";
-import { McpDetail, type McpGroup } from "../../components/mcp-detail";
+import type { McpGroup } from "../../components/mcp-detail";
+import { McpDetail } from "../../components/mcp-detail";
 import { McpList } from "../../components/mcp-list";
 import { useMcps } from "../../hooks/use-mcps";
 import { getMcpMergeKey } from "../../lib/utils";
@@ -78,15 +73,15 @@ export default function MCPServersPage() {
 	return (
 		<div className="flex h-full">
 			{/* Servers List Panel */}
-			<div className="w-80 shrink-0 border-r border-border flex flex-col">
+			<div className="flex w-80 shrink-0 flex-col border-r border-border">
 				{/* Search Header */}
-				<div className="flex items-center gap-2 p-3 border-b border-border">
+				<div className="flex items-center gap-2 border-b border-border p-3">
 					<SearchField
 						value={searchQuery}
 						onChange={setSearchQuery}
 						aria-label={t("searchServers")}
 						variant="secondary"
-						className="flex-1 min-w-0"
+						className="min-w-0 flex-1"
 					>
 						<SearchField.Group>
 							<SearchField.SearchIcon />
@@ -152,7 +147,7 @@ export default function MCPServersPage() {
 				)}
 				{(effectivePanel.type === "empty" ||
 					(effectivePanel.type === "detail" && !selectedGroup)) && (
-					<div className="flex items-center justify-center h-full">
+					<div className="flex h-full items-center justify-center">
 						<p className="text-sm text-muted">
 							{t("selectServer")}
 						</p>

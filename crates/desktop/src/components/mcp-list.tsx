@@ -1,7 +1,4 @@
-import {
-	CommandLineIcon,
-	WifiIcon,
-} from "@heroicons/react/24/solid";
+import { CommandLineIcon, WifiIcon } from "@heroicons/react/24/solid";
 import { Label, ListBox } from "@heroui/react";
 import Fuse from "fuse.js";
 import { useMemo } from "react";
@@ -74,7 +71,7 @@ export function McpList({
 
 	if (filteredGroups.length === 0) {
 		return (
-			<p className="px-3 py-6 text-sm text-muted text-center">
+			<p className="px-3 py-6 text-center text-sm text-muted">
 				{emptyMessage ?? t("noServersMatch")}
 			</p>
 		);
@@ -99,9 +96,9 @@ export function McpList({
 					textValue={group.items[0].name}
 					className="data-selected:bg-accent/10"
 				>
-					<div className="flex items-center gap-2 w-full">
+					<div className="flex w-full items-center gap-2">
 						{getTransportIcon(group.transport)}
-						<Label className="truncate flex-1">
+						<Label className="flex-1 truncate">
 							{group.items[0].name}
 						</Label>
 					</div>

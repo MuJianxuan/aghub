@@ -13,7 +13,10 @@ export function ResourceSectionHeader({
 	icon,
 }: ResourceSectionHeaderProps) {
 	return (
-		<div className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted uppercase tracking-wide border-b border-border bg-surface-secondary">
+		<div className="
+    flex items-center gap-2 border-b border-border bg-surface-secondary px-3
+    py-2 text-xs font-medium tracking-wide text-muted uppercase
+  ">
 			{icon}
 			<span className="flex-1">{title}</span>
 			{count > 0 && (

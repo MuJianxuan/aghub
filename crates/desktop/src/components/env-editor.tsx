@@ -74,7 +74,7 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 	return (
 		<div className="space-y-2">
 			{value.map((pair, index) => (
-				<div key={index} className="flex gap-2 items-start">
+				<div key={index} className="flex items-start gap-2">
 					<Input
 						variant="secondary"
 						placeholder={t("envEditor.keyPlaceholder")}
@@ -100,13 +100,13 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 						onPress={() => handleRemove(index)}
 						className="mt-1"
 					>
-						<XMarkIcon className="w-4 h-4" />
+						<XMarkIcon className="size-4" />
 					</Button>
 				</div>
 			))}
 			<div className="flex items-center gap-2">
 				<Button variant="ghost" size="sm" onPress={handleAdd}>
-					<PlusIcon className="w-4 h-4" />
+					<PlusIcon className="size-4" />
 					{t("envEditor.addKeypair")}
 				</Button>
 				<Button
@@ -114,7 +114,7 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 					size="sm"
 					onPress={handleImportFromClipboard}
 				>
-					<ClipboardDocumentIcon className="w-4 h-4" />
+					<ClipboardDocumentIcon className="size-4" />
 					{t("envEditor.importFromClipboard")}
 				</Button>
 			</div>

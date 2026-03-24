@@ -4,18 +4,18 @@ import {
 	ServerIcon,
 } from "@heroicons/react/24/solid";
 import { Surface } from "@heroui/react";
-import React from "react";
+import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
 import { cn } from "../lib/utils";
 import { ProjectList } from "./project-list";
 
-type MenuItem = {
+interface MenuItem {
 	type: "link";
 	labelKey: string;
 	href: string;
 	icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-};
+}
 
 const menuItems: MenuItem[] = [
 	{
@@ -39,9 +39,11 @@ export function SettingsSidebar() {
 	return (
 		<Surface
 			variant="default"
-			className="w-60 shrink-0 border-r border-border p-3 rounded-none flex flex-col"
+			className="
+     flex w-60 shrink-0 flex-col rounded-none border-r border-border p-3
+   "
 		>
-			<aside className="flex flex-col h-full">
+			<aside className="flex h-full flex-col">
 				<nav className="flex flex-col gap-0.5">
 					{menuItems.map((item) => {
 						const Icon = item.icon;
@@ -52,10 +54,16 @@ export function SettingsSidebar() {
 								key={item.href}
 								href={item.href}
 								className={cn(
-									"flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+									`
+           flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm
+           transition-colors
+         `,
 									isActive
-										? "bg-accent/10 text-foreground font-medium"
-										: "text-muted hover:bg-surface-secondary hover:text-foreground",
+										? "bg-accent/10 font-medium text-foreground"
+										: `
+            text-muted
+            hover:bg-surface-secondary hover:text-foreground
+          `,
 								)}
 							>
 								<Icon className="size-4" />
@@ -71,10 +79,16 @@ export function SettingsSidebar() {
 					<Link
 						href="/settings"
 						className={cn(
-							"flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+							`
+         flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm
+         transition-colors
+       `,
 							pathname === "/settings"
-								? "bg-accent/10 text-foreground font-medium"
-								: "text-muted hover:bg-surface-secondary hover:text-foreground",
+								? "bg-accent/10 font-medium text-foreground"
+								: `
+          text-muted
+          hover:bg-surface-secondary hover:text-foreground
+        `,
 						)}
 					>
 						<Cog6ToothIcon className="size-4" />

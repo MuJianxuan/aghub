@@ -14,12 +14,14 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createApi, type UpdateMcpRequest } from "../lib/api";
+import type { UpdateMcpRequest } from "../lib/api";
+import { createApi } from "../lib/api";
 import type { McpResponse, TransportDto } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
 import { buildTransportFromForm, capitalize } from "../lib/mcp-utils";
 import { useServer } from "../providers/server";
-import { EnvEditor, type EnvVar } from "./env-editor";
+import type { EnvVar } from "./env-editor";
+import { EnvEditor } from "./env-editor";
 
 interface EditMcpPanelProps {
 	group: {
@@ -95,7 +97,9 @@ export function EditMcpPanel({
 			return Promise.all(
 				group.items.map((item) => {
 					const scope =
-						item.source === ConfigSource.Project ? "project" : "global";
+						item.source === ConfigSource.Project
+							? "project"
+							: "global";
 					return api.mcps.update(
 						item.name,
 						item.agent ?? "default",
@@ -119,9 +123,7 @@ export function EditMcpPanel({
 	const agentNamesList = useMemo(
 		() =>
 			group.items
-				.map((i) =>
-					i.agent ? capitalize(i.agent) : "Default",
-				)
+				.map((i) => (i.agent ? capitalize(i.agent) : "Default"))
 				.join(", "),
 		[group.items],
 	);
@@ -142,7 +144,7 @@ export function EditMcpPanel({
 
 		const body: UpdateMcpRequest = {
 			name: name.trim() !== primaryServer.name ? name.trim() : undefined,
-			timeout: timeout ? parseInt(timeout, 10) : undefined,
+			timeout: timeout ? Number.parseInt(timeout, 10) : undefined,
 		};
 
 		const transport = buildTransport();
@@ -161,15 +163,17 @@ export function EditMcpPanel({
 	}, [name, transportType, command, url]);
 
 	return (
-		<div className="h-full overflow-y-auto p-6 max-w-3xl">
-			<div className="flex items-center justify-between gap-3 mb-6">
+		<div className="h-full max-w-3xl overflow-y-auto p-6">
+			<div className="mb-6 flex items-center justify-between gap-3">
 				<h2 className="text-xl font-semibold text-foreground">
 					{t("editMcpServer")}
 				</h2>
 			</div>
 
 			{group.items.length > 1 && (
-				<div className="bg-warning/10 border border-warning-soft-hover rounded-lg p-3 mb-4">
+				<div className="
+      mb-4 rounded-lg border border-warning-soft-hover bg-warning/10 p-3
+    ">
 					<p className="text-sm text-warning">
 						{t("changeWillApplyToAgents", {
 							count: group.items.length,
@@ -179,163 +183,151 @@ export function EditMcpPanel({
 				</div>
 			)}
 
-				<Form>
+			<Form>
+				<Fieldset>
+					<Fieldset.Group>
+						<TextField className="w-full">
+							<Label>{t("name")}</Label>
+							<Input
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								placeholder={t("serverName")}
+							/>
+						</TextField>
+					</Fieldset.Group>
+				</Fieldset>
+
+				<Fieldset>
+					<Fieldset.Group>
+						<Select
+							className="w-full"
+							selectedKey={transportType}
+							onSelectionChange={(key) =>
+								setTransportType(
+									key as "stdio" | "sse" | "streamable_http",
+								)
+							}
+						>
+							<Label>{t("transportType")}</Label>
+							<Select.Trigger>
+								<Select.Value />
+								<Select.Indicator />
+							</Select.Trigger>
+							<Select.Popover>
+								<ListBox>
+									<ListBox.Item id="stdio" textValue="stdio">
+										stdio
+									</ListBox.Item>
+									<ListBox.Item id="sse" textValue="sse">
+										sse
+									</ListBox.Item>
+									<ListBox.Item
+										id="streamable_http"
+										textValue="streamable_http"
+									>
+										streamable_http
+									</ListBox.Item>
+								</ListBox>
+							</Select.Popover>
+						</Select>
+					</Fieldset.Group>
+				</Fieldset>
+
+				{transportType === "stdio" && (
 					<Fieldset>
 						<Fieldset.Group>
 							<TextField className="w-full">
-								<Label>{t("name")}</Label>
+								<Label>{t("command")}</Label>
 								<Input
-									value={name}
-									onChange={(e) => setName(e.target.value)}
-									placeholder={t("serverName")}
+									value={command}
+									onChange={(e) => setCommand(e.target.value)}
+									placeholder="npx"
+								/>
+							</TextField>
+							<TextField className="w-full">
+								<Label>{t("args")}</Label>
+								<Input
+									value={args}
+									onChange={(e) => setArgs(e.target.value)}
+									placeholder="-y @modelcontextprotocol/server-filesystem"
+								/>
+								<Description>{t("argsHelp")}</Description>
+							</TextField>
+							<div className="flex flex-col gap-2">
+								<Label>{t("env")}</Label>
+								<EnvEditor
+									value={envVars}
+									onChange={setEnvVars}
+								/>
+							</div>
+						</Fieldset.Group>
+					</Fieldset>
+				)}
+
+				{(transportType === "sse" ||
+					transportType === "streamable_http") && (
+					<Fieldset>
+						<Fieldset.Group>
+							<TextField className="w-full">
+								<Label>URL</Label>
+								<Input
+									value={url}
+									onChange={(e) => setUrl(e.target.value)}
+									placeholder="http://localhost:3000/sse"
+								/>
+							</TextField>
+							<TextField className="w-full">
+								<Label>{t("headers")}</Label>
+								<TextArea
+									value={headers}
+									onChange={(e) => setHeaders(e.target.value)}
+									placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
+									className="min-h-20 font-mono"
 								/>
 							</TextField>
 						</Fieldset.Group>
 					</Fieldset>
+				)}
 
-					<Fieldset>
-						<Fieldset.Group>
-							<Select
-								className="w-full"
-								selectedKey={transportType}
-								onSelectionChange={(key) =>
-									setTransportType(
-										key as
-											| "stdio"
-											| "sse"
-											| "streamable_http",
-									)
-								}
-							>
-								<Label>{t("transportType")}</Label>
-								<Select.Trigger>
-									<Select.Value />
-									<Select.Indicator />
-								</Select.Trigger>
-								<Select.Popover>
-									<ListBox>
-										<ListBox.Item
-											id="stdio"
-											textValue="stdio"
-										>
-											stdio
-										</ListBox.Item>
-										<ListBox.Item id="sse" textValue="sse">
-											sse
-										</ListBox.Item>
-										<ListBox.Item
-											id="streamable_http"
-											textValue="streamable_http"
-										>
-											streamable_http
-										</ListBox.Item>
-									</ListBox>
-								</Select.Popover>
-							</Select>
-						</Fieldset.Group>
-					</Fieldset>
-
-					{transportType === "stdio" && (
+				<Disclosure className="pt-4">
+					<Disclosure.Trigger className="flex w-full items-center justify-between">
+						{t("advanced")}
+						<Disclosure.Indicator />
+					</Disclosure.Trigger>
+					<Disclosure.Content>
 						<Fieldset>
 							<Fieldset.Group>
 								<TextField className="w-full">
-									<Label>{t("command")}</Label>
+									<Label>{t("timeout")}</Label>
 									<Input
-										value={command}
+										type="number"
+										value={timeout}
 										onChange={(e) =>
-											setCommand(e.target.value)
+											setTimeoutValue(e.target.value)
 										}
-										placeholder="npx"
+										placeholder="60"
 									/>
-								</TextField>
-								<TextField className="w-full">
-									<Label>{t("args")}</Label>
-									<Input
-										value={args}
-										onChange={(e) =>
-											setArgs(e.target.value)
-										}
-										placeholder="-y @modelcontextprotocol/server-filesystem"
-									/>
-									<Description>{t("argsHelp")}</Description>
-								</TextField>
-								<div className="flex flex-col gap-2">
-									<Label>{t("env")}</Label>
-									<EnvEditor
-										value={envVars}
-										onChange={setEnvVars}
-									/>
-								</div>
-							</Fieldset.Group>
-						</Fieldset>
-					)}
-
-					{(transportType === "sse" ||
-						transportType === "streamable_http") && (
-						<Fieldset>
-							<Fieldset.Group>
-								<TextField className="w-full">
-									<Label>URL</Label>
-									<Input
-										value={url}
-										onChange={(e) => setUrl(e.target.value)}
-										placeholder="http://localhost:3000/sse"
-									/>
-								</TextField>
-								<TextField className="w-full">
-									<Label>{t("headers")}</Label>
-									<TextArea
-										value={headers}
-										onChange={(e) =>
-											setHeaders(e.target.value)
-										}
-										placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
-										className="min-h-20 font-mono"
-									/>
+									<Description>
+										{t("timeoutHelp")}
+									</Description>
 								</TextField>
 							</Fieldset.Group>
 						</Fieldset>
-					)}
+					</Disclosure.Content>
+				</Disclosure>
 
-					<Disclosure className="pt-4">
-						<Disclosure.Trigger className="flex items-center justify-between w-full">
-							{t("advanced")}
-							<Disclosure.Indicator />
-						</Disclosure.Trigger>
-						<Disclosure.Content>
-							<Fieldset>
-								<Fieldset.Group>
-									<TextField className="w-full">
-										<Label>{t("timeout")}</Label>
-										<Input
-											type="number"
-											value={timeout}
-											onChange={(e) =>
-												setTimeoutValue(e.target.value)
-											}
-											placeholder="60"
-										/>
-										<Description>
-											{t("timeoutHelp")}
-										</Description>
-									</TextField>
-								</Fieldset.Group>
-							</Fieldset>
-						</Disclosure.Content>
-					</Disclosure>
-
-					<div className="flex justify-end gap-2 pt-2">
-						<Button variant="secondary" onPress={onDone}>
-							{t("cancel")}
-						</Button>
-						<Button
-							onPress={handleSave}
-							isDisabled={!isValid || updateMutation.isPending}
-						>
-							{updateMutation.isPending ? t("saving") : t("save")}
-						</Button>
-					</div>
-				</Form>
+				<div className="flex justify-end gap-2 pt-2">
+					<Button variant="secondary" onPress={onDone}>
+						{t("cancel")}
+					</Button>
+					<Button
+						onPress={handleSave}
+						isDisabled={!isValid || updateMutation.isPending}
+					>
+						{updateMutation.isPending ? t("saving") : t("save")}
+					</Button>
+				</div>
+			</Form>
 		</div>
 	);
 }

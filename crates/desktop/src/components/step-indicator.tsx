@@ -5,28 +5,35 @@ interface StepIndicatorProps {
 
 export function StepIndicator({ currentStep, labels }: StepIndicatorProps) {
 	return (
-		<div className="flex items-center justify-center gap-2 mb-6">
+		<div className="mb-6 flex items-center justify-center gap-2">
 			{labels.map((label, idx) => {
 				const step = idx + 1;
 				return (
 					<div key={step} className="flex items-center gap-2">
 						<div
-							className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+							className={`
+         flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium
+         ${
 								step < currentStep
-									? "bg-accent/15 text-accent"
+									? "bg-accent-soft text-accent"
 									: step === currentStep
 										? "bg-accent text-accent-foreground"
 										: "bg-default-100 text-muted"
-							}`}
+							}
+       `}
 						>
 							<span
-								className={`flex items-center justify-center size-4.5 rounded-full text-[10px] font-bold ${
+								className={`
+          flex size-4.5 items-center justify-center rounded-full text-[10px]
+          font-bold
+          ${
 									step < currentStep
 										? "bg-accent text-accent-foreground"
 										: step === currentStep
 											? "bg-accent-foreground text-accent"
 											: "bg-default-200 text-muted"
-								}`}
+								}
+        `}
 							>
 								{step < currentStep ? "✓" : step}
 							</span>
@@ -34,11 +41,14 @@ export function StepIndicator({ currentStep, labels }: StepIndicatorProps) {
 						</div>
 						{idx < labels.length - 1 && (
 							<div
-								className={`w-6 h-px ${
+								className={`
+          h-px w-6
+          ${
 									step < currentStep
 										? "bg-accent"
 										: "bg-default-200"
-								}`}
+								}
+        `}
 							/>
 						)}
 					</div>

@@ -14,9 +14,9 @@ export default function CustomAgentsPage() {
 	return (
 		<div className="flex h-full">
 			{/* Agents List Panel */}
-			<div className="w-80 shrink-0 border-r border-border flex flex-col">
+			<div className="flex w-80 shrink-0 flex-col border-r border-border">
 				{/* Search Header */}
-				<div className="flex items-center gap-2 p-3 border-b border-border">
+				<div className="flex items-center gap-2 border-b border-border p-3">
 					<SearchField
 						value={searchQuery}
 						onChange={setSearchQuery}
@@ -36,7 +36,7 @@ export default function CustomAgentsPage() {
 				</div>
 
 				{/* Empty State */}
-				<div className="flex-1 flex items-center justify-center p-6">
+				<div className="flex flex-1 items-center justify-center p-6">
 					<Empty className="border-0">
 						<EmptyHeader>
 							<EmptyMedia>
@@ -47,7 +47,7 @@ export default function CustomAgentsPage() {
 							</EmptyTitle>
 						</EmptyHeader>
 						<Button variant="outline" size="sm">
-							<PlusIcon className="size-4 mr-1" />
+							<PlusIcon className="mr-1 size-4" />
 							Create agent
 						</Button>
 					</Empty>
@@ -55,7 +55,7 @@ export default function CustomAgentsPage() {
 			</div>
 
 			{/* Detail Panel - Empty State */}
-			<div className="flex-1 flex items-center justify-center">
+			<div className="flex flex-1 items-center justify-center">
 				<Empty className="border-0">
 					<EmptyHeader>
 						<EmptyMedia>
@@ -66,7 +66,7 @@ export default function CustomAgentsPage() {
 						</EmptyTitle>
 					</EmptyHeader>
 					<Button variant="outline" size="sm">
-						<PlusIcon className="size-4 mr-1" />
+						<PlusIcon className="mr-1 size-4" />
 						Create your first agent
 					</Button>
 				</Empty>

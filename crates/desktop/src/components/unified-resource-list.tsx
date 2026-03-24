@@ -5,13 +5,13 @@ import {
 	ServerIcon,
 } from "@heroicons/react/24/solid";
 import { Button, Dropdown, SearchField } from "@heroui/react";
-import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import type { McpResponse, SkillResponse } from "../lib/api-types";
+import { getMcpMergeKey } from "../lib/utils";
 import { McpList } from "./mcp-list";
 import { ResourceSectionHeader } from "./resource-section-header";
 import { SkillList } from "./skill-list";
-import type { McpResponse, SkillResponse } from "../lib/api-types";
-import { getMcpMergeKey } from "../lib/utils";
 
 interface UnifiedResourceListProps {
 	mcps: McpResponse[];
@@ -71,14 +71,14 @@ export function UnifiedResourceList({
 	};
 
 	return (
-		<div className="w-80 shrink-0 border-r border-border flex flex-col">
-			<div className="flex items-center gap-2 p-3 border-b border-border">
+		<div className="flex w-80 shrink-0 flex-col border-r border-border">
+			<div className="flex items-center gap-2 border-b border-border p-3">
 				<SearchField
 					value={searchQuery}
 					onChange={onSearchChange}
 					aria-label={t("searchResources")}
 					variant="secondary"
-					className="flex-1 min-w-0"
+					className="min-w-0 flex-1"
 				>
 					<SearchField.Group>
 						<SearchField.SearchIcon />
@@ -177,7 +177,7 @@ export function UnifiedResourceList({
 								: t("noProjectResources")}
 						</p>
 						{searchQuery && (
-							<p className="text-xs text-muted mt-1">
+							<p className="mt-1 text-xs text-muted">
 								&ldquo;{searchQuery}&rdquo;
 							</p>
 						)}

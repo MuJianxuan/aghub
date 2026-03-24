@@ -1,13 +1,9 @@
 import { Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
-import {
-	createContext,
-	type ReactNode,
-	useContext,
-	useEffect,
-	useState,
-} from "react";
-import { type AgentAvailability, type AgentInfo, createApi } from "../lib/api";
+import type { ReactNode } from "react";
+import { createContext, useEffect, useState } from "react";
+import type { AgentAvailability, AgentInfo } from "../lib/api";
+import { createApi } from "../lib/api";
 import { getDisabledAgents } from "../lib/store";
 import { useServer } from "../providers/server";
 
@@ -30,7 +26,7 @@ const AgentAvailabilityContext = createContext<AgentAvailabilityContext | null>(
 );
 
 export function useAgentAvailability(): AgentAvailabilityContext {
-	const ctx = useContext(AgentAvailabilityContext);
+	const ctx = use(AgentAvailabilityContext);
 	if (!ctx)
 		throw new Error(
 			"useAgentAvailability must be used within <AgentAvailabilityProvider>",
@@ -117,7 +113,7 @@ export function AgentAvailabilityProvider({
 
 	if (isLoading) {
 		return (
-			<div className="flex items-center justify-center h-screen">
+			<div className="flex h-screen items-center justify-center">
 				<Spinner size="lg" />
 			</div>
 		);

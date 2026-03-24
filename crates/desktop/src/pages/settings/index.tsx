@@ -14,10 +14,10 @@ import { useQueryState } from "nuqs";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AgentCard } from "../../components/agent-card";
-import IntegrationsPanel from "./integrations-panel";
 import { disableAgent, enableAgent } from "../../lib/store";
 import { useAgentAvailability } from "../../providers/agent-availability";
 import { useTheme } from "../../providers/theme";
+import IntegrationsPanel from "./integrations-panel";
 
 export default function SettingsPage() {
 	const { t, i18n } = useTranslation();
@@ -52,14 +52,14 @@ export default function SettingsPage() {
 
 	return (
 		<div className="h-full overflow-y-auto">
-			<div className="p-6 max-w-3xl">
+			<div className="max-w-3xl p-6">
 				<Tabs
 					selectedKey={selectedTab}
 					onSelectionChange={(key) => {
 						setSelectedTab(key as string);
 					}}
 				>
-					<div className="flex items-center justify-between mb-2">
+					<div className="mb-2 flex items-center justify-between">
 						<h2 className="text-xl font-semibold">
 							{t("settings")}
 						</h2>
@@ -67,21 +67,21 @@ export default function SettingsPage() {
 						<Tabs.ListContainer>
 							<Tabs.List
 								aria-label="Settings sections"
-								className="w-auto inline-flex"
+								className="inline-flex w-auto"
 							>
-							<Tabs.Tab id="appearance">
-								{t("appearance")}
-								<Tabs.Indicator />
-							</Tabs.Tab>
-							<Tabs.Tab id="agents">
-								{t("agentManagement")}
-								<Tabs.Indicator />
-							</Tabs.Tab>
-							<Tabs.Tab id="integrations">
-								{t("integrations")}
-								<Tabs.Indicator />
-							</Tabs.Tab>
-						</Tabs.List>
+								<Tabs.Tab id="appearance">
+									{t("appearance")}
+									<Tabs.Indicator />
+								</Tabs.Tab>
+								<Tabs.Tab id="agents">
+									{t("agentManagement")}
+									<Tabs.Indicator />
+								</Tabs.Tab>
+								<Tabs.Tab id="integrations">
+									{t("integrations")}
+									<Tabs.Indicator />
+								</Tabs.Tab>
+							</Tabs.List>
 						</Tabs.ListContainer>
 					</div>
 
@@ -171,7 +171,10 @@ export default function SettingsPage() {
 					</Tabs.Panel>
 
 					<Tabs.Panel id="agents">
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+						<div className="
+        grid grid-cols-1 gap-3
+        md:grid-cols-2
+      ">
 							{availableAgents
 								.filter(
 									(agent) => agent.availability.is_available,

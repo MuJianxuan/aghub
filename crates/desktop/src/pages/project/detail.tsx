@@ -111,7 +111,7 @@ export default function ProjectDetailPage() {
 
 	if (!project) {
 		return (
-			<div className="flex items-center justify-center h-full">
+			<div className="flex h-full items-center justify-center">
 				<p className="text-sm text-muted">{t("projectNotFound")}</p>
 			</div>
 		);
@@ -149,30 +149,33 @@ export default function ProjectDetailPage() {
 						projectPath={project.path}
 					/>
 				)}
-			{panelMode === "create-mcp" && (
-				<CreateMcpPanel
-					onDone={() => setPanelMode(null)}
-					projectPath={project.path}
-				/>
-			)}
-			{panelMode === "edit-mcp" && selectedMcpGroup && (
-				<EditMcpPanel
-					key={selectedMcpGroup.mergeKey}
-					group={selectedMcpGroup}
-					onDone={() => setPanelMode(null)}
-					projectPath={project.path}
-				/>
-			)}
-				{(!panelMode && !selectedMcpGroup && !selectedSkillGroup) && (
-					<div className="flex flex-col items-center justify-center h-full gap-3">
-						<div className="flex items-center justify-center w-16 h-16 rounded-full bg-surface-secondary">
+				{panelMode === "create-mcp" && (
+					<CreateMcpPanel
+						onDone={() => setPanelMode(null)}
+						projectPath={project.path}
+					/>
+				)}
+				{panelMode === "edit-mcp" && selectedMcpGroup && (
+					<EditMcpPanel
+						key={selectedMcpGroup.mergeKey}
+						group={selectedMcpGroup}
+						onDone={() => setPanelMode(null)}
+						projectPath={project.path}
+					/>
+				)}
+				{!panelMode && !selectedMcpGroup && !selectedSkillGroup && (
+					<div className="flex h-full flex-col items-center justify-center gap-3">
+						<div className="
+        flex size-16 items-center justify-center rounded-full
+        bg-surface-secondary
+      ">
 							<FolderIcon className="size-8 text-muted" />
 						</div>
 						<div className="text-center">
-							<h3 className="text-lg font-semibold mb-1">
+							<h3 className="mb-1 text-lg font-semibold">
 								{project.name}
 							</h3>
-							<p className="text-sm text-muted max-w-sm">
+							<p className="max-w-sm text-sm text-muted">
 								{t("selectResourceToView")}
 							</p>
 						</div>

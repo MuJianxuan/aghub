@@ -9,24 +9,19 @@ import {
 	TrashIcon,
 	XCircleIcon,
 } from "@heroicons/react/24/solid";
-import {
-	Button,
-	Chip,
-	Modal,
-	Spinner,
-} from "@heroui/react";
-import { useTranslation } from "react-i18next";
+import { Button, Chip, Modal, Spinner } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
 import * as pathe from "pathe";
-import { useServer } from "../providers/server";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { createApi } from "../lib/api";
-import { ConfigSource } from "../lib/api-types";
-import type { SkillResponse } from "../lib/api-types";
 import type {
 	GlobalSkillLockResponse,
 	ProjectSkillLockResponse,
+	SkillResponse,
 } from "../lib/api-types";
+import { ConfigSource } from "../lib/api-types";
+import { useServer } from "../providers/server";
 
 interface LocationGroup {
 	sourcePath: string;
@@ -86,7 +81,9 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 				};
 			}
 		} else if (skillItem.source === ConfigSource.Project) {
-			const entry = projectLock?.skills.find((s) => s.name === skill.name);
+			const entry = projectLock?.skills.find(
+				(s) => s.name === skill.name,
+			);
 			if (entry) {
 				return {
 					source: entry.source,
@@ -134,9 +131,9 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="p-6 max-w-3xl">
-					<div className="flex items-center justify-between gap-3 mb-2">
-						<h2 className="text-xl font-semibold text-foreground truncate">
+				<div className="max-w-3xl p-6">
+					<div className="mb-2 flex items-center justify-between gap-3">
+						<h2 className="truncate text-xl font-semibold text-foreground">
 							{skill.name}
 						</h2>
 						<div className="flex items-center gap-1">
@@ -144,7 +141,10 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 								isIconOnly
 								variant="ghost"
 								size="sm"
-								className="text-muted hover:text-danger shrink-0"
+								className="
+          shrink-0 text-muted
+          hover:text-danger
+        "
 								aria-label={t("deleteSkill")}
 								onPress={() => setDeleteDialogOpen(true)}
 							>
@@ -155,20 +155,32 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 					{skill.description && (
 						<div className="mb-6">
-							<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+							<h3 className="
+         mb-2 text-xs font-medium tracking-wide text-muted uppercase
+       ">
 								{t("description")}
 							</h3>
-							<p className="text-sm text-foreground">{skill.description}</p>
+							<p className="text-sm text-foreground">
+								{skill.description}
+							</p>
 						</div>
 					)}
 
 					<div className="mb-6">
-						<						h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
-							{t("locations")} ({globalLocationGroups.length + projectLocationGroups.length})
+						<h3 className="
+        mb-3 text-xs font-medium tracking-wide text-muted uppercase
+      ">
+							{t("locations")} (
+							{globalLocationGroups.length +
+								projectLocationGroups.length}
+							)
 						</h3>
 
 						<CollapsibleLocations
-							locations={[...globalLocationGroups, ...projectLocationGroups]}
+							locations={[
+								...globalLocationGroups,
+								...projectLocationGroups,
+							]}
 							showAll={showAll}
 							onToggle={() => setShowAll(!showAll)}
 							openFolderMutation={openFolderMutation}
@@ -178,13 +190,15 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 					{(skill.author || skill.version) && (
 						<div className="mb-6">
-							<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+							<h3 className="
+         mb-2 text-xs font-medium tracking-wide text-muted uppercase
+       ">
 								{t("metadata")}
 							</h3>
 							<div className="flex gap-6">
 								{skill.author && (
 									<div>
-										<span className="text-xs text-muted block mb-0.5">
+										<span className="mb-0.5 block text-xs text-muted">
 											{t("author")}
 										</span>
 										<span className="text-sm text-foreground">
@@ -194,10 +208,10 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 								)}
 								{skill.version && (
 									<div>
-										<span className="text-xs text-muted block mb-0.5">
+										<span className="mb-0.5 block text-xs text-muted">
 											{t("version")}
 										</span>
-										<span className="text-sm text-foreground font-mono">
+										<span className="font-mono text-sm text-foreground">
 											{skill.version}
 										</span>
 									</div>
@@ -208,12 +222,16 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 					{skill.tools.length > 0 && (
 						<div className="mb-6">
-							<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+							<h3 className="
+         mb-2 text-xs font-medium tracking-wide text-muted uppercase
+       ">
 								{t("tools")} ({skill.tools.length})
 							</h3>
 							<div className="flex flex-wrap gap-1.5">
 								{skill.tools.map((tool) => (
-									<Chip key={tool} size="sm">{tool}</Chip>
+									<Chip key={tool} size="sm">
+										{tool}
+									</Chip>
 								))}
 							</div>
 						</div>
@@ -221,18 +239,24 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 					{currentSkillSource && (
 						<div className="mb-6">
-							<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3 flex items-center gap-2">
+							<h3 className="
+         mb-3 flex items-center gap-2 text-xs font-medium tracking-wide
+         text-muted uppercase
+       ">
 								<GlobeAltIcon className="size-4" />
 								{t("installedFrom")}
 							</h3>
-							<div className="p-3 border border-border rounded-lg bg-surface">
-								<p className="text-sm font-medium text-foreground truncate">
+							<div className="rounded-lg border border-border bg-surface p-3">
+								<p className="truncate text-sm font-medium text-foreground">
 									{currentSkillSource.source}
 								</p>
-								<div className="flex items-center gap-2 mt-1">
-									<p className="text-xs text-muted">{currentSkillSource.sourceType}</p>
-									<span className="text-xs text-muted font-mono">
-										<HashtagIcon className="size-3 inline" /> {currentSkillSource.hash.slice(0, 8)}...
+								<div className="mt-1 flex items-center gap-2">
+									<p className="text-xs text-muted">
+										{currentSkillSource.sourceType}
+									</p>
+									<span className="font-mono text-xs text-muted">
+										<HashtagIcon className="inline size-3" />{" "}
+										{currentSkillSource.hash.slice(0, 8)}...
 									</span>
 								</div>
 							</div>
@@ -268,9 +292,8 @@ function CollapsibleLocations({
 }: CollapsibleLocationsProps) {
 	const { t } = useTranslation();
 	const hasMore = locations.length > 2;
-	const displayLocations = showAll || !hasMore
-		? locations
-		: locations.slice(0, 2);
+	const displayLocations =
+		showAll || !hasMore ? locations : locations.slice(0, 2);
 	const hiddenCount = locations.length - 2;
 
 	return (
@@ -280,8 +303,12 @@ function CollapsibleLocations({
 					<LocationItem
 						key={group.sourcePath}
 						group={group}
-						onOpenFolder={() => openFolderMutation.mutate(group.sourcePath)}
-						onEditFolder={() => editFolderMutation.mutate(group.sourcePath)}
+						onOpenFolder={() =>
+							openFolderMutation.mutate(group.sourcePath)
+						}
+						onEditFolder={() =>
+							editFolderMutation.mutate(group.sourcePath)
+						}
 						isOpening={openFolderMutation.isPending}
 						isEditing={editFolderMutation.isPending}
 					/>
@@ -291,7 +318,10 @@ function CollapsibleLocations({
 				<button
 					type="button"
 					onClick={onToggle}
-					className="flex items-center gap-1 mt-2 text-xs text-muted hover:text-foreground transition-colors"
+					className="
+       mt-2 flex items-center gap-1 text-xs text-muted transition-colors
+       hover:text-foreground
+     "
 				>
 					{showAll ? (
 						<>
@@ -336,12 +366,18 @@ function LocationItem({
 	}, [group.sourcePath]);
 
 	return (
-		<div className="flex items-center justify-between gap-2 p-2.5 bg-default-50 rounded-lg border border-border">
+		<div className="
+    bg-default-50 flex items-center justify-between gap-2 rounded-lg border
+    border-border p-2.5
+  ">
 			<div className="min-w-0 flex-1">
-				<p className="text-xs font-medium text-foreground truncate mb-0.5">
+				<p className="mb-0.5 truncate text-xs font-medium text-foreground">
 					{group.agents.map(formatAgentName).join(", ")}
 				</p>
-				<p className="text-xs text-muted font-mono truncate" title={group.sourcePath}>
+				<p
+					className="truncate font-mono text-xs text-muted"
+					title={group.sourcePath}
+				>
 					{folderPath}
 				</p>
 			</div>
@@ -350,7 +386,10 @@ function LocationItem({
 					isIconOnly
 					variant="ghost"
 					size="sm"
-					className="text-muted hover:text-foreground shrink-0"
+					className="
+       shrink-0 text-muted
+       hover:text-foreground
+     "
 					aria-label={t("editInEditor")}
 					onPress={onEditFolder}
 					isDisabled={isEditing}
@@ -365,7 +404,10 @@ function LocationItem({
 					isIconOnly
 					variant="ghost"
 					size="sm"
-					className="text-muted hover:text-foreground shrink-0"
+					className="
+       shrink-0 text-muted
+       hover:text-foreground
+     "
 					aria-label={t("openFolder")}
 					onPress={onOpenFolder}
 					isDisabled={isOpening}
@@ -407,7 +449,9 @@ function DeleteSkillDialog({
 				group.items.map(async (item) => {
 					if (!item.agent) return;
 					const scope =
-						item.source === ConfigSource.Project ? "project" : "global";
+						item.source === ConfigSource.Project
+							? "project"
+							: "global";
 					return api.skills.delete(
 						item.agent,
 						skill.name,
@@ -444,14 +488,18 @@ function DeleteSkillDialog({
 					</Modal.Header>
 
 					<Modal.Body className="p-2">
-						<p className="text-sm text-muted mb-4">
-							{t("deleteSkillWarning", { count: group.items.length })}
+						<p className="mb-4 text-sm text-muted">
+							{t("deleteSkillWarning", {
+								count: group.items.length,
+							})}
 						</p>
 
 						<div className="space-y-4">
 							{globalItems.length > 0 && (
 								<div>
-									<h4 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+									<h4 className="
+           mb-2 text-xs font-medium tracking-wide text-muted uppercase
+         ">
 										{t("globalSkills")}
 									</h4>
 									<div className="space-y-2">
@@ -460,15 +508,19 @@ function DeleteSkillDialog({
 												key={item.agent}
 												className="flex items-center gap-2 text-sm"
 											>
-												<XCircleIcon className="size-4 text-danger shrink-0" />
+												<XCircleIcon className="size-4 shrink-0 text-danger" />
 												<span className="text-foreground">
 													{item.agent
-														? item.agent.charAt(0).toUpperCase() +
-														  item.agent.slice(1).toLowerCase()
+														? item.agent
+																.charAt(0)
+																.toUpperCase() +
+															item.agent
+																.slice(1)
+																.toLowerCase()
 														: t("default")}
 												</span>
 												{item.source_path && (
-													<span className="text-muted text-xs truncate flex-1">
+													<span className="flex-1 truncate text-xs text-muted">
 														{item.source_path}
 													</span>
 												)}
@@ -480,7 +532,9 @@ function DeleteSkillDialog({
 
 							{projectItems.length > 0 && (
 								<div>
-									<h4 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+									<h4 className="
+           mb-2 text-xs font-medium tracking-wide text-muted uppercase
+         ">
 										{t("projectSkills")}
 									</h4>
 									<div className="space-y-2">
@@ -489,15 +543,19 @@ function DeleteSkillDialog({
 												key={item.agent}
 												className="flex items-center gap-2 text-sm"
 											>
-												<XCircleIcon className="size-4 text-danger shrink-0" />
+												<XCircleIcon className="size-4 shrink-0 text-danger" />
 												<span className="text-foreground">
 													{item.agent
-														? item.agent.charAt(0).toUpperCase() +
-														  item.agent.slice(1).toLowerCase()
+														? item.agent
+																.charAt(0)
+																.toUpperCase() +
+															item.agent
+																.slice(1)
+																.toLowerCase()
 														: t("default")}
 												</span>
 												{item.source_path && (
-													<span className="text-muted text-xs truncate flex-1">
+													<span className="flex-1 truncate text-xs text-muted">
 														{item.source_path}
 													</span>
 												)}

@@ -23,7 +23,11 @@ export function AgentIcon({ id, name }: AgentIconProps) {
 		// Render SVG inside a square container with border
 		return (
 			<div
-				className="size-12 flex items-center justify-center rounded-lg bg-surface-secondary border border-border [&_svg]:size-8"
+				className="
+      flex size-12 items-center justify-center rounded-lg border border-border
+      bg-surface-secondary
+      [&_svg]:size-8
+    "
 				dangerouslySetInnerHTML={{ __html: svg.default || svg }}
 			/>
 		);

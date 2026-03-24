@@ -1,11 +1,11 @@
 import {
-	Button,
-	Modal,
-	type Selection,
-	Spinner,
-	Tag,
-	TagGroup,
-} from "@heroui/react";
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	MinusIcon,
+	PlusIcon,
+} from "@heroicons/react/24/solid";
+import type { Selection } from "@heroui/react";
+import { Button, Modal, Spinner, Tag, TagGroup } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,7 +17,6 @@ import { useAgentAvailability } from "../providers/agent-availability";
 import { useServer } from "../providers/server";
 import { ResultStatusItem } from "./result-status-item";
 import { StepIndicator } from "./step-indicator";
-import { ChevronLeftIcon, ChevronRightIcon, MinusIcon, PlusIcon } from "@heroicons/react/24/solid";
 
 interface ManageAgentsDialogProps {
 	group: {
@@ -141,7 +140,8 @@ export function ManageAgentsDialog({
 					} else {
 						const scope =
 							group.items.find(
-								(i) => (i.agent ?? "default") === result.agentId,
+								(i) =>
+									(i.agent ?? "default") === result.agentId,
 							)?.source === ConfigSource.Project
 								? "project"
 								: "global";
@@ -190,7 +190,7 @@ export function ManageAgentsDialog({
 
 						{step === 1 && (
 							<div>
-								<p className="text-sm text-muted mb-3">
+								<p className="mb-3 text-sm text-muted">
 									{t("selectAgentsForMcp")}
 								</p>
 								{usableAgents.length === 0 ? (
@@ -248,7 +248,9 @@ export function ManageAgentsDialog({
 							<div className="space-y-4">
 								{toInstall.length > 0 && (
 									<div>
-										<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+										<p className="
+            mb-2 text-xs font-medium tracking-wide text-muted uppercase
+          ">
 											{t("toInstall")}
 										</p>
 										<TagGroup selectionMode="none">
@@ -257,7 +259,7 @@ export function ManageAgentsDialog({
 													<Tag
 														key={id}
 														id={id}
-														className="bg-success-soft text-success border-success/30"
+														className="border-success/30 bg-success-soft text-success"
 													>
 														<div className="flex items-center gap-1.5">
 															{getAgentDisplayName(
@@ -273,7 +275,9 @@ export function ManageAgentsDialog({
 								)}
 								{toUninstall.length > 0 && (
 									<div>
-										<p className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
+										<p className="
+            mb-2 text-xs font-medium tracking-wide text-muted uppercase
+          ">
 											{t("toUninstall")}
 										</p>
 										<TagGroup selectionMode="none">
@@ -282,7 +286,7 @@ export function ManageAgentsDialog({
 													<Tag
 														key={id}
 														id={id}
-														className="bg-danger-soft text-danger border-danger/30"
+														className="border-danger/30 bg-danger-soft text-danger"
 													>
 														<div className="flex items-center gap-1.5">
 															{getAgentDisplayName(
@@ -324,7 +328,8 @@ export function ManageAgentsDialog({
 													? t("installing")
 													: t("uninstalling")
 												: result.status === "success"
-													? result.action === "install"
+													? result.action ===
+														"install"
 														? t("installSuccess")
 														: t("uninstallSuccess")
 													: ""

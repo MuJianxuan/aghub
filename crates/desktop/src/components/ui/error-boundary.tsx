@@ -1,5 +1,6 @@
 import { Button } from "@heroui/react";
-import { Component, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { Component } from "react";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "./empty";
 
 interface Props {
@@ -22,7 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
 		if (this.state.error) {
 			return (
 				this.props.fallback ?? (
-					<div className="flex items-center justify-center h-full p-6">
+					<div className="flex h-full items-center justify-center p-6">
 						<Empty>
 							<EmptyHeader>
 								<EmptyTitle>Something went wrong</EmptyTitle>

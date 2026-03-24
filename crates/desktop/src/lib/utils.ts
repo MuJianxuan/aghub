@@ -1,4 +1,5 @@
-import { type ClassValue, clsx } from "clsx";
+import type { ClassValue } from "clsx";
+import { clsx } from "clsx";
 import stableHash from "stable-hash";
 import { twMerge } from "tailwind-merge";
 import type { TransportDto } from "./api-types";

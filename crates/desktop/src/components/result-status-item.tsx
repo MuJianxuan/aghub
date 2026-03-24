@@ -18,15 +18,15 @@ export function ResultStatusItem({
 	error,
 }: ResultStatusItemProps) {
 	return (
-		<div className="flex items-start gap-2 p-3 rounded-lg bg-default-50">
+		<div className="bg-default-50 flex items-start gap-2 rounded-lg p-3">
 			{status === "pending" && (
-				<ArrowPathIcon className="size-4 text-muted shrink-0 mt-0.5 animate-spin" />
+				<ArrowPathIcon className="mt-0.5 size-4 shrink-0 animate-spin text-muted" />
 			)}
 			{status === "success" && (
-				<CheckCircleIcon className="size-4 text-success shrink-0 mt-0.5" />
+				<CheckCircleIcon className="mt-0.5 size-4 shrink-0 text-success" />
 			)}
 			{status === "error" && (
-				<XCircleIcon className="size-4 text-danger shrink-0 mt-0.5" />
+				<XCircleIcon className="mt-0.5 size-4 shrink-0 text-danger" />
 			)}
 			<div className="min-w-0">
 				<p className="text-sm font-medium">{displayName}</p>

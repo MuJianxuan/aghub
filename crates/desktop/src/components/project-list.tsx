@@ -41,10 +41,16 @@ function ProjectListItem({ project, isActive }: ProjectListItemProps) {
 				href={`/projects/${project.id}`}
 				onContextMenu={handleContextMenu}
 				className={cn(
-					"flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors cursor-pointer select-none",
+					`
+       flex cursor-pointer items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm
+       transition-colors select-none
+     `,
 					isActive
-						? "bg-accent/10 text-foreground font-medium"
-						: "text-muted hover:bg-surface-secondary hover:text-foreground",
+						? "bg-accent/10 font-medium text-foreground"
+						: `
+        text-muted
+        hover:bg-surface-secondary hover:text-foreground
+      `,
 				)}
 			>
 				<FolderIcon className="size-4 shrink-0" />
@@ -80,16 +86,19 @@ export function ProjectList() {
 			<div className="mt-4">
 				<div className="flex items-center justify-between px-3 py-2">
 					<button
-						className="flex items-center gap-2 flex-1"
+						className="flex flex-1 items-center gap-2"
 						onClick={() => setIsExpanded(!isExpanded)}
 					>
-						<h3 className="text-xs font-medium text-muted uppercase tracking-wide">
+						<h3 className="text-xs font-medium tracking-wide text-muted uppercase">
 							{t("projects")}
 						</h3>
 						<ChevronIcon className="size-3 text-muted" />
 					</button>
 					<button
-						className="h-5 w-5 min-w-0 flex items-center justify-center rounded text-muted hover:text-foreground hover:bg-surface-secondary"
+						className="
+        flex size-5 min-w-0 items-center justify-center rounded-sm text-muted
+        hover:bg-surface-secondary hover:text-foreground
+      "
 						aria-label={t("addProject")}
 						onClick={(e) => {
 							e.stopPropagation();
@@ -103,15 +112,15 @@ export function ProjectList() {
 				{/* Projects List */}
 				{isExpanded && (
 					<div className="flex flex-col gap-0.5">
-					{projects.map((project) => (
-						<ProjectListItem
-							key={project.id}
-							project={project}
-							isActive={
-								location === `/projects/${project.id}`
-							}
-						/>
-					))}
+						{projects.map((project) => (
+							<ProjectListItem
+								key={project.id}
+								project={project}
+								isActive={
+									location === `/projects/${project.id}`
+								}
+							/>
+						))}
 					</div>
 				)}
 			</div>

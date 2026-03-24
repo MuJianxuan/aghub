@@ -119,7 +119,10 @@ export async function enableAgent(agentId: string): Promise<void> {
 
 export async function getIntegrationPreferences(): Promise<IntegrationPreferences> {
 	const store = await getStore();
-	return (await store.get<IntegrationPreferences>("integrationPreferences")) ?? {};
+	return (
+		(await store.get<IntegrationPreferences>("integrationPreferences")) ??
+		{}
+	);
 }
 
 export async function saveIntegrationPreferences(

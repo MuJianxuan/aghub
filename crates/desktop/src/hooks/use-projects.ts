@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Project } from "../lib/store";
 import {
 	addProject,
 	getProjects,
-	type Project,
 	removeProject,
 	updateProject,
 } from "../lib/store";

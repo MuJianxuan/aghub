@@ -65,10 +65,14 @@ function SkillItemButton({
 		<button
 			type="button"
 			onClick={() => onSelect(name)}
-			className={`${baseClasses} ${variantClasses} ${stateClasses}`}
+			className={`
+     ${baseClasses}
+     ${variantClasses}
+     ${stateClasses}
+   `}
 		>
 			<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
-			<span className="truncate flex-1 text-sm font-medium text-foreground">
+			<span className="flex-1 truncate text-sm font-medium text-foreground">
 				{name}
 			</span>
 		</button>
@@ -105,15 +109,23 @@ export function SkillList({
 	const findSkillSource = (
 		skillName: string,
 	): { source: string; sourceType: string } | null => {
-		const globalEntry = globalLock?.skills.find((s) => s.name === skillName);
+		const globalEntry = globalLock?.skills.find(
+			(s) => s.name === skillName,
+		);
 		if (globalEntry) {
-			return { source: globalEntry.source, sourceType: globalEntry.sourceType };
+			return {
+				source: globalEntry.source,
+				sourceType: globalEntry.sourceType,
+			};
 		}
 		const projectEntry = projectLock?.skills.find(
 			(s) => s.name === skillName,
 		);
 		if (projectEntry) {
-			return { source: projectEntry.source, sourceType: projectEntry.sourceType };
+			return {
+				source: projectEntry.source,
+				sourceType: projectEntry.sourceType,
+			};
 		}
 		return null;
 	};
@@ -159,8 +171,10 @@ export function SkillList({
 		}
 
 		const groups = new Map<string, SourceGroup>();
-		const singleItems: (SkillGroup & { source: string; sourceType: string })[] =
-			[];
+		const singleItems: (SkillGroup & {
+			source: string;
+			sourceType: string;
+		})[] = [];
 		const unknown: SkillGroup[] = [];
 
 		for (const group of filteredByName) {
@@ -233,7 +247,7 @@ export function SkillList({
 			unknownGroups.length > 0;
 		if (!hasItems) {
 			return (
-				<p className="px-3 py-6 text-sm text-muted text-center">
+				<p className="px-3 py-6 text-center text-sm text-muted">
 					{emptyMessage ?? t("noSkillsMatch")}
 				</p>
 			);
@@ -246,15 +260,18 @@ export function SkillList({
 						<button
 							type="button"
 							onClick={() => toggleSource(sg.source)}
-							className="flex items-center gap-2 w-full px-3 py-2.5 hover:bg-surface-secondary transition-colors text-left"
+							className="
+         flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors
+         hover:bg-surface-secondary
+       "
 						>
 							{expandedSources.has(sg.source) ? (
-								<ChevronDownIcon className="size-4 text-muted shrink-0" />
+								<ChevronDownIcon className="size-4 shrink-0 text-muted" />
 							) : (
-								<ChevronRightIcon className="size-4 text-muted shrink-0" />
+								<ChevronRightIcon className="size-4 shrink-0 text-muted" />
 							)}
-							<div className="flex-1 min-w-0">
-								<p className="text-sm font-medium text-foreground truncate">
+							<div className="min-w-0 flex-1">
+								<p className="truncate text-sm font-medium text-foreground">
 									{sg.source}
 								</p>
 							</div>
@@ -265,15 +282,17 @@ export function SkillList({
 
 						{expandedSources.has(sg.source) && (
 							<div>
-							{sg.skills.map((skillGroup) => (
-								<SkillItemButton
-									key={skillGroup.name}
-									name={skillGroup.name}
-									isSelected={selectedKey === skillGroup.name}
-									onSelect={onSelect}
-									variant="nested"
-								/>
-							))}
+								{sg.skills.map((skillGroup) => (
+									<SkillItemButton
+										key={skillGroup.name}
+										name={skillGroup.name}
+										isSelected={
+											selectedKey === skillGroup.name
+										}
+										onSelect={onSelect}
+										variant="nested"
+									/>
+								))}
 							</div>
 						)}
 					</div>
@@ -302,7 +321,7 @@ export function SkillList({
 
 	if (filteredByName.length === 0) {
 		return (
-			<p className="px-3 py-6 text-sm text-muted text-center">
+			<p className="px-3 py-6 text-center text-sm text-muted">
 				{emptyMessage ?? t("noSkillsMatch")}
 			</p>
 		);
@@ -327,9 +346,9 @@ export function SkillList({
 					textValue={group.name}
 					className="data-selected:bg-accent/10"
 				>
-					<div className="flex items-center gap-2 w-full">
+					<div className="flex w-full items-center gap-2">
 						<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
-						<Label className="truncate flex-1">{group.name}</Label>
+						<Label className="flex-1 truncate">{group.name}</Label>
 					</div>
 				</ListBox.Item>
 			))}

@@ -5,12 +5,12 @@ export function SettingsLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<Surface
 			variant="default"
-			className="flex flex-col h-screen overflow-hidden"
+			className="flex h-screen flex-col overflow-hidden"
 		>
 			{/* Title bar - draggable */}
 			<div
 				data-tauri-drag-region
-				className="h-9 shrink-0 flex items-center border-b border-border pl-20"
+				className="flex h-9 shrink-0 items-center border-b border-border pl-20"
 			>
 				<div className="text-sm font-medium tracking-tight">aghub</div>
 				<div className="flex-1" />

@@ -1,3 +1,5 @@
+import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/solid";
+import type { Selection } from "@heroui/react";
 import {
 	Button,
 	ListBox,
@@ -6,19 +8,17 @@ import {
 	Spinner,
 	Tag,
 	TagGroup,
-	type Selection,
 } from "@heroui/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAgentAvailability } from "../providers/agent-availability";
-import { useServer } from "../providers/server";
 import { createApi } from "../lib/api";
 import type { MarketSkill } from "../lib/api-types";
 import { capitalize } from "../lib/mcp-utils";
+import { useAgentAvailability } from "../providers/agent-availability";
+import { useServer } from "../providers/server";
 import { ResultStatusItem } from "./result-status-item";
 import { StepIndicator } from "./step-indicator";
-import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/solid";
 
 interface InstallSkillDialogProps {
 	isOpen: boolean;
@@ -56,8 +56,12 @@ export function InstallSkillDialog({
 
 	const [step, setStep] = useState<WizardStep>(1);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [selectedSkill, setSelectedSkill] = useState<MarketSkill | null>(null);
-	const [selectedAgents, setSelectedAgents] = useState<Set<string>>(new Set());
+	const [selectedSkill, setSelectedSkill] = useState<MarketSkill | null>(
+		null,
+	);
+	const [selectedAgents, setSelectedAgents] = useState<Set<string>>(
+		new Set(),
+	);
 	const [results, setResults] = useState<InstallResult[]>([]);
 
 	const isInstalling = results.some((r) => r.status === "pending");
@@ -95,7 +99,8 @@ export function InstallSkillDialog({
 
 		setStep(2);
 
-		const pendingResults: InstallResult[] = [...selectedAgents].map(
+		const pendingResults: InstallResult[] = Array.from(
+			selectedAgents,
 			(agentId) => ({
 				agentId,
 				displayName: getAgentDisplayName(agentId),
@@ -104,12 +109,10 @@ export function InstallSkillDialog({
 		);
 		setResults(pendingResults);
 
-		const skillsCliNames = [...selectedAgents]
-			.map((id) => {
-				const agent = availableAgents.find((a) => a.id === id);
-				return agent?.skills_cli_name;
-			})
-			.filter((name): name is string => !!name);
+		const skillsCliNames = Array.from(selectedAgents, (id) => {
+			const agent = availableAgents.find((a) => a.id === id);
+			return agent?.skills_cli_name;
+		}).filter((name): name is string => !!name);
 
 		try {
 			const response = await api.skills.install({
@@ -149,10 +152,7 @@ export function InstallSkillDialog({
 		onClose();
 	};
 
-	const stepLabels = [
-		t("selectSourceAndAgents"),
-		t("installation"),
-	];
+	const stepLabels = [t("selectSourceAndAgents"), t("installation")];
 
 	const canInstall = selectedSkill !== null && selectedAgents.size > 0;
 
@@ -193,7 +193,7 @@ export function InstallSkillDialog({
 								</SearchField>
 
 								{searchQuery.length >= 2 && (
-									<div className="border border-border rounded-lg overflow-hidden">
+									<div className="overflow-hidden rounded-lg border border-border">
 										{isSearching ? (
 											<div className="flex items-center justify-center py-8">
 												<Spinner size="sm" />
@@ -201,7 +201,9 @@ export function InstallSkillDialog({
 										) : marketResults.length > 0 ? (
 											<div className="max-h-64 overflow-y-auto">
 												<ListBox
-													aria-label={t("searchResults")}
+													aria-label={t(
+														"searchResults",
+													)}
 													selectionMode="single"
 													selectedKeys={
 														selectedSkill
@@ -223,36 +225,48 @@ export function InstallSkillDialog({
 																	selectedKey,
 															);
 														if (skill)
-															handleSkillSelect(skill);
+															handleSkillSelect(
+																skill,
+															);
 													}}
 												>
-													{marketResults.map((skill) => (
-														<ListBox.Item
-															key={skill.slug}
-															id={skill.slug}
-															textValue={skill.name}
-															className="data-selected:bg-accent/10"
-														>
-															<div className="flex items-center justify-between w-full py-1">
-																<div className="min-w-0 flex-1">
-																	<p className="text-sm font-medium truncate">
-																		{skill.name}
-																	</p>
-																	<p className="text-xs text-muted truncate">
-																		{skill.source}
-																	</p>
+													{marketResults.map(
+														(skill) => (
+															<ListBox.Item
+																key={skill.slug}
+																id={skill.slug}
+																textValue={
+																	skill.name
+																}
+																className="data-selected:bg-accent/10"
+															>
+																<div className="flex w-full items-center justify-between py-1">
+																	<div className="min-w-0 flex-1">
+																		<p className="truncate text-sm font-medium">
+																			{
+																				skill.name
+																			}
+																		</p>
+																		<p className="truncate text-xs text-muted">
+																			{
+																				skill.source
+																			}
+																		</p>
+																	</div>
+																	<span className="ml-2 shrink-0 text-xs text-muted">
+																		{skill.installs.toLocaleString()}{" "}
+																		{t(
+																			"installs",
+																		)}
+																	</span>
 																</div>
-																<span className="text-xs text-muted shrink-0 ml-2">
-																	{skill.installs.toLocaleString()}{" "}
-																	{t("installs")}
-																</span>
-															</div>
-														</ListBox.Item>
-													))}
+															</ListBox.Item>
+														),
+													)}
 												</ListBox>
 											</div>
 										) : (
-											<p className="px-4 py-6 text-sm text-muted text-center">
+											<p className="px-4 py-6 text-center text-sm text-muted">
 												{t("noResults")}
 											</p>
 										)}
@@ -260,8 +274,10 @@ export function InstallSkillDialog({
 								)}
 
 								{selectedSkill && (
-									<div className="p-3 bg-accent/5 border border-accent-soft-hover rounded-lg">
-										<p className="text-xs text-muted uppercase tracking-wide mb-1">
+									<div className="
+           rounded-lg border border-accent-soft-hover bg-accent/5 p-3
+         ">
+										<p className="mb-1 text-xs tracking-wide text-muted uppercase">
 											{t("selectedSkill")}
 										</p>
 										<p className="font-medium">
@@ -275,13 +291,13 @@ export function InstallSkillDialog({
 
 								{/* Agent selection */}
 								<div>
-									<p className="text-sm text-muted mb-3">
+									<p className="mb-3 text-sm text-muted">
 										{t("selectAgentsForSkill")}
 									</p>
 
 									{skillAgents.length === 0 ? (
-										<div className="text-center py-6">
-											<MagnifyingGlassIcon className="size-8 text-muted mx-auto mb-2" />
+										<div className="py-6 text-center">
+											<MagnifyingGlassIcon className="mx-auto mb-2 size-8 text-muted" />
 											<p className="text-sm text-muted">
 												{t("noTargetAgents")}
 											</p>
@@ -296,16 +312,19 @@ export function InstallSkillDialog({
 										>
 											<TagGroup.List className="flex-wrap">
 												{skillAgents.map((agent) => {
-													const isSelected = selectedAgents.has(
-														agent.id,
-													);
+													const isSelected =
+														selectedAgents.has(
+															agent.id,
+														);
 													return (
 														<Tag
 															key={agent.id}
 															id={agent.id}
 														>
 															<div className="flex items-center gap-1.5">
-																{agent.display_name}
+																{
+																	agent.display_name
+																}
 																{isSelected && (
 																	<PlusIcon className="size-3" />
 																)}
@@ -323,7 +342,7 @@ export function InstallSkillDialog({
 						{step === 2 && (
 							<div className="space-y-3">
 								{results.length === 0 ? (
-									<p className="text-sm text-muted text-center py-4">
+									<p className="py-4 text-center text-sm text-muted">
 										{t("noChanges")}
 									</p>
 								) : (
@@ -341,8 +360,11 @@ export function InstallSkillDialog({
 												statusText={
 													result.status === "pending"
 														? t("installing")
-														: result.status === "success"
-															? t("installSuccess")
+														: result.status ===
+																"success"
+															? t(
+																	"installSuccess",
+																)
 															: ""
 												}
 												error={result.error}

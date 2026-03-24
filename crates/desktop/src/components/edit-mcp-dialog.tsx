@@ -14,12 +14,14 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createApi, type UpdateMcpRequest } from "../lib/api";
+import type { UpdateMcpRequest } from "../lib/api";
+import { createApi } from "../lib/api";
 import type { McpResponse, TransportDto } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
 import { buildTransportFromForm, capitalize } from "../lib/mcp-utils";
 import { useServer } from "../providers/server";
-import { EnvEditor, type EnvVar } from "./env-editor";
+import type { EnvVar } from "./env-editor";
+import { EnvEditor } from "./env-editor";
 
 interface EditMcpDialogProps {
 	group: {
@@ -91,7 +93,9 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 			return Promise.all(
 				group.items.map((item) => {
 					const scope =
-						item.source === ConfigSource.Project ? "project" : "global";
+						item.source === ConfigSource.Project
+							? "project"
+							: "global";
 					return api.mcps.update(
 						item.name,
 						item.agent ?? "default",
@@ -113,9 +117,7 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 	const agentNamesList = useMemo(
 		() =>
 			group.items
-				.map((i) =>
-					i.agent ? capitalize(i.agent) : "Default",
-				)
+				.map((i) => (i.agent ? capitalize(i.agent) : "Default"))
 				.join(", "),
 		[group.items],
 	);
@@ -136,7 +138,7 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 
 		const body: UpdateMcpRequest = {
 			name: name.trim() !== primaryServer.name ? name.trim() : undefined,
-			timeout: timeout ? parseInt(timeout, 10) : undefined,
+			timeout: timeout ? Number.parseInt(timeout, 10) : undefined,
 		};
 
 		const transport = buildTransport();
@@ -157,7 +159,9 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 					</Modal.Header>
 					<Modal.Body className="p-2">
 						{group.items.length > 1 && (
-							<div className="bg-warning/10 border border-warning-soft-hover rounded-lg p-3 mb-4">
+							<div className="
+         mb-4 rounded-lg border border-warning-soft-hover bg-warning/10 p-3
+       ">
 								<p className="text-sm text-warning">
 									{t("changeWillApplyToAgents", {
 										count: group.items.length,
@@ -297,25 +301,25 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 								</Fieldset>
 							)}
 
-						<Fieldset>
-							<Fieldset.Group>
-								<TextField className="w-full">
-									<Label>{t("timeout")}</Label>
-									<Input
-										type="number"
-										value={timeout}
-										onChange={(e) =>
-											setTimeoutValue(e.target.value)
-										}
-										placeholder="60"
-									/>
-									<Description>
-										{t("timeoutHelp")}
-									</Description>
-								</TextField>
-							</Fieldset.Group>
-						</Fieldset>
-					</Form>
+							<Fieldset>
+								<Fieldset.Group>
+									<TextField className="w-full">
+										<Label>{t("timeout")}</Label>
+										<Input
+											type="number"
+											value={timeout}
+											onChange={(e) =>
+												setTimeoutValue(e.target.value)
+											}
+											placeholder="60"
+										/>
+										<Description>
+											{t("timeoutHelp")}
+										</Description>
+									</TextField>
+								</Fieldset.Group>
+							</Fieldset>
+						</Form>
 					</Modal.Body>
 					<Modal.Footer>
 						<Button

@@ -69,67 +69,71 @@ export function createApi(baseUrl: string) {
 					})
 					.json();
 			},
-		create(
-			agent: string,
-			data: CreateSkillRequest,
-			projectRoot?: string,
-		): Promise<SkillResponse> {
-			const scope = projectRoot ? "project" : "global";
-			return client
-				.post(`agents/${agent}/skills`, {
-					searchParams: {
-						scope,
-						...(projectRoot
-							? { project_root: projectRoot }
-							: {}),
-					},
-					json: data,
-				})
-				.json();
+			create(
+				agent: string,
+				data: CreateSkillRequest,
+				projectRoot?: string,
+			): Promise<SkillResponse> {
+				const scope = projectRoot ? "project" : "global";
+				return client
+					.post(`agents/${agent}/skills`, {
+						searchParams: {
+							scope,
+							...(projectRoot
+								? { project_root: projectRoot }
+								: {}),
+						},
+						json: data,
+					})
+					.json();
+			},
+			install(data: InstallSkillRequest): Promise<InstallSkillResponse> {
+				return client
+					.post("skills/install", { json: data, timeout: 300000 })
+					.json();
+			},
+			delete(
+				agent: string,
+				name: string,
+				scope: "global" | "project" = "global",
+				projectRoot?: string,
+			): Promise<void> {
+				return client
+					.delete(`agents/${agent}/skills/${name}`, {
+						searchParams: {
+							scope,
+							...(projectRoot
+								? { project_root: projectRoot }
+								: {}),
+						},
+					})
+					.then(() => undefined);
+			},
+			openFolder(skillPath: string): Promise<void> {
+				return client
+					.post("skills/open", { json: { skill_path: skillPath } })
+					.then(() => undefined);
+			},
+			editFolder(skillPath: string): Promise<void> {
+				return client
+					.post("skills/edit", { json: { skill_path: skillPath } })
+					.then(() => undefined);
+			},
+			getGlobalLock(): Promise<GlobalSkillLockResponse> {
+				return client.get("skills/lock/global").json();
+			},
+			getProjectLock(
+				projectPath?: string,
+			): Promise<ProjectSkillLockResponse> {
+				return client
+					.get("skills/lock/project", {
+						searchParams: projectPath
+							? { project_path: projectPath }
+							: {},
+					})
+					.json();
+			},
 		},
-		install(data: InstallSkillRequest): Promise<InstallSkillResponse> {
-			return client
-				.post("skills/install", { json: data, timeout: 300000 })
-				.json();
-		},
-		delete(
-			agent: string,
-			name: string,
-			scope: "global" | "project" = "global",
-			projectRoot?: string,
-		): Promise<void> {
-			return client
-				.delete(`agents/${agent}/skills/${name}`, {
-					searchParams: {
-						scope,
-						...(projectRoot ? { project_root: projectRoot } : {}),
-					},
-				})
-				.then(() => undefined);
-		},
-		openFolder(skillPath: string): Promise<void> {
-			return client
-				.post("skills/open", { json: { skill_path: skillPath } })
-				.then(() => undefined);
-		},
-		editFolder(skillPath: string): Promise<void> {
-			return client
-				.post("skills/edit", { json: { skill_path: skillPath } })
-				.then(() => undefined);
-		},
-		getGlobalLock(): Promise<GlobalSkillLockResponse> {
-			return client.get("skills/lock/global").json();
-		},
-		getProjectLock(projectPath?: string): Promise<ProjectSkillLockResponse> {
-			return client
-				.get("skills/lock/project", {
-					searchParams: projectPath
-						? { project_path: projectPath }
-						: {},
-				})
-				.json();
-		},
-	},
 		mcps: {
 			listAll(
 				scope: "global" | "project" | "all" = "global",
@@ -229,7 +233,10 @@ export function createApi(baseUrl: string) {
 			listCodeEditors(): Promise<ToolInfo[]> {
 				return client.get("integrations/code-editors").json();
 			},
-			openWithEditor(path: string, editor: CodeEditorType): Promise<void> {
+			openWithEditor(
+				path: string,
+				editor: CodeEditorType,
+			): Promise<void> {
 				return client
 					.post("integrations/open-with-editor", {
 						json: { path, editor },

@@ -81,6 +81,7 @@ export default {
 	orCreateNew: "或创建一个新的",
 	transport: "传输",
 	type: "类型",
+	details: "详情",
 	command: "命令",
 	args: "参数",
 	url: "URL",

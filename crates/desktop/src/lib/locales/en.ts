@@ -83,6 +83,7 @@ export default {
 	orCreateNew: "or create a new one",
 	transport: "Transport",
 	type: "Type",
+	details: "Details",
 	command: "Command",
 	args: "Args",
 	url: "URL",

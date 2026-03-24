@@ -11,7 +11,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createApi } from "../lib/api";
-import type { McpResponse } from "../lib/api-types";
+import type { McpResponse, TransportDto } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
 import { useServer } from "../hooks/use-server";
 import { ManageAgentsDialog } from "./manage-agents-dialog";
@@ -72,7 +72,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 			timeout: primary.timeout,
 		};
 		const configJson = JSON.stringify(config, null, 2);
-		
+
 		try {
 			await navigator.clipboard.writeText(configJson);
 			setCopyFeedback(true);
@@ -85,7 +85,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	// Clear copy feedback after 2 seconds
 	useEffect(() => {
 		if (copyFeedback) {
-			const timer = setTimeout(() => setCopyFeedback(false), 2000);
+			const timer = setTimeout(setCopyFeedback, 2000, false);
 			return () => clearTimeout(timer);
 		}
 	}, [copyFeedback]);
@@ -215,7 +215,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 					{/* Connection / Transport */}
 					<div className="mb-6">
-						<h3 className="mb-3 text-xs font-medium tracking-wide text-muted uppercase">
+						<h3 className="
+        mb-3 text-xs font-medium tracking-wide text-muted uppercase
+      ">
 							{t("transport")}
 						</h3>
 						<Table>
@@ -225,7 +227,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 										<Table.Column isRowHeader className="w-24">
 											{t("type")}
 										</Table.Column>
-										<Table.Column>Value</Table.Column>
+										<Table.Column>
+											{t("details")}
+										</Table.Column>
 									</Table.Header>
 									<Table.Body>
 										<Table.Row>

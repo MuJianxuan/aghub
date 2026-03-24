@@ -1,6 +1,5 @@
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
@@ -236,16 +235,10 @@ pub fn save_selected_agents(agents: Vec<String>) -> std::io::Result<()> {
 	write_skill_lock(&lock)
 }
 
-/// Compute SHA-256 hash of content.
-pub fn compute_content_hash(content: &str) -> String {
-	format!("{:x}", Sha256::digest(content.as_bytes()))
-}
-
 #[cfg(test)]
 mod tests {
 	use super::*;
 	use std::fs;
-	use std::path::Path;
 	use std::sync::Mutex;
 	use tempfile::TempDir;
 
@@ -646,16 +639,5 @@ mod tests {
 		} else {
 			std::env::remove_var("XDG_STATE_HOME");
 		}
-	}
-
-	#[test]
-	fn test_compute_content_hash() {
-		let hash1 = compute_content_hash("test content");
-		let hash2 = compute_content_hash("test content");
-		assert_eq!(hash1, hash2);
-		assert_eq!(hash1.len(), 64); // SHA-256 produces 64 hex characters
-
-		let hash3 = compute_content_hash("different content");
-		assert_ne!(hash1, hash3);
 	}
 }

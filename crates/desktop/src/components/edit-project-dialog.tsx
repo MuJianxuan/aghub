@@ -7,7 +7,7 @@ import {
 	Modal,
 	TextField,
 } from "@heroui/react";
-import { invoke } from "@tauri-apps/api/core";
+import { open } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAddProject } from "../hooks/use-projects";
@@ -29,7 +29,10 @@ export function CreateProjectDialog({
 
 	const handleFolderSelect = async () => {
 		try {
-			const selectedPath = await invoke<string | null>("pick_folder");
+			const selectedPath = await open({
+				directory: true,
+				multiple: false,
+			});
 			if (selectedPath) {
 				setPath(selectedPath);
 				const folderName = basename(selectedPath) || "";

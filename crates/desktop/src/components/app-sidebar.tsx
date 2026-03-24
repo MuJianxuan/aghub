@@ -57,7 +57,7 @@ export function AppSidebar() {
            transition-colors
          `,
 									isActive
-										? "bg-accent/10 font-medium text-foreground"
+										? "bg-surface font-medium text-foreground"
 										: `
             text-muted
             hover:bg-surface-secondary hover:text-foreground
@@ -82,7 +82,7 @@ export function AppSidebar() {
          transition-colors
        `,
 							pathname === "/settings"
-								? "bg-accent/10 font-medium text-foreground"
+								? "bg-surface font-medium text-foreground"
 								: `
           text-muted
           hover:bg-surface-secondary hover:text-foreground

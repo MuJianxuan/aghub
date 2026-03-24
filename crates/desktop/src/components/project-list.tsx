@@ -46,7 +46,7 @@ function ProjectListItem({ project, isActive }: ProjectListItemProps) {
        transition-colors select-none
      `,
 					isActive
-						? "bg-accent/10 font-medium text-foreground"
+						? "bg-surface font-medium text-foreground"
 						: `
         text-muted
         hover:bg-surface-secondary hover:text-foreground

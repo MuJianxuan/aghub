@@ -6,6 +6,7 @@ import {
 	SearchField,
 	type Selection,
 } from "@heroui/react";
+import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { InstallSkillDialog } from "../../components/install-skill-dialog";
@@ -29,28 +30,27 @@ export default function SkillsPage() {
 		return Array.from(map.entries()).map(([name, items]) => ({
 			name,
 			items,
+			description: items.find((s) => s.description)?.description ?? "",
 		}));
 	}, [skills]);
 
-	const filteredGroups = useMemo(() => {
-		const query = searchQuery.toLowerCase();
-		if (!query) return groupedSkills;
+	const fuse = useMemo(
+		() =>
+			new Fuse(groupedSkills, {
+				keys: [
+					{ name: "name", weight: 2 },
+					{ name: "description", weight: 1 },
+				],
+				threshold: 0.4,
+				includeScore: true,
+			}),
+		[groupedSkills],
+	);
 
-		const nameMatches: typeof groupedSkills = [];
-		const descMatches: typeof groupedSkills = [];
-		for (const group of groupedSkills) {
-			if (group.name.toLowerCase().includes(query)) {
-				nameMatches.push(group);
-			} else if (
-				group.items.some((s) =>
-					(s.description ?? "").toLowerCase().includes(query),
-				)
-			) {
-				descMatches.push(group);
-			}
-		}
-		return [...nameMatches, ...descMatches];
-	}, [groupedSkills, searchQuery]);
+	const filteredGroups = useMemo(() => {
+		if (!searchQuery) return groupedSkills;
+		return fuse.search(searchQuery).map((result) => result.item);
+	}, [fuse, groupedSkills, searchQuery]);
 
 	const actualSelected = useMemo(() => {
 		if (

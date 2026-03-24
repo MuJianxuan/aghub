@@ -62,7 +62,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 	const [transportType, setTransportType] = useState<
 		"stdio" | "sse" | "streamable_http"
 	>("stdio");
-	const [timeout, setTimeoutValue] = useState("");
+	const [timeoutValue, setTimeoutValue] = useState("");
 	const [selectedAgents, setSelectedAgents] = useState<Set<string>>(() => {
 		return new Set(usableAgents[0] ? [usableAgents[0].id] : []);
 	});
@@ -78,8 +78,13 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 	const [showImportDialog, setShowImportDialog] = useState(false);
 	const [jsonText, setJsonText] = useState("");
 	const [parseError, setParseError] = useState("");
+	const [error, setError] = useState<string | null>(null);
 
 	const createMutation = useMutation({
+		onError: (error) => {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			setError(errorMessage);
+		},
 		mutationFn: ({
 			agent,
 			body,
@@ -103,7 +108,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 			envVars,
 			url,
 			headers,
-			timeout,
+			timeout: timeoutValue,
 		});
 	};
 
@@ -116,17 +121,21 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 		const body = {
 			name: name.trim(),
 			transport,
-			timeout: timeout ? Number.parseInt(timeout, 10) : undefined,
+			timeout: timeoutValue ? Number.parseInt(timeoutValue, 10) : undefined,
 		};
 
 		// Create MCP for each selected agent
 		const agentsToCreate = [...selectedAgents];
-		await Promise.all(
-			agentsToCreate.map((agent) =>
-				createMutation.mutateAsync({ agent, body }),
-			),
-		);
-		onDone();
+		try {
+			await Promise.all(
+				agentsToCreate.map((agent) =>
+					createMutation.mutateAsync({ agent, body }),
+				),
+			);
+			onDone();
+		} catch {
+			// Error is handled by onError callback
+		}
 	};
 
 	const isValid = useMemo(() => {
@@ -235,6 +244,14 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 					</Tooltip.Content>
 				</Tooltip>
 			</div>
+
+			{error && (
+				<div className="mb-4 rounded-lg border border-danger/30 bg-danger-soft p-3">
+					<p className="text-sm text-danger">
+						{t("createError", { error })}
+					</p>
+				</div>
+			)}
 
 			<Form>
 				<Fieldset>
@@ -387,7 +404,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 									<Label>{t("timeout")}</Label>
 									<Input
 										type="number"
-										value={timeout}
+										value={timeoutValue}
 										onChange={(e) =>
 											setTimeoutValue(e.target.value)
 										}

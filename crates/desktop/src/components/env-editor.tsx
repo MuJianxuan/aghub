@@ -74,10 +74,12 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 	return (
 		<div className="space-y-2">
 			{value.map((pair, index) => (
+				// eslint-disable-next-line react/no-array-index-key
 				<div key={index} className="flex items-start gap-2">
 					<Input
 						variant="secondary"
 						placeholder={t("envEditor.keyPlaceholder")}
+						aria-label={t("envEditor.keyPlaceholder")}
 						value={pair.key}
 						onChange={(e) =>
 							handleChange(index, "key", e.target.value)
@@ -87,6 +89,7 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 					<Input
 						variant="secondary"
 						placeholder={t("envEditor.valuePlaceholder")}
+						aria-label={t("envEditor.valuePlaceholder")}
 						value={pair.value}
 						onChange={(e) =>
 							handleChange(index, "value", e.target.value)
@@ -97,6 +100,7 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 						variant="ghost"
 						size="sm"
 						isIconOnly
+						aria-label={t("remove")}
 						onPress={() => handleRemove(index)}
 						className="mt-1"
 					>

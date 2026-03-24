@@ -28,6 +28,7 @@ export function AgentIcon({ id, name }: AgentIconProps) {
       bg-surface-secondary
       [&_svg]:size-8
     "
+				// eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
 				dangerouslySetInnerHTML={{ __html: svg.default || svg }}
 			/>
 		);

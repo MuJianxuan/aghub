@@ -106,30 +106,6 @@ export function SkillList({
 		enabled: groupBySource,
 	});
 
-	const findSkillSource = (
-		skillName: string,
-	): { source: string; sourceType: string } | null => {
-		const globalEntry = globalLock?.skills.find(
-			(s) => s.name === skillName,
-		);
-		if (globalEntry) {
-			return {
-				source: globalEntry.source,
-				sourceType: globalEntry.sourceType,
-			};
-		}
-		const projectEntry = projectLock?.skills.find(
-			(s) => s.name === skillName,
-		);
-		if (projectEntry) {
-			return {
-				source: projectEntry.source,
-				sourceType: projectEntry.sourceType,
-			};
-		}
-		return null;
-	};
-
 	const groupedByName = useMemo(() => {
 		const map = new Map<string, SkillResponse[]>();
 		for (const skill of skills) {
@@ -162,6 +138,30 @@ export function SkillList({
 	}, [fuse, groupedByName, searchQuery]);
 
 	const { sourceGroups, singleItemGroups, unknownGroups } = useMemo(() => {
+		const findSkillSource = (
+			skillName: string,
+		): { source: string; sourceType: string } | null => {
+			const globalEntry = globalLock?.skills.find(
+				(s) => s.name === skillName,
+			);
+			if (globalEntry) {
+				return {
+					source: globalEntry.source,
+					sourceType: globalEntry.sourceType,
+				};
+			}
+			const projectEntry = projectLock?.skills.find(
+				(s) => s.name === skillName,
+			);
+			if (projectEntry) {
+				return {
+					source: projectEntry.source,
+					sourceType: projectEntry.sourceType,
+				};
+			}
+			return null;
+		};
+
 		if (!groupBySource) {
 			return {
 				sourceGroups: [],

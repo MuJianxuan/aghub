@@ -19,7 +19,7 @@ export function AgentAvailabilityProvider({
 	const { baseUrl } = useServerContext();
 	const api = createApi(baseUrl);
 	const [disabledAgents, setDisabledAgents] = useState<Set<string>>(
-		new Set(),
+		() => new Set(),
 	);
 
 	// Fetch all agents

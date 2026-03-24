@@ -60,9 +60,9 @@ export function InstallSkillDialog({
 		null,
 	);
 	const [selectedAgents, setSelectedAgents] = useState<Set<string>>(
-		new Set(),
+		() => new Set(),
 	);
-	const [results, setResults] = useState<InstallResult[]>([]);
+	const [results, setResults] = useState<InstallResult[]>(() => []);
 
 	const isInstalling = results.some((r) => r.status === "pending");
 

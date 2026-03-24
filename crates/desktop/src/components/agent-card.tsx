@@ -27,8 +27,10 @@ const agentAccentColors: Record<string, string> = {
 	roo: "#f97316",
 };
 
+const NORMALIZE_REGEX = /[_-]/g;
+
 function getAgentAccentColor(agentId: string): string {
-	const normalizedId = agentId.toLowerCase().replace(/[_-]/g, "_");
+	const normalizedId = agentId.toLowerCase().replace(NORMALIZE_REGEX, "_");
 	for (const [key, color] of Object.entries(agentAccentColors)) {
 		if (normalizedId.includes(key)) {
 			return color;

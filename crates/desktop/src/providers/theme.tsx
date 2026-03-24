@@ -18,7 +18,7 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-	const [theme, setThemeState] = useState<Theme>(() => {
+	const [themeState, setThemeState] = useState<Theme>(() => {
 		const stored = localStorage.getItem("theme") as Theme | null;
 		return stored ?? "system";
 	});
@@ -30,15 +30,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 	};
 
 	useEffect(() => {
-		applyTheme(theme);
+		applyTheme(themeState);
 
-		if (theme === "system") {
+		if (themeState === "system") {
 			const mq = window.matchMedia("(prefers-color-scheme: dark)");
 			const handler = () => applyTheme("system");
 			mq.addEventListener("change", handler);
 			return () => mq.removeEventListener("change", handler);
 		}
-	}, [theme]);
+	}, [themeState]);
 
-	return <ThemeContext value={{ theme, setTheme }}>{children}</ThemeContext>;
+	return <ThemeContext value={{ theme: themeState, setTheme }}>{children}</ThemeContext>;
 }

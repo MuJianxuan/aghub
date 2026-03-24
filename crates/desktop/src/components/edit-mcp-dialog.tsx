@@ -45,7 +45,7 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 	const [transportType, setTransportType] = useState<
 		"stdio" | "sse" | "streamable_http"
 	>(primaryServer.transport.type);
-	const [timeout, setTimeoutValue] = useState(
+	const [timeoutValue, setTimeoutValue] = useState(
 		primaryServer.timeout?.toString() ?? "",
 	);
 
@@ -138,7 +138,7 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 
 		const body: UpdateMcpRequest = {
 			name: name.trim() !== primaryServer.name ? name.trim() : undefined,
-			timeout: timeout ? Number.parseInt(timeout, 10) : undefined,
+				timeout: timeoutValue ? Number.parseInt(timeoutValue, 10) : undefined,
 		};
 
 		const transport = buildTransport();
@@ -305,14 +305,14 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 								<Fieldset.Group>
 									<TextField className="w-full">
 										<Label>{t("timeout")}</Label>
-										<Input
-											type="number"
-											value={timeout}
-											onChange={(e) =>
-												setTimeoutValue(e.target.value)
-											}
-											placeholder="60"
-										/>
+								<Input
+									type="number"
+									value={timeoutValue}
+									onChange={(e) =>
+										setTimeoutValue(e.target.value)
+									}
+									placeholder="60"
+								/>
 										<Description>
 											{t("timeoutHelp")}
 										</Description>

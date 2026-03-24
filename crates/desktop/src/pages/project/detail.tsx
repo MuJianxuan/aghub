@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "wouter";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
-import { CreateSkillPanel } from "../../components/create-skill-panel";
 import { EditMcpPanel } from "../../components/edit-mcp-panel";
+import { InstallSkillDialog } from "../../components/install-skill-dialog";
 import { McpDetail } from "../../components/mcp-detail";
 import { SkillDetail } from "../../components/skill-detail";
 import { UnifiedResourceList } from "../../components/unified-resource-list";
@@ -19,7 +19,6 @@ import { useServer } from "../../providers/server";
 type PanelState =
 	| { type: "detail"; selectedKey: string; resourceType: "mcp" | "skill" }
 	| { type: "create-mcp" }
-	| { type: "create-skill" }
 	| { type: "edit-mcp"; selectedKey: string }
 	| { type: "empty" };
 
@@ -32,6 +31,7 @@ export default function ProjectDetailPage() {
 	const api = createApi(baseUrl);
 
 	const [panel, setPanel] = useState<PanelState>({ type: "empty" });
+	const [isInstallSkillOpen, setIsInstallSkillOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Fetch MCPs and Skills for this project
@@ -126,7 +126,7 @@ export default function ProjectDetailPage() {
 				}
 				onSelect={handleSelect}
 				onCreateMcp={() => setPanel({ type: "create-mcp" })}
-				onCreateSkill={() => setPanel({ type: "create-skill" })}
+						onCreateSkill={() => setIsInstallSkillOpen(true)}
 				onRefresh={handleRefresh}
 				searchQuery={searchQuery}
 				onSearchChange={setSearchQuery}
@@ -152,19 +152,13 @@ export default function ProjectDetailPage() {
 						projectPath={project.path}
 					/>
 				)}
-				{panel.type === "create-mcp" && (
-					<CreateMcpPanel
-						onDone={() => setPanel({ type: "empty" })}
-						projectPath={project.path}
-					/>
-				)}
-				{panel.type === "create-skill" && (
-					<CreateSkillPanel
-						onDone={() => setPanel({ type: "empty" })}
-						projectPath={project.path}
-					/>
-				)}
-				{panel.type === "edit-mcp" && selectedMcpGroup && (
+			{panel.type === "create-mcp" && (
+				<CreateMcpPanel
+					onDone={() => setPanel({ type: "empty" })}
+					projectPath={project.path}
+				/>
+			)}
+			{panel.type === "edit-mcp" && selectedMcpGroup && (
 					<EditMcpPanel
 						group={selectedMcpGroup}
 						onDone={() =>
@@ -196,6 +190,12 @@ export default function ProjectDetailPage() {
 					</div>
 				)}
 			</div>
+
+			<InstallSkillDialog
+				isOpen={isInstallSkillOpen}
+				onClose={() => setIsInstallSkillOpen(false)}
+				projectPath={project?.path}
+			/>
 		</div>
 	);
 }

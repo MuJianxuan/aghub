@@ -8,7 +8,7 @@ import {
 } from "@heroui/react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CreateSkillPanel } from "../../components/create-skill-panel";
+import { InstallSkillDialog } from "../../components/install-skill-dialog";
 import { SkillDetail } from "../../components/skill-detail";
 import { useSkills } from "../../hooks/use-skills";
 import type { SkillResponse } from "../../lib/api-types";
@@ -17,7 +17,7 @@ export default function SkillsPage() {
 	const { t } = useTranslation();
 	const { data: skills, refetch } = useSkills();
 	const [searchQuery, setSearchQuery] = useState("");
-	const [isCreating, setIsCreating] = useState(false);
+	const [isInstallDialogOpen, setIsInstallDialogOpen] = useState(false);
 	const [selected, setSelected] = useState<Selection>(new Set());
 
 	const groupedSkills = useMemo(() => {
@@ -47,7 +47,6 @@ export default function SkillsPage() {
 	);
 
 	const actualSelected = useMemo(() => {
-		if (isCreating) return new Set<string>();
 		if (
 			selected !== "all" &&
 			(selected as Set<string>).size > 0 &&
@@ -60,7 +59,7 @@ export default function SkillsPage() {
 		return new Set<string>(
 			filteredGroups[0] ? [filteredGroups[0].name] : [],
 		);
-	}, [selected, isCreating, filteredGroups]);
+	}, [selected, filteredGroups]);
 
 	const activeGroup = useMemo(() => {
 		if (actualSelected.size === 0) return null;
@@ -70,12 +69,10 @@ export default function SkillsPage() {
 
 	const handleSelectionChange = (keys: Selection) => {
 		setSelected(keys);
-		setIsCreating(false);
 	};
 
-	const handleCreate = () => {
-		setSelected(new Set());
-		setIsCreating(true);
+	const handleOpenInstallDialog = () => {
+		setIsInstallDialogOpen(true);
 	};
 
 	return (
@@ -105,7 +102,7 @@ export default function SkillsPage() {
 						size="sm"
 						className="shrink-0"
 						aria-label={t("addSkill")}
-						onPress={handleCreate}
+						onPress={handleOpenInstallDialog}
 					>
 						<PlusIcon className="size-4" />
 					</Button>
@@ -149,9 +146,7 @@ export default function SkillsPage() {
 
 			{/* Right Panel */}
 			<div className="flex-1 overflow-hidden">
-				{isCreating ? (
-					<CreateSkillPanel onDone={() => setIsCreating(false)} />
-				) : activeGroup ? (
+				{activeGroup ? (
 					<SkillDetail group={activeGroup} />
 				) : (
 					<div className="flex items-center justify-center h-full">
@@ -159,6 +154,11 @@ export default function SkillsPage() {
 					</div>
 				)}
 			</div>
+
+			<InstallSkillDialog
+				isOpen={isInstallDialogOpen}
+				onClose={() => setIsInstallDialogOpen(false)}
+			/>
 		</div>
 	);
 }

@@ -131,6 +131,18 @@ export default {
 	editTooltip: "编辑",
 	deleteTooltip: "删除",
 
+	// Install Skill Dialog
+	installSkill: "安装技能",
+	selectSource: "选择来源",
+	installation: "安装",
+	install: "安装",
+	searchSkillMarketDescription: "在市场搜索要安装的技能。",
+	searchResults: "搜索结果",
+	selectedSkill: "已选技能",
+	installingSkill: "正在安装技能",
+	selectAgentsForSkill: "选择要安装此技能的代理：",
+	installs: "次安装",
+
 	// Projects
 	addProject: "添加项目",
 	editProject: "编辑项目",

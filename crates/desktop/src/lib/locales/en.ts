@@ -130,6 +130,18 @@ export default {
 	uninstallFailed: "Failed to uninstall",
 	selectAgentsForMcp: "Select which agents should have this MCP server:",
 	noTargetAgents: "No available agents.",
+
+	// Install Skill Dialog
+	installSkill: "Install Skill",
+	selectSource: "Select Source",
+	installation: "Installation",
+	install: "Install",
+	searchSkillMarketDescription: "Search for a skill in the marketplace to install.",
+	searchResults: "Search Results",
+	selectedSkill: "Selected Skill",
+	installingSkill: "Installing Skill",
+	selectAgentsForSkill: "Select which agents to install this skill to:",
+	installs: "installs",
 	copyTooltip: "Copy config",
 	editTooltip: "Edit",
 	deleteTooltip: "Delete",

@@ -112,12 +112,18 @@ export function SkillList({
 		return fuse.search(searchQuery).map((result) => result.item);
 	}, [fuse, groupedByName, searchQuery]);
 
-	const { sourceGroups, unknownGroups } = useMemo(() => {
+	const { sourceGroups, singleItemGroups, unknownGroups } = useMemo(() => {
 		if (!groupBySource) {
-			return { sourceGroups: [], unknownGroups: filteredByName };
+			return {
+				sourceGroups: [],
+				singleItemGroups: [],
+				unknownGroups: filteredByName,
+			};
 		}
 
 		const groups = new Map<string, SourceGroup>();
+		const singleItems: (SkillGroup & { source: string; sourceType: string })[] =
+			[];
 		const unknown: SkillGroup[] = [];
 
 		for (const group of filteredByName) {
@@ -138,11 +144,28 @@ export function SkillList({
 			}
 		}
 
-		const sortedSourceGroups = Array.from(groups.values()).sort((a, b) =>
+		const multiItemGroups: SourceGroup[] = [];
+		for (const sg of groups.values()) {
+			if (sg.skills.length === 1) {
+				singleItems.push({
+					...sg.skills[0],
+					source: sg.source,
+					sourceType: sg.sourceType,
+				});
+			} else {
+				multiItemGroups.push(sg);
+			}
+		}
+
+		const sortedSourceGroups = multiItemGroups.sort((a, b) =>
 			a.source.localeCompare(b.source),
+		);
+		const sortedSingleItems = singleItems.sort((a, b) =>
+			a.name.localeCompare(b.name),
 		);
 		return {
 			sourceGroups: sortedSourceGroups,
+			singleItemGroups: sortedSingleItems,
 			unknownGroups: unknown,
 		};
 	}, [filteredByName, groupBySource, globalLock, projectLock]);
@@ -168,7 +191,9 @@ export function SkillList({
 
 	if (groupBySource) {
 		const hasItems =
-			sourceGroups.length > 0 || unknownGroups.length > 0;
+			sourceGroups.length > 0 ||
+			singleItemGroups.length > 0 ||
+			unknownGroups.length > 0;
 		if (!hasItems) {
 			return (
 				<p className="px-3 py-6 text-sm text-muted text-center">
@@ -223,6 +248,24 @@ export function SkillList({
 							</div>
 						)}
 					</div>
+				))}
+
+				{singleItemGroups.map((group) => (
+					<button
+						key={group.name}
+						type="button"
+						onClick={() => onSelect(group.name)}
+						className={`flex items-center gap-2 w-full px-3 py-2.5 border-b border-border text-left transition-colors ${
+							selectedKey === group.name
+								? "bg-accent/10 text-foreground"
+								: "text-muted hover:bg-surface-secondary"
+						}`}
+					>
+						<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
+						<span className="truncate flex-1 text-sm font-medium text-foreground">
+							{group.name}
+						</span>
+					</button>
 				))}
 
 				{unknownGroups.map((group) => (

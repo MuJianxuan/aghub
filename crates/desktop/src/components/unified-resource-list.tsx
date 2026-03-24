@@ -9,7 +9,6 @@ import {
 import type { Key } from "@heroui/react";
 import {
 	Button,
-	Chip,
 	Dropdown,
 	Label,
 	ListBox,
@@ -233,15 +232,6 @@ export function UnifiedResourceList({
 										<Label className="truncate flex-1">
 											{group.items[0].name}
 										</Label>
-										{group.items.length > 1 && (
-											<Chip
-												size="sm"
-												variant="soft"
-												color="accent"
-											>
-												{group.items.length}
-											</Chip>
-										)}
 									</div>
 								</ListBox.Item>
 							))}
@@ -280,15 +270,6 @@ export function UnifiedResourceList({
 										<Label className="truncate flex-1">
 											{group.name}
 										</Label>
-										{group.items.length > 1 && (
-											<Chip
-												size="sm"
-												variant="soft"
-												color="accent"
-											>
-												{group.items.length}
-											</Chip>
-										)}
 									</div>
 								</ListBox.Item>
 							))}

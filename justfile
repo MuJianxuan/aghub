@@ -31,6 +31,7 @@ fmt:
 # Run clippy linter
 lint:
     cargo clippy --workspace -- -D warnings
+    cd ./crates/desktop && nr lint
 
 # Clean build artifacts
 clean:

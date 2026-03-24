@@ -93,13 +93,13 @@ export default function SettingsPage() {
 					<Tabs.Panel id="appearance">
 						<div className="space-y-2">
 							{/* Theme Setting */}
-							<div className="rounded-lg bg-(--surface) p-4">
+							<div className="rounded-lg bg-surface p-4">
 								<div className="flex items-center justify-between">
 									<div className="space-y-0.5">
 										<span className="text-sm font-medium text-(--foreground)">
 											{t("theme")}
 										</span>
-										<span className="block text-xs text-(--muted)">
+										<span className="block text-xs text-muted">
 											{t("themeDescription")}
 										</span>
 									</div>
@@ -145,13 +145,13 @@ export default function SettingsPage() {
 							</div>
 
 							{/* Language Setting */}
-							<div className="rounded-lg bg-(--surface) p-4">
+							<div className="rounded-lg bg-surface p-4">
 								<div className="flex items-center justify-between">
 									<div className="space-y-0.5">
 										<span className="text-sm font-medium text-(--foreground)">
 											{t("language")}
 										</span>
-										<span className="block text-xs text-(--muted)">
+										<span className="block text-xs text-muted">
 											{t("languageDescription")}
 										</span>
 									</div>
@@ -265,10 +265,10 @@ export default function SettingsPage() {
 									{/* Agents Grid */}
 									{filteredAgents.length === 0 ? (
 										<div className="
-            flex flex-col items-center justify-center rounded-lg bg-(--surface)
+            flex flex-col items-center justify-center rounded-lg bg-surface
             py-16 text-center
           ">
-											<div className="mb-4 text-(--muted)">
+											<div className="mb-4 text-muted">
 												<UserGroupIcon className="mx-auto size-12" />
 											</div>
 											<p className="text-sm font-medium text-(--foreground)">
@@ -276,7 +276,7 @@ export default function SettingsPage() {
 													? t("noAgentsMatch")
 													: t("noAgentsAvailable")}
 											</p>
-											<p className="mt-1 max-w-sm text-xs text-(--muted)">
+											<p className="mt-1 max-w-sm text-xs text-muted">
 												{agentSearch || agentFilter !== "all"
 													? t("adjustFiltersDescription")
 													: t("noAgentsDescription")}

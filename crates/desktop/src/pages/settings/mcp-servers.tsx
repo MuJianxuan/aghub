@@ -197,17 +197,18 @@ export default function MCPServersPage() {
 						onDone={() => setPanel({ type: "empty" })}
 					/>
 				)}
-				{panel.type === "edit" && selectedGroup && (
-					<EditMcpPanel
-						group={selectedGroup}
-						onDone={() =>
-							setPanel({
-								type: "detail",
-								selectedKey: selectedGroup.mergeKey,
-							})
-						}
-					/>
-				)}
+			{panel.type === "edit" && selectedGroup && (
+				<EditMcpPanel
+					key={selectedGroup.mergeKey}
+					group={selectedGroup}
+					onDone={() =>
+						setPanel({
+							type: "detail",
+							selectedKey: selectedGroup.mergeKey,
+						})
+					}
+				/>
+			)}
 				{(panel.type === "empty" ||
 					(panel.type === "detail" && !selectedGroup)) && (
 					<div className="flex items-center justify-center h-full">

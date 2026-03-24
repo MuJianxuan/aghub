@@ -138,6 +138,7 @@ export function ProjectList() {
 			{/* Edit Dialog */}
 			{editingProject && (
 				<EditProjectDialog
+					key={editingProject.id}
 					project={editingProject}
 					isOpen={isEditDialogOpen}
 					onClose={handleCloseEdit}
@@ -146,6 +147,7 @@ export function ProjectList() {
 
 			{/* Create Dialog */}
 			<CreateProjectDialog
+				key={isCreateDialogOpen ? "open" : "closed"}
 				isOpen={isCreateDialogOpen}
 				onClose={() => setIsCreateDialogOpen(false)}
 			/>

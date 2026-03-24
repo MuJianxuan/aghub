@@ -12,7 +12,7 @@ import {
 	TextField,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createApi, type UpdateMcpRequest } from "../lib/api";
 import type { McpResponse, TransportDto } from "../lib/api-types";
@@ -88,42 +88,6 @@ export function EditMcpPanel({
 		}
 		return "";
 	});
-
-	useEffect(() => {
-		const primary = group.items[0];
-		setName(primary.name);
-		setTransportType(primary.transport.type);
-		setTimeoutValue(primary.timeout?.toString() ?? "");
-
-		if (primary.transport.type === "stdio") {
-			setCommand(primary.transport.command);
-			setArgs(primary.transport.args?.join(" ") ?? "");
-			setEnvVars(
-				primary.transport.env
-					? Object.entries(primary.transport.env).map(
-							([key, value]) => ({
-								key,
-								value,
-							}),
-						)
-					: [],
-			);
-			setUrl("");
-			setHeaders("");
-		} else {
-			setUrl(primary.transport.url);
-			setHeaders(
-				primary.transport.headers
-					? Object.entries(primary.transport.headers)
-							.map(([k, v]) => `${k}: ${v}`)
-							.join("\n")
-					: "",
-			);
-			setCommand("");
-			setArgs("");
-			setEnvVars([]);
-		}
-	}, [group]);
 
 	const updateMutation = useMutation({
 		mutationFn: (body: UpdateMcpRequest) => {

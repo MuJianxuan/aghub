@@ -8,7 +8,7 @@ import {
 	TextField,
 } from "@heroui/react";
 import { invoke } from "@tauri-apps/api/core";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAddProject, useUpdateProject } from "../hooks/use-projects";
 import type { Project } from "../lib/store";
@@ -27,10 +27,6 @@ export function EditProjectDialog({
 	const { t } = useTranslation();
 	const updateProject = useUpdateProject();
 	const [name, setName] = useState(project.name);
-
-	useEffect(() => {
-		setName(project.name);
-	}, [project.name]);
 
 	const handleSave = () => {
 		if (name.trim()) {
@@ -92,13 +88,6 @@ export function CreateProjectDialog({
 	const addProject = useAddProject();
 	const [name, setName] = useState("");
 	const [path, setPath] = useState("");
-
-	useEffect(() => {
-		if (isOpen) {
-			setName("");
-			setPath("");
-		}
-	}, [isOpen]);
 
 	const handleFolderSelect = async () => {
 		try {

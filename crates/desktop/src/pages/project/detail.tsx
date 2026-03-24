@@ -159,18 +159,19 @@ export default function ProjectDetailPage() {
 				/>
 			)}
 			{panel.type === "edit-mcp" && selectedMcpGroup && (
-					<EditMcpPanel
-						group={selectedMcpGroup}
-						onDone={() =>
-							setPanel({
-								type: "detail",
-								selectedKey: panel.selectedKey,
-								resourceType: "mcp",
-							})
-						}
-						projectPath={project.path}
-					/>
-				)}
+				<EditMcpPanel
+					key={selectedMcpGroup.mergeKey}
+					group={selectedMcpGroup}
+					onDone={() =>
+						setPanel({
+							type: "detail",
+							selectedKey: panel.selectedKey,
+							resourceType: "mcp",
+						})
+					}
+					projectPath={project.path}
+				/>
+			)}
 				{(panel.type === "empty" ||
 					(panel.type === "detail" &&
 						!selectedMcpGroup &&

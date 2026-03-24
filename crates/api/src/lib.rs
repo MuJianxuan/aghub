@@ -65,9 +65,8 @@ pub async fn start(options: ApiOptions) -> Result<(), rocket::Error> {
 				routes::mcps::enable_mcp,
 				routes::mcps::disable_mcp,
 				routes::integrations::list_code_editors,
-				routes::integrations::list_terminals,
 				routes::integrations::open_with_editor,
-				routes::integrations::open_in_terminal_endpoint,
+				routes::integrations::get_preferences,
 			],
 		)
 		.register(

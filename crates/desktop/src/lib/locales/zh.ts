@@ -29,9 +29,6 @@ export default {
 	// Integrations
 	integrations: "集成",
 	codeEditors: "代码编辑器",
-	terminals: "终端",
-	selectEditor: "选择编辑器...",
-	selectTerminal: "选择终端...",
 
 	// Agent Management
 	agentManagementDescription:

@@ -29,9 +29,6 @@ export default {
 	// Integrations
 	integrations: "Integrations",
 	codeEditors: "Code Editor",
-	terminals: "Terminal",
-	selectEditor: "Select editor...",
-	selectTerminal: "Select terminal...",
 
 	// Agent Management
 	agentManagementDescription:

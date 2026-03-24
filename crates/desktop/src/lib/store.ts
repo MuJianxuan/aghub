@@ -1,5 +1,5 @@
 import { Store } from "@tauri-apps/plugin-store";
-import type { CodeEditorType, TerminalType } from "./api-types";
+import type { CodeEditorType } from "./api-types";
 
 const CURRENT_VERSION = 3;
 
@@ -11,7 +11,6 @@ export interface Project {
 
 export interface IntegrationPreferences {
 	codeEditor?: CodeEditorType;
-	terminal?: TerminalType;
 }
 
 let store: Store | null = null;

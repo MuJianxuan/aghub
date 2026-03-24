@@ -82,23 +82,13 @@ export type CodeEditorType =
 	| "zed"
 	| "vim";
 
-export type TerminalType =
-	| "alacritty"
-	| "ghostty"
-	| "iterm"
-	| "apple_terminal";
-
-export type ToolType = "code_editor" | "terminal";
-
 export interface ToolInfo {
 	id: string;
 	name: string;
 	installed: boolean;
 	path?: string;
-	tool_type: ToolType;
 }
 
 export interface ToolPreferences {
 	code_editor?: CodeEditorType;
-	terminal?: TerminalType;
 }

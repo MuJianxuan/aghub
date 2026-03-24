@@ -1,30 +1,19 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Key } from "react-aria-components";
-import {
-	ListBox,
-	Select,
-	Spinner,
-} from "@heroui/react";
-import {
-	useCodeEditors,
-	useTerminals,
-} from "../../hooks/use-integrations";
+import { ListBox, Select, Spinner } from "@heroui/react";
+import { useCodeEditors } from "../../hooks/use-integrations";
 import {
 	getIntegrationPreferences,
 	saveIntegrationPreferences,
 } from "../../lib/store";
-import type { CodeEditorType, TerminalType } from "../../lib/api-types";
+import type { CodeEditorType } from "../../lib/api-types";
 
 export default function IntegrationsPanel() {
 	const { t } = useTranslation();
-	const { data: codeEditors, isLoading: isLoadingEditors } = useCodeEditors();
-	const { data: terminals, isLoading: isLoadingTerminals } = useTerminals();
+	const { data: codeEditors, isLoading } = useCodeEditors();
 
 	const [selectedEditor, setSelectedEditor] = useState<CodeEditorType | "">(
-		"",
-	);
-	const [selectedTerminal, setSelectedTerminal] = useState<TerminalType | "">(
 		"",
 	);
 
@@ -32,7 +21,6 @@ export default function IntegrationsPanel() {
 		async function loadPreferences() {
 			const prefs = await getIntegrationPreferences();
 			if (prefs.codeEditor) setSelectedEditor(prefs.codeEditor);
-			if (prefs.terminal) setSelectedTerminal(prefs.terminal);
 		}
 		loadPreferences();
 	}, []);
@@ -41,23 +29,8 @@ export default function IntegrationsPanel() {
 		if (!value) return;
 		const editor = value as CodeEditorType;
 		setSelectedEditor(editor);
-		await saveIntegrationPreferences({
-			codeEditor: editor || undefined,
-			terminal: selectedTerminal || undefined,
-		});
+		await saveIntegrationPreferences({ codeEditor: editor || undefined });
 	};
-
-	const handleTerminalChange = async (value: Key | null) => {
-		if (!value) return;
-		const terminal = value as TerminalType;
-		setSelectedTerminal(terminal);
-		await saveIntegrationPreferences({
-			codeEditor: selectedEditor || undefined,
-			terminal: terminal || undefined,
-		});
-	};
-
-	const isLoading = isLoadingEditors || isLoadingTerminals;
 
 	if (isLoading) {
 		return (
@@ -67,10 +40,7 @@ export default function IntegrationsPanel() {
 		);
 	}
 
-	const installedEditors =
-		codeEditors?.filter((e) => e.installed) || [];
-	const installedTerminals =
-		terminals?.filter((t) => t.installed) || [];
+	const installedEditors = codeEditors?.filter((e) => e.installed) || [];
 
 	return (
 		<div className="space-y-8">
@@ -95,34 +65,6 @@ export default function IntegrationsPanel() {
 									textValue={editor.name}
 								>
 									{editor.name}
-								</ListBox.Item>
-							))}
-						</ListBox>
-					</Select.Popover>
-				</Select>
-			</div>
-
-			<div className="flex items-center justify-between">
-				<span className="text-sm">{t("terminals")}</span>
-				<Select
-					selectedKey={selectedTerminal || null}
-					onSelectionChange={handleTerminalChange}
-					aria-label={t("terminals")}
-					className="w-56"
-				>
-					<Select.Trigger>
-						<Select.Value />
-						<Select.Indicator />
-					</Select.Trigger>
-					<Select.Popover>
-						<ListBox>
-							{installedTerminals.map((terminal) => (
-								<ListBox.Item
-									key={terminal.id}
-									id={terminal.id}
-									textValue={terminal.name}
-								>
-									{terminal.name}
 								</ListBox.Item>
 							))}
 						</ListBox>

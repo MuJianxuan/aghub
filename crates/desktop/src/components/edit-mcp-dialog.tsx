@@ -262,9 +262,6 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 												value={envVars}
 												onChange={setEnvVars}
 											/>
-											<Description>
-												{t("envHelp")}
-											</Description>
 										</div>
 									</Fieldset.Group>
 								</Fieldset>
@@ -295,9 +292,6 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 												placeholder="Authorization: Bearer token&#10;X-Custom-Header: value"
 												className="min-h-20 font-mono"
 											/>
-											<Description>
-												{t("headersHelp")}
-											</Description>
 										</TextField>
 									</Fieldset.Group>
 								</Fieldset>

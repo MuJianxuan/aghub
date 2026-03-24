@@ -3,6 +3,7 @@ import {
 	WifiIcon,
 } from "@heroicons/react/24/solid";
 import { Label, ListBox } from "@heroui/react";
+import Fuse from "fuse.js";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { McpResponse } from "../lib/api-types";
@@ -31,26 +32,9 @@ export function McpList({
 }: McpListProps) {
 	const { t } = useTranslation();
 
-	const filteredMcps = useMemo(
-		() =>
-			mcps.filter(
-				(server) =>
-					server.name
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()) ||
-					(server.source ?? "")
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()) ||
-					(server.agent ?? "")
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()),
-			),
-		[mcps, searchQuery],
-	);
-
 	const groupedMcps = useMemo(() => {
 		const map = new Map<string, McpResponse[]>();
-		for (const mcp of filteredMcps) {
+		for (const mcp of mcps) {
 			const key = getMcpMergeKey(mcp.transport);
 			const existing = map.get(key) ?? [];
 			map.set(key, [...existing, mcp]);
@@ -60,7 +44,26 @@ export function McpList({
 			transport: items[0].transport,
 			items,
 		}));
-	}, [filteredMcps]);
+	}, [mcps]);
+
+	const fuse = useMemo(
+		() =>
+			new Fuse(groupedMcps, {
+				keys: [
+					{ name: "items.0.name", weight: 2 },
+					{ name: "items.0.source", weight: 1 },
+					{ name: "items.0.agent", weight: 1 },
+				],
+				threshold: 0.4,
+				includeScore: true,
+			}),
+		[groupedMcps],
+	);
+
+	const filteredGroups = useMemo(() => {
+		if (!searchQuery) return groupedMcps;
+		return fuse.search(searchQuery).map((result) => result.item);
+	}, [fuse, groupedMcps, searchQuery]);
 
 	const getTransportIcon = (transport: McpGroup["transport"]) => {
 		if (transport.type === "stdio") {
@@ -69,7 +72,7 @@ export function McpList({
 		return <WifiIcon className="size-4 shrink-0" />;
 	};
 
-	if (groupedMcps.length === 0) {
+	if (filteredGroups.length === 0) {
 		return (
 			<p className="px-3 py-6 text-sm text-muted text-center">
 				{emptyMessage ?? t("noServersMatch")}
@@ -89,7 +92,7 @@ export function McpList({
 			}}
 			className="p-2"
 		>
-			{groupedMcps.map((group) => (
+			{filteredGroups.map((group) => (
 				<ListBox.Item
 					key={group.mergeKey}
 					id={group.mergeKey}

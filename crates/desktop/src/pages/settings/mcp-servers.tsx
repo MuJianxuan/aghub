@@ -1,23 +1,18 @@
 import {
 	ArrowPathIcon,
-	CommandLineIcon,
 	PlusIcon,
-	WifiIcon,
 } from "@heroicons/react/24/solid";
 import {
 	Button,
-	Label,
-	ListBox,
 	SearchField,
-	type Selection,
 } from "@heroui/react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
 import { EditMcpPanel } from "../../components/edit-mcp-panel";
 import { McpDetail, type McpGroup } from "../../components/mcp-detail";
+import { McpList } from "../../components/mcp-list";
 import { useMcps } from "../../hooks/use-mcps";
-import type { McpResponse } from "../../lib/api-types";
 import { getMcpMergeKey } from "../../lib/utils";
 
 type RightPanel =
@@ -33,48 +28,29 @@ export default function MCPServersPage() {
 	const [panel, setPanel] = useState<RightPanel>({ type: "empty" });
 	const [selectedKey, setSelectedKey] = useState<string | null>(null);
 
-	const filteredServers = useMemo(
-		() =>
-			mcps.filter(
-				(server) =>
-					server.name
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()) ||
-					(server.source ?? "")
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()) ||
-					(server.agent ?? "")
-						.toLowerCase()
-						.includes(searchQuery.toLowerCase()),
-			),
-		[mcps, searchQuery],
-	);
-
 	const groupedMcps = useMemo(() => {
-		const map = new Map<string, McpResponse[]>();
+		const map = new Map<string, McpGroup>();
 
-		for (const mcp of filteredServers) {
+		for (const mcp of mcps) {
 			const key = getMcpMergeKey(mcp.transport);
-			const existing = map.get(key) ?? [];
-			map.set(key, [...existing, mcp]);
+			const existing = map.get(key);
+			if (existing) {
+				existing.items.push(mcp);
+			} else {
+				map.set(key, {
+					mergeKey: key,
+					transport: mcp.transport,
+					items: [mcp],
+				});
+			}
 		}
 
-		return Array.from(map.entries()).map(([mergeKey, items]) => ({
-			mergeKey,
-			transport: items[0].transport,
-			items,
-		}));
-	}, [filteredServers]);
+		return Array.from(map.values());
+	}, [mcps]);
 
-	const handleSelectionChange = (keys: Selection) => {
-		const key = [...(keys as Set<string>)][0];
-		if (key) {
-			setSelectedKey(key);
-			setPanel({ type: "detail", selectedKey: key });
-		} else {
-			setSelectedKey(null);
-			setPanel({ type: "empty" });
-		}
+	const handleSelect = (key: string) => {
+		setSelectedKey(key);
+		setPanel({ type: "detail", selectedKey: key });
 	};
 
 	const handleCreate = () => {
@@ -85,13 +61,6 @@ export default function MCPServersPage() {
 	const selectedGroup = selectedKey
 		? groupedMcps.find((g) => g.mergeKey === selectedKey)
 		: null;
-
-	const getTransportIcon = (transport: McpGroup["transport"]) => {
-		if (transport.type === "stdio") {
-			return <CommandLineIcon className="size-4 shrink-0" />;
-		}
-		return <WifiIcon className="size-4 shrink-0" />;
-	};
 
 	return (
 		<div className="flex h-full">
@@ -137,36 +106,12 @@ export default function MCPServersPage() {
 				</div>
 
 				{/* Servers List */}
-				<ListBox
-					aria-label="MCP Servers"
-					selectionMode="single"
-					selectedKeys={
-						selectedKey ? new Set([selectedKey]) : new Set()
-					}
-					onSelectionChange={handleSelectionChange}
-					className="flex-1 overflow-y-auto p-2"
-				>
-					{groupedMcps.map((group) => (
-						<ListBox.Item
-							key={group.mergeKey}
-							id={group.mergeKey}
-							textValue={group.items[0].name}
-							className="data-selected:bg-accent/10"
-						>
-							<div className="flex items-center gap-2 w-full">
-								{getTransportIcon(group.transport)}
-								<Label className="truncate flex-1">
-									{group.items[0].name}
-								</Label>
-							</div>
-						</ListBox.Item>
-					))}
-				</ListBox>
-				{groupedMcps.length === 0 && (
-					<p className="px-3 py-6 text-sm text-muted text-center">
-						{t("noServersMatch")} &ldquo;{searchQuery}&rdquo;
-					</p>
-				)}
+				<McpList
+					mcps={mcps}
+					selectedKey={selectedKey}
+					searchQuery={searchQuery}
+					onSelect={handleSelect}
+				/>
 			</div>
 
 			{/* Server Detail Panel */}
@@ -187,18 +132,18 @@ export default function MCPServersPage() {
 						onDone={() => setPanel({ type: "empty" })}
 					/>
 				)}
-			{panel.type === "edit" && selectedGroup && (
-				<EditMcpPanel
-					key={selectedGroup.mergeKey}
-					group={selectedGroup}
-					onDone={() =>
-						setPanel({
-							type: "detail",
-							selectedKey: selectedGroup.mergeKey,
-						})
-					}
-				/>
-			)}
+				{panel.type === "edit" && selectedGroup && (
+					<EditMcpPanel
+						key={selectedGroup.mergeKey}
+						group={selectedGroup}
+						onDone={() =>
+							setPanel({
+								type: "detail",
+								selectedKey: selectedGroup.mergeKey,
+							})
+						}
+					/>
+				)}
 				{(panel.type === "empty" ||
 					(panel.type === "detail" && !selectedGroup)) && (
 					<div className="flex items-center justify-center h-full">

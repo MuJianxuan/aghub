@@ -1,16 +1,13 @@
 import { ArrowPathIcon, PlusIcon } from "@heroicons/react/24/solid";
 import {
 	Button,
-	Label,
-	ListBox,
 	SearchField,
-	type Selection,
 } from "@heroui/react";
-import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { InstallSkillDialog } from "../../components/install-skill-dialog";
 import { SkillDetail } from "../../components/skill-detail";
+import { SkillList } from "../../components/skill-list";
 import { useSkills } from "../../hooks/use-skills";
 import type { SkillResponse } from "../../lib/api-types";
 
@@ -19,7 +16,7 @@ export default function SkillsPage() {
 	const { data: skills, refetch } = useSkills();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isInstallDialogOpen, setIsInstallDialogOpen] = useState(false);
-	const [selected, setSelected] = useState<Selection>(new Set());
+	const [selectedName, setSelectedName] = useState<string | null>(null);
 
 	const groupedSkills = useMemo(() => {
 		const map = new Map<string, SkillResponse[]>();
@@ -34,47 +31,15 @@ export default function SkillsPage() {
 		}));
 	}, [skills]);
 
-	const fuse = useMemo(
-		() =>
-			new Fuse(groupedSkills, {
-				keys: [
-					{ name: "name", weight: 2 },
-					{ name: "description", weight: 1 },
-				],
-				threshold: 0.4,
-				includeScore: true,
-			}),
-		[groupedSkills],
-	);
-
-	const filteredGroups = useMemo(() => {
-		if (!searchQuery) return groupedSkills;
-		return fuse.search(searchQuery).map((result) => result.item);
-	}, [fuse, groupedSkills, searchQuery]);
-
-	const actualSelected = useMemo(() => {
-		if (
-			selected !== "all" &&
-			(selected as Set<string>).size > 0 &&
-			Array.from(selected as Set<string>).some((key) =>
-				filteredGroups.some((g) => g.name === key),
-			)
-		) {
-			return selected as Set<string>;
-		}
-		return new Set<string>(
-			filteredGroups[0] ? [filteredGroups[0].name] : [],
-		);
-	}, [selected, filteredGroups]);
-
 	const activeGroup = useMemo(() => {
-		if (actualSelected.size === 0) return null;
-		const key = [...actualSelected][0];
-		return filteredGroups.find((g) => g.name === key) ?? null;
-	}, [actualSelected, filteredGroups]);
+		if (!selectedName) {
+			return groupedSkills[0] ?? null;
+		}
+		return groupedSkills.find((g) => g.name === selectedName) ?? null;
+	}, [selectedName, groupedSkills]);
 
-	const handleSelectionChange = (keys: Selection) => {
-		setSelected(keys);
+	const handleSelect = (name: string) => {
+		setSelectedName(name);
 	};
 
 	const handleOpenInstallDialog = () => {
@@ -125,29 +90,13 @@ export default function SkillsPage() {
 				</div>
 
 				{/* Skills List */}
-				<ListBox
-					aria-label="Skills"
-					selectionMode="single"
-					selectedKeys={actualSelected}
-					onSelectionChange={handleSelectionChange}
-					className="flex-1 overflow-y-auto p-2"
-				>
-					{filteredGroups.map((group) => (
-						<ListBox.Item
-							key={group.name}
-							id={group.name}
-							textValue={group.name}
-							className="data-selected:bg-accent/10"
-						>
-							<Label className="truncate">{group.name}</Label>
-						</ListBox.Item>
-					))}
-				</ListBox>
-				{filteredGroups.length === 0 && (
-					<p className="px-3 py-6 text-sm text-muted text-center">
-						{t("noSkillsMatch")} &ldquo;{searchQuery}&rdquo;
-					</p>
-				)}
+				<SkillList
+					skills={skills}
+					selectedKey={selectedName ?? activeGroup?.name ?? null}
+					searchQuery={searchQuery}
+					onSelect={handleSelect}
+					groupBySource={true}
+				/>
 			</div>
 
 			{/* Right Panel */}

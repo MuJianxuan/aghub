@@ -38,6 +38,43 @@ interface SkillListProps {
 	projectPath?: string;
 }
 
+interface SkillItemButtonProps {
+	name: string;
+	isSelected: boolean;
+	onSelect: (name: string) => void;
+	variant?: "nested" | "flat";
+}
+
+function SkillItemButton({
+	name,
+	isSelected,
+	onSelect,
+	variant = "flat",
+}: SkillItemButtonProps) {
+	const baseClasses =
+		"flex items-center gap-2 w-full text-left transition-colors";
+	const variantClasses =
+		variant === "nested"
+			? "px-3 py-2"
+			: "px-3 py-2.5 border-b border-border";
+	const stateClasses = isSelected
+		? "bg-accent/10 text-foreground"
+		: "text-muted hover:bg-surface-secondary";
+
+	return (
+		<button
+			type="button"
+			onClick={() => onSelect(name)}
+			className={`${baseClasses} ${variantClasses} ${stateClasses}`}
+		>
+			<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
+			<span className="truncate flex-1 text-sm font-medium text-foreground">
+				{name}
+			</span>
+		</button>
+	);
+}
+
 export function SkillList({
 	skills,
 	selectedKey,
@@ -228,62 +265,36 @@ export function SkillList({
 
 						{expandedSources.has(sg.source) && (
 							<div>
-								{sg.skills.map((skillGroup) => (
-									<button
-										key={skillGroup.name}
-										type="button"
-										onClick={() => onSelect(skillGroup.name)}
-										className={`flex items-center gap-2 w-full px-3 py-2 text-left transition-colors ${
-											selectedKey === skillGroup.name
-												? "bg-accent/10 text-foreground"
-												: "text-muted hover:bg-surface-secondary"
-										}`}
-									>
-										<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
-										<span className="truncate flex-1 text-sm font-medium text-foreground">
-											{skillGroup.name}
-										</span>
-									</button>
-								))}
+							{sg.skills.map((skillGroup) => (
+								<SkillItemButton
+									key={skillGroup.name}
+									name={skillGroup.name}
+									isSelected={selectedKey === skillGroup.name}
+									onSelect={onSelect}
+									variant="nested"
+								/>
+							))}
 							</div>
 						)}
 					</div>
 				))}
 
 				{singleItemGroups.map((group) => (
-					<button
+					<SkillItemButton
 						key={group.name}
-						type="button"
-						onClick={() => onSelect(group.name)}
-						className={`flex items-center gap-2 w-full px-3 py-2.5 border-b border-border text-left transition-colors ${
-							selectedKey === group.name
-								? "bg-accent/10 text-foreground"
-								: "text-muted hover:bg-surface-secondary"
-						}`}
-					>
-						<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
-						<span className="truncate flex-1 text-sm font-medium text-foreground">
-							{group.name}
-						</span>
-					</button>
+						name={group.name}
+						isSelected={selectedKey === group.name}
+						onSelect={onSelect}
+					/>
 				))}
 
 				{unknownGroups.map((group) => (
-					<button
+					<SkillItemButton
 						key={group.name}
-						type="button"
-						onClick={() => onSelect(group.name)}
-						className={`flex items-center gap-2 w-full px-3 py-2.5 border-b border-border text-left transition-colors ${
-							selectedKey === group.name
-								? "bg-accent/10 text-foreground"
-								: "text-muted hover:bg-surface-secondary"
-						}`}
-					>
-						<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
-						<span className="truncate flex-1 text-sm font-medium text-foreground">
-							{group.name}
-						</span>
-					</button>
+						name={group.name}
+						isSelected={selectedKey === group.name}
+						onSelect={onSelect}
+					/>
 				))}
 			</div>
 		);

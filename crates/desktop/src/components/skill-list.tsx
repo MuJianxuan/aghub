@@ -184,12 +184,11 @@ export function SkillList({
 							) : (
 								<ChevronRightIcon className="size-4 text-muted shrink-0" />
 							)}
-							<div className="flex-1 min-w-0">
-								<p className="text-sm font-medium text-foreground truncate">
-									{sg.source}
-								</p>
-								<p className="text-xs text-muted">{sg.sourceType}</p>
-							</div>
+						<div className="flex-1 min-w-0">
+							<p className="text-sm font-medium text-foreground truncate">
+								{sg.source}
+							</p>
+						</div>
 							<Chip size="sm" variant="secondary">
 								{sg.skills.length}
 							</Chip>

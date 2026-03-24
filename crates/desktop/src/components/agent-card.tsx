@@ -56,10 +56,7 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 	return (
 		<Tooltip delay={500}>
 			<Card
-				className="
-      border-l-2 transition-all duration-200
-      hover:bg-(--surface)
-    "
+				className="border-l-2 bg-surface transition-all duration-200"
 				style={{ borderLeftColor: accentColor }}
 				variant="transparent"
 			>

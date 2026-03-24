@@ -9,12 +9,16 @@ description = "Skill packaging and parsing library for .skill/.zip files"
 
 [dependencies]
 serde = { workspace = true }
+serde_json = { workspace = true }
 serde_yaml = { workspace = true }
 thiserror = { workspace = true }
 zip = "2.2"
 tempfile = { workspace = true }
 skills-ref = { git = "https://github.com/AkaraChen/skills-ref" }
 walkdir = "2.5"
+sha2 = "0.10"
+chrono = { version = "0.4", features = ["serde"] }
+dirs = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

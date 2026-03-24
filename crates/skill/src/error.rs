@@ -35,6 +35,16 @@ pub enum SkillError {
 	/// Skill not found.
 	#[error("Skill not found: {0}")]
 	NotFound(String),
+
+	/// Path strip prefix error.
+	#[error("Path error: {0}")]
+	PathError(String),
+}
+
+impl From<std::path::StripPrefixError> for SkillError {
+	fn from(e: std::path::StripPrefixError) -> Self {
+		SkillError::PathError(e.to_string())
+	}
 }
 
 impl From<Box<dyn skills_ref::errors::SkillError>> for SkillError {

@@ -17,7 +17,7 @@ pub struct MarketSkill {
 /// Search skills from marketplace
 /// `source` defaults to "skills-sh", extensible for future providers
 #[get("/skills-market/search?<q>&<limit>&<source>")]
-pub async fn search_market(
+pub async fn search_skill_market(
 	q: &str,
 	limit: Option<usize>,
 	source: Option<&str>,

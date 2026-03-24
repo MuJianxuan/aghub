@@ -4,7 +4,7 @@ import { AppSidebar } from "../components/app-sidebar";
 export function MainLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<Surface
-			variant="default"
+			variant="secondary"
 			className="flex h-screen flex-col overflow-hidden"
 		>
 			{/* Title bar - draggable */}

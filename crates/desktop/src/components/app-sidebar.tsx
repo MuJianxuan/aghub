@@ -38,7 +38,7 @@ export function AppSidebar() {
 
 	return (
 		<Surface
-			variant="default"
+			variant="secondary"
 			className="
      flex w-60 shrink-0 flex-col rounded-none border-r border-border p-3
    "

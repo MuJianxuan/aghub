@@ -129,6 +129,16 @@ export function createApi(baseUrl: string) {
 				})
 				.then(() => undefined);
 		},
+		openFolder(skillPath: string): Promise<void> {
+			return client
+				.post("skills/open", { json: { skill_path: skillPath } })
+				.then(() => undefined);
+		},
+		editFolder(skillPath: string): Promise<void> {
+			return client
+				.post("skills/edit", { json: { skill_path: skillPath } })
+				.then(() => undefined);
+		},
 	},
 		mcps: {
 			listAll(

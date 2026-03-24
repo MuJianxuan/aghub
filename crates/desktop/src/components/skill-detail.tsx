@@ -1,4 +1,5 @@
 import {
+	CodeBracketIcon,
 	ExclamationTriangleIcon,
 	FolderIcon,
 	PencilIcon,
@@ -17,12 +18,9 @@ import {
 	TextArea,
 	TextField,
 } from "@heroui/react";
-import { homeDir } from "@tauri-apps/api/path";
-import { openPath } from "@tauri-apps/plugin-opener";
-import { dirname } from "pathe";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useServer } from "../providers/server";
 import { createApi } from "../lib/api";
 import { ConfigSource } from "../lib/api-types";
@@ -40,29 +38,21 @@ interface SkillDetailProps {
 
 export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const { t } = useTranslation();
+	const { baseUrl } = useServer();
+	const api = createApi(baseUrl);
 
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	const skill = group.items[0];
 
-	const handleOpenFolder = useCallback(
-		async (sourcePath?: string) => {
-			if (!sourcePath) return;
-			try {
-				let path = sourcePath;
-				if (path.startsWith("~/")) {
-					const home = await homeDir();
-					path = `${home}/${path.slice(2)}`;
-				}
-				const folderPath = dirname(path);
-				await openPath(folderPath);
-			} catch (error) {
-				console.error("Failed to open folder:", error);
-			}
-		},
-		[],
-	);
+	const openFolderMutation = useMutation({
+		mutationFn: (skillPath: string) => api.skills.openFolder(skillPath),
+	});
+
+	const editFolderMutation = useMutation({
+		mutationFn: (skillPath: string) => api.skills.editFolder(skillPath),
+	});
 
 	const globalItems = group.items.filter(
 		(item) => item.source === ConfigSource.Global,
@@ -75,7 +65,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 		<>
 			<div className="h-full overflow-y-auto">
 				<div className="p-6 max-w-3xl">
-					{/* Header */}
 					<div className="flex items-center justify-between gap-3 mb-2">
 						<h2 className="text-xl font-semibold text-foreground truncate">
 							{skill.name}
@@ -104,19 +93,15 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 						</div>
 					</div>
 
-					{/* Description */}
 					{skill.description && (
 						<div className="mb-6">
 							<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
 								{t("description")}
 							</h3>
-							<p className="text-sm text-foreground">
-								{skill.description}
-							</p>
+							<p className="text-sm text-foreground">{skill.description}</p>
 						</div>
 					)}
 
-					{/* Locations */}
 					<div className="mb-6">
 						<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-3">
 							{t("locations")} ({group.items.length})
@@ -124,15 +109,22 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 						{globalItems.length > 0 && (
 							<div className="mb-4">
-								<h4 className="text-xs text-muted mb-2">
-									{t("globalSkills")}
-								</h4>
+								<h4 className="text-xs text-muted mb-2">{t("globalSkills")}</h4>
 								<div className="space-y-2">
 									{globalItems.map((item) => (
 										<LocationItem
 											key={item.agent}
 											item={item}
-											onOpenFolder={handleOpenFolder}
+											onOpenFolder={() =>
+												item.source_path &&
+												openFolderMutation.mutate(item.source_path)
+											}
+											onEditFolder={() =>
+												item.source_path &&
+												editFolderMutation.mutate(item.source_path)
+											}
+											isOpening={openFolderMutation.isPending}
+											isEditing={editFolderMutation.isPending}
 										/>
 									))}
 								</div>
@@ -141,15 +133,22 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 						{projectItems.length > 0 && (
 							<div>
-								<h4 className="text-xs text-muted mb-2">
-									{t("projectSkills")}
-								</h4>
+								<h4 className="text-xs text-muted mb-2">{t("projectSkills")}</h4>
 								<div className="space-y-2">
 									{projectItems.map((item) => (
 										<LocationItem
 											key={item.agent}
 											item={item}
-											onOpenFolder={handleOpenFolder}
+											onOpenFolder={() =>
+												item.source_path &&
+												openFolderMutation.mutate(item.source_path)
+											}
+											onEditFolder={() =>
+												item.source_path &&
+												editFolderMutation.mutate(item.source_path)
+											}
+											isOpening={openFolderMutation.isPending}
+											isEditing={editFolderMutation.isPending}
 										/>
 									))}
 								</div>
@@ -157,7 +156,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 						)}
 					</div>
 
-					{/* Metadata */}
 					{(skill.author || skill.version) && (
 						<div className="mb-6">
 							<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
@@ -188,7 +186,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 						</div>
 					)}
 
-					{/* Tools */}
 					{skill.tools.length > 0 && (
 						<div className="mb-6">
 							<h3 className="text-xs font-medium text-muted uppercase tracking-wide mb-2">
@@ -196,9 +193,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 							</h3>
 							<div className="flex flex-wrap gap-1.5">
 								{skill.tools.map((tool) => (
-									<Chip key={tool} size="sm">
-										{tool}
-									</Chip>
+									<Chip key={tool} size="sm">{tool}</Chip>
 								))}
 							</div>
 						</div>
@@ -206,7 +201,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 				</div>
 			</div>
 
-			{/* Edit Dialog */}
 			<EditSkillDialog
 				group={group}
 				isOpen={editDialogOpen}
@@ -214,7 +208,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 				projectPath={projectPath}
 			/>
 
-			{/* Delete Dialog */}
 			<DeleteSkillDialog
 				group={group}
 				isOpen={deleteDialogOpen}
@@ -227,10 +220,19 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 interface LocationItemProps {
 	item: SkillResponse;
-	onOpenFolder: (sourcePath?: string) => void;
+	onOpenFolder: () => void;
+	onEditFolder: () => void;
+	isOpening: boolean;
+	isEditing: boolean;
 }
 
-function LocationItem({ item, onOpenFolder }: LocationItemProps) {
+function LocationItem({
+	item,
+	onOpenFolder,
+	onEditFolder,
+	isOpening,
+	isEditing,
+}: LocationItemProps) {
 	const { t } = useTranslation();
 
 	const agentDisplayName = item.agent
@@ -241,9 +243,7 @@ function LocationItem({ item, onOpenFolder }: LocationItemProps) {
 		<div className="flex items-center justify-between gap-3 p-3 bg-default-50 rounded-lg border border-border">
 			<div className="min-w-0 flex-1">
 				<div className="flex items-center gap-2 mb-1">
-					<Chip size="sm" variant="secondary">
-						{agentDisplayName}
-					</Chip>
+					<Chip size="sm" variant="secondary">{agentDisplayName}</Chip>
 				</div>
 				{item.source_path && (
 					<p className="text-xs text-muted font-mono truncate">
@@ -252,16 +252,38 @@ function LocationItem({ item, onOpenFolder }: LocationItemProps) {
 				)}
 			</div>
 			{item.source_path && (
-				<Button
-					isIconOnly
-					variant="ghost"
-					size="sm"
-					className="text-muted hover:text-foreground shrink-0"
-					aria-label={t("openFolder")}
-					onPress={() => onOpenFolder(item.source_path)}
-				>
-					<FolderIcon className="size-4" />
-				</Button>
+				<div className="flex items-center gap-1">
+					<Button
+						isIconOnly
+						variant="ghost"
+						size="sm"
+						className="text-muted hover:text-foreground shrink-0"
+						aria-label={t("editInEditor")}
+						onPress={onEditFolder}
+						isDisabled={isEditing}
+					>
+						{isEditing ? (
+							<Spinner size="sm" />
+						) : (
+							<CodeBracketIcon className="size-4" />
+						)}
+					</Button>
+					<Button
+						isIconOnly
+						variant="ghost"
+						size="sm"
+						className="text-muted hover:text-foreground shrink-0"
+						aria-label={t("openFolder")}
+						onPress={onOpenFolder}
+						isDisabled={isOpening}
+					>
+						{isOpening ? (
+							<Spinner size="sm" />
+						) : (
+							<FolderIcon className="size-4" />
+						)}
+					</Button>
+				</div>
 			)}
 		</div>
 	);
@@ -342,8 +364,7 @@ function EditSkillDialog({
 
 					<Modal.Body className="p-2 space-y-4">
 						<p className="text-sm text-muted">
-							{t("affectsAllAgents")}: {group.items.length}{" "}
-							{t("locations")}
+							{t("affectsAllAgents")}: {group.items.length} {t("locations")}
 						</p>
 
 						<Fieldset>
@@ -418,9 +439,7 @@ function EditSkillDialog({
 					</Modal.Body>
 
 					<Modal.Footer>
-						<Button slot="close" variant="secondary">
-							{t("cancel")}
-						</Button>
+						<Button slot="close" variant="secondary">{t("cancel")}</Button>
 						<Button
 							onPress={handleSubmit}
 							isDisabled={updateMutation.isPending}
@@ -523,12 +542,8 @@ function DeleteSkillDialog({
 												<XCircleIcon className="size-4 text-danger shrink-0" />
 												<span className="text-foreground">
 													{item.agent
-														? item.agent
-																.charAt(0)
-																.toUpperCase() +
-															item.agent
-																.slice(1)
-																.toLowerCase()
+														? item.agent.charAt(0).toUpperCase() +
+														  item.agent.slice(1).toLowerCase()
 														: t("default")}
 												</span>
 												{item.source_path && (
@@ -556,12 +571,8 @@ function DeleteSkillDialog({
 												<XCircleIcon className="size-4 text-danger shrink-0" />
 												<span className="text-foreground">
 													{item.agent
-														? item.agent
-																.charAt(0)
-																.toUpperCase() +
-															item.agent
-																.slice(1)
-																.toLowerCase()
+														? item.agent.charAt(0).toUpperCase() +
+														  item.agent.slice(1).toLowerCase()
 														: t("default")}
 												</span>
 												{item.source_path && (

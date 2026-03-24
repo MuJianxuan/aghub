@@ -67,6 +67,8 @@ pub async fn start(options: ApiOptions) -> Result<(), rocket::Error> {
 				routes::integrations::list_code_editors,
 				routes::integrations::open_with_editor,
 				routes::integrations::get_preferences,
+				routes::skills::open_skill_folder,
+				routes::skills::edit_skill_folder,
 			],
 		)
 		.register(

@@ -26,3 +26,4 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 dirs = { workspace = true }
 which = "7"
+open = "5"

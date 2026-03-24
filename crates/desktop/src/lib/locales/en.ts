@@ -53,6 +53,7 @@ export default {
 	tools: "Tools",
 	source: "Source",
 	openFolder: "Open folder",
+	editInEditor: "Edit in editor",
 	createSkill: "Create Skill",
 	skillName: "Skill Name",
 	targetAgent: "Target Agent",

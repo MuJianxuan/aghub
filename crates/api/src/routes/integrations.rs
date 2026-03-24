@@ -3,9 +3,7 @@ use std::process::Command;
 use rocket::serde::json::Json;
 use which::which;
 
-use crate::dto::integrations::{
-	CodeEditorType, OpenWithEditorRequest, ToolInfoDto, ToolPreferencesDto,
-};
+use crate::dto::integrations::{CodeEditorType, OpenWithEditorRequest, ToolInfoDto, ToolPreferencesDto};
 
 fn get_code_editor_info(editor: &CodeEditorType) -> ToolInfoDto {
 	let path = which(editor.cli_command())

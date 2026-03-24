@@ -60,3 +60,14 @@ pub struct OpenWithEditorRequest {
 	pub path: String,
 	pub editor: CodeEditorType,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenSkillFolderRequest {
+	pub skill_path: String,
+	pub editor: Option<CodeEditorType>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EditSkillFolderRequest {
+	pub skill_path: String,
+}

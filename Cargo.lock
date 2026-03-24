@@ -41,6 +41,7 @@ version = "0.1.0"
 dependencies = [
  "aghub-core",
  "dirs 5.0.1",
+ "open",
  "rocket",
  "rocket_cors",
  "serde",

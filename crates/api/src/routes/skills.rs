@@ -4,8 +4,10 @@ use aghub_core::{
 use rocket::http::Status;
 use rocket::response::status::NoContent;
 use rocket::serde::json::Json;
+use which::which;
 
 use crate::{
+	dto::integrations::{CodeEditorType, EditSkillFolderRequest, OpenSkillFolderRequest},
 	dto::skill::{
 		CreateSkillRequest, InstallSkillRequest, InstallSkillResponse,
 		SkillResponse, UpdateSkillRequest,
@@ -17,6 +19,29 @@ use crate::{
 		resolved_to_resource_scope,
 	},
 };
+
+fn expand_tilde_path(path: &str) -> std::path::PathBuf {
+	if path.starts_with("~/") {
+		dirs::home_dir()
+			.map(|home| home.join(&path[2..]))
+			.unwrap_or_else(|| path.into())
+	} else {
+		path.into()
+	}
+}
+
+fn get_parent_folder(path: std::path::PathBuf) -> std::path::PathBuf {
+	path.parent()
+		.map(|p| p.to_path_buf())
+		.unwrap_or(path)
+}
+
+fn detect_available_editor() -> Option<CodeEditorType> {
+	CodeEditorType::all()
+		.iter()
+		.find(|editor| which(editor.cli_command()).is_ok())
+		.cloned()
+}
 use std::process::Stdio;
 use std::time::Duration;
 use tokio::process::Command;
@@ -257,4 +282,49 @@ pub async fn install_skill(
 		stderr,
 		exit_code,
 	}))
+}
+
+#[post("/skills/open", format = "json", data = "<request>")]
+pub async fn open_skill_folder(
+	request: Json<OpenSkillFolderRequest>,
+) -> Result<(), String> {
+	let req = request.into_inner();
+	let path = expand_tilde_path(&req.skill_path);
+	let folder = get_parent_folder(path);
+
+	match open::that(&folder) {
+		Ok(_) => Ok(()),
+		Err(e) => Err(format!("Failed to open folder: {}", e)),
+	}
+}
+
+#[post("/skills/edit", format = "json", data = "<request>")]
+pub async fn edit_skill_folder(
+	request: Json<EditSkillFolderRequest>,
+) -> Result<(), String> {
+	let req = request.into_inner();
+	let path = expand_tilde_path(&req.skill_path);
+	let folder = get_parent_folder(path);
+
+	match detect_available_editor() {
+		Some(editor) => {
+			match std::process::Command::new(editor.cli_command())
+				.arg(&folder)
+				.spawn()
+			{
+				Ok(_) => Ok(()),
+				Err(e) => Err(format!("Failed to open editor: {}", e)),
+			}
+		}
+		None => {
+			let editor_names: Vec<&str> = CodeEditorType::all()
+				.iter()
+				.map(|e| e.display_name())
+				.collect();
+			Err(format!(
+				"No supported code editor found. Please install {}.",
+				editor_names.join(", ")
+			))
+		}
+	}
 }

@@ -58,7 +58,7 @@ function SkillItemButton({
 			? "px-3 py-2"
 			: "px-3 py-2.5 border-b border-border";
 	const stateClasses = isSelected
-		? "bg-accent/10 text-foreground"
+		? "bg-surface text-foreground"
 		: "text-muted hover:bg-surface-secondary";
 
 	return (

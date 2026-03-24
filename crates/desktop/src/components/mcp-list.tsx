@@ -94,7 +94,7 @@ export function McpList({
 					key={group.mergeKey}
 					id={group.mergeKey}
 					textValue={group.items[0].name}
-					className="data-selected:bg-accent/10"
+					className="data-selected:bg-surface"
 				>
 					<div className="flex w-full items-center gap-2">
 						{getTransportIcon(group.transport)}

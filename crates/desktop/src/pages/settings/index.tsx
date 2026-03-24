@@ -1,14 +1,13 @@
 import {
 	ComputerDesktopIcon,
-	MagnifyingGlassIcon,
 	MoonIcon,
 	SunIcon,
 	UserGroupIcon,
 } from "@heroicons/react/24/solid";
 import {
 	Button,
-	Input,
 	ListBox,
+	SearchField,
 	Select,
 	Tabs,
 	ToggleButton,
@@ -94,13 +93,13 @@ export default function SettingsPage() {
 					<Tabs.Panel id="appearance">
 						<div className="space-y-2">
 							{/* Theme Setting */}
-							<div className="rounded-lg bg-[var(--surface)] p-4">
+							<div className="rounded-lg bg-(--surface) p-4">
 								<div className="flex items-center justify-between">
 									<div className="space-y-0.5">
-										<span className="text-sm font-medium text-[var(--foreground)]">
+										<span className="text-sm font-medium text-(--foreground)">
 											{t("theme")}
 										</span>
-										<span className="block text-xs text-[var(--muted)]">
+										<span className="block text-xs text-(--muted)">
 											{t("themeDescription")}
 										</span>
 									</div>
@@ -146,13 +145,13 @@ export default function SettingsPage() {
 							</div>
 
 							{/* Language Setting */}
-							<div className="rounded-lg bg-[var(--surface)] p-4">
+							<div className="rounded-lg bg-(--surface) p-4">
 								<div className="flex items-center justify-between">
 									<div className="space-y-0.5">
-										<span className="text-sm font-medium text-[var(--foreground)]">
+										<span className="text-sm font-medium text-(--foreground)">
 											{t("language")}
 										</span>
-										<span className="block text-xs text-[var(--muted)]">
+										<span className="block text-xs text-(--muted)">
 											{t("languageDescription")}
 										</span>
 									</div>
@@ -166,7 +165,7 @@ export default function SettingsPage() {
 											changeLanguage(key as string)
 										}
 										aria-label={t("language")}
-										className="min-w-[10rem]"
+										className="min-w-40"
 									>
 										<Select.Trigger>
 											<Select.Value />
@@ -220,34 +219,42 @@ export default function SettingsPage() {
 							return (
 								<div className="space-y-3">
 									{/* Search and Filter Bar */}
-									<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-										<Input
-											placeholder={t("searchAgents")}
+									<div className="
+           flex flex-col gap-2
+           sm:flex-row sm:items-center sm:justify-between
+         ">
+										<SearchField
 											value={agentSearch}
-											onChange={(e) => setAgentSearch(e.target.value)}
-											startContent={
-												<MagnifyingGlassIcon className="size-4 text-[var(--muted)]" />
-											}
-											className="w-full sm:w-64"
-										/>
+											onChange={setAgentSearch}
+											className="
+             w-full
+             sm:w-64
+           "
+										>
+											<SearchField.Group>
+												<SearchField.SearchIcon />
+												<SearchField.Input placeholder={t("searchAgents")} />
+												<SearchField.ClearButton />
+											</SearchField.Group>
+										</SearchField>
 										<div className="flex gap-1">
 											<Button
 												size="sm"
-												variant={agentFilter === "all" ? "solid" : "ghost"}
+												variant={agentFilter === "all" ? "primary" : "ghost"}
 												onPress={() => setAgentFilter("all")}
 											>
 												{t("all")}
 											</Button>
 											<Button
 												size="sm"
-												variant={agentFilter === "enabled" ? "solid" : "ghost"}
+												variant={agentFilter === "enabled" ? "primary" : "ghost"}
 												onPress={() => setAgentFilter("enabled")}
 											>
 												{t("enabled")}
 											</Button>
 											<Button
 												size="sm"
-												variant={agentFilter === "disabled" ? "solid" : "ghost"}
+												variant={agentFilter === "disabled" ? "primary" : "ghost"}
 												onPress={() => setAgentFilter("disabled")}
 											>
 												{t("disabled")}
@@ -257,23 +264,29 @@ export default function SettingsPage() {
 
 									{/* Agents Grid */}
 									{filteredAgents.length === 0 ? (
-										<div className="flex flex-col items-center justify-center rounded-lg bg-[var(--surface)] py-16 text-center">
-											<div className="mb-4 text-[var(--muted)]">
+										<div className="
+            flex flex-col items-center justify-center rounded-lg bg-(--surface)
+            py-16 text-center
+          ">
+											<div className="mb-4 text-(--muted)">
 												<UserGroupIcon className="mx-auto size-12" />
 											</div>
-											<p className="text-sm font-medium text-[var(--foreground)]">
+											<p className="text-sm font-medium text-(--foreground)">
 												{agentSearch || agentFilter !== "all"
 													? t("noAgentsMatch")
 													: t("noAgentsAvailable")}
 											</p>
-											<p className="mt-1 max-w-sm text-xs text-[var(--muted)]">
+											<p className="mt-1 max-w-sm text-xs text-(--muted)">
 												{agentSearch || agentFilter !== "all"
 													? t("adjustFiltersDescription")
 													: t("noAgentsDescription")}
 											</p>
 										</div>
 									) : (
-										<div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+										<div className="
+            grid grid-cols-1 gap-3
+            sm:grid-cols-2
+          ">
 											{filteredAgents.map((agent) => (
 												<AgentCard
 													key={agent.id}

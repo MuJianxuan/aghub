@@ -1,5 +1,4 @@
 import { Card, Switch, Tooltip } from "@heroui/react";
-import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { AgentIcon } from "../lib/agent-icons";
 import type { AvailableAgent } from "../contexts/agent-availability";
@@ -53,30 +52,12 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 		capabilityLabels.push(t("mcpServers"));
 
 	return (
-		<Tooltip
-			content={
-				<div className="space-y-1 py-1">
-					<p className="font-medium">{agent.display_name}</p>
-					{capabilityLabels.length > 0 && (
-						<p className="text-xs opacity-80">
-							{t("supports")}: {capabilityLabels.join(", ")}
-						</p>
-					)}
-					{agent.skills_cli_name && (
-						<p className="text-xs opacity-80">
-							{t("cliName")}: {agent.skills_cli_name}
-						</p>
-					)}
-				</div>
-			}
-			placement="bottom"
-			delay={500}
-		>
+		<Tooltip delay={500}>
 			<Card
-				className={clsx(
-					"border-l-2 transition-all duration-200 hover:bg-[var(--surface)]",
-					agent.isDisabled && "opacity-50",
-				)}
+				className="
+      border-l-2 transition-all duration-200
+      hover:bg-(--surface)
+    "
 				style={{ borderLeftColor: accentColor }}
 				variant="transparent"
 			>
@@ -90,14 +71,7 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 							</Card.Description>
 						)}
 					</div>
-					<Tooltip
-						content={
-							agent.isDisabled
-								? t("enableAgentTooltip", { name: agent.display_name })
-								: t("disableAgentTooltip", { name: agent.display_name })
-						}
-						placement="top"
-					>
+					<Tooltip>
 						<Switch
 							isSelected={!agent.isDisabled}
 							onChange={() => onToggle(agent.id, agent.isDisabled)}
@@ -108,9 +82,29 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 								<Switch.Thumb />
 							</Switch.Control>
 						</Switch>
+						<Tooltip.Content>
+							{agent.isDisabled
+								? t("enableAgentTooltip", { name: agent.display_name })
+								: t("disableAgentTooltip", { name: agent.display_name })}
+						</Tooltip.Content>
 					</Tooltip>
 				</Card.Content>
 			</Card>
+			<Tooltip.Content>
+				<div className="space-y-1 py-1">
+					<p className="font-medium">{agent.display_name}</p>
+					{capabilityLabels.length > 0 && (
+						<p className="text-xs opacity-80">
+							{t("supports")}: {capabilityLabels.join(", ")}
+						</p>
+					)}
+					{agent.skills_cli_name && (
+						<p className="text-xs opacity-80">
+							{t("cliName")}: {agent.skills_cli_name}
+						</p>
+					)}
+				</div>
+			</Tooltip.Content>
 		</Tooltip>
 	);
 }

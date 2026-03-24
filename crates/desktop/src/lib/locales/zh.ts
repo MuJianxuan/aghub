@@ -30,9 +30,6 @@ export default {
 	noAgentsDescription: "安装 AI 编码代理以在此管理它们。",
 	searchAgents: "搜索代理...",
 	adjustFiltersDescription: "尝试调整搜索或筛选条件。",
-	all: "全部",
-	enabled: "已启用",
-	disabled: "已禁用",
 
 	// Integrations
 	integrations: "集成",
@@ -102,7 +99,6 @@ export default {
 	headers: "请求头",
 	argsHelp: "空格分隔的参数",
 	timeoutHelp: "秒数（可选）",
-	enabled: "启用",
 	enabledHelp: "切换此 MCP 服务器是否处于激活状态。",
 	saving: "保存中...",
 	createMcpServer: "创建 MCP 服务器",

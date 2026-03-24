@@ -45,13 +45,13 @@ export default function IntegrationsPanel() {
 	return (
 		<div className="space-y-2">
 			{/* Code Editor Setting */}
-			<div className="rounded-lg bg-[var(--surface)] p-4">
+			<div className="rounded-lg bg-(--surface) p-4">
 				<div className="flex items-center justify-between">
 					<div className="space-y-0.5">
-						<span className="text-sm font-medium text-[var(--foreground)]">
+						<span className="text-sm font-medium text-(--foreground)">
 							{t("codeEditors")}
 						</span>
-						<span className="block text-xs text-[var(--muted)]">
+						<span className="block text-xs text-(--muted)">
 							{t("codeEditorsDescription")}
 						</span>
 					</div>
@@ -59,7 +59,7 @@ export default function IntegrationsPanel() {
 						selectedKey={selectedEditor || null}
 						onSelectionChange={handleEditorChange}
 						aria-label={t("codeEditors")}
-						className="min-w-[14rem]"
+						className="min-w-56"
 					>
 						<Select.Trigger>
 							<Select.Value />

@@ -50,9 +50,6 @@ export function SkillList({
 	const { t } = useTranslation();
 	const { baseUrl } = useServer();
 	const api = createApi(baseUrl);
-	const [expandedSources, setExpandedSources] = useState<Set<string>>(
-		new Set(),
-	);
 
 	const { data: globalLock } = useQuery<GlobalSkillLockResponse>({
 		queryKey: ["skill-locks", "global"],
@@ -141,11 +138,21 @@ export function SkillList({
 			}
 		}
 
+		const sortedSourceGroups = Array.from(groups.values()).sort((a, b) =>
+			a.source.localeCompare(b.source),
+		);
 		return {
-			sourceGroups: Array.from(groups.values()).sort((a, b) => a.source.localeCompare(b.source)),
+			sourceGroups: sortedSourceGroups,
 			unknownGroups: unknown,
 		};
 	}, [filteredByName, groupBySource, globalLock, projectLock]);
+
+	const [expandedSources, setExpandedSources] = useState<Set<string>>(() => {
+		if (sourceGroups.length <= 5) {
+			return new Set(sourceGroups.map((sg) => sg.source));
+		}
+		return new Set();
+	});
 
 	const toggleSource = (source: string) => {
 		setExpandedSources((prev) => {
@@ -184,30 +191,31 @@ export function SkillList({
 							) : (
 								<ChevronRightIcon className="size-4 text-muted shrink-0" />
 							)}
-						<div className="flex-1 min-w-0">
-							<p className="text-sm font-medium text-foreground truncate">
-								{sg.source}
-							</p>
-						</div>
+							<div className="flex-1 min-w-0">
+								<p className="text-sm font-medium text-foreground truncate">
+									{sg.source}
+								</p>
+							</div>
 							<Chip size="sm" variant="secondary">
 								{sg.skills.length}
 							</Chip>
 						</button>
 
 						{expandedSources.has(sg.source) && (
-							<div className="px-3 pb-2">
+							<div>
 								{sg.skills.map((skillGroup) => (
 									<button
 										key={skillGroup.name}
 										type="button"
 										onClick={() => onSelect(skillGroup.name)}
-										className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+										className={`flex items-center gap-2 w-full px-3 py-2 text-left transition-colors ${
 											selectedKey === skillGroup.name
 												? "bg-accent/10 text-foreground"
 												: "text-muted hover:bg-surface-secondary"
 										}`}
 									>
-										<span className="truncate block">
+										<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
+										<span className="truncate flex-1 text-sm font-medium text-foreground">
 											{skillGroup.name}
 										</span>
 									</button>

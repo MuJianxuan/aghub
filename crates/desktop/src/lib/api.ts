@@ -9,6 +9,13 @@ import type {
 	TransportDto,
 } from "./api-types";
 
+export interface UpdateSkillRequest {
+	description?: string;
+	author?: string;
+	version?: string;
+	tools?: string[];
+}
+
 export interface UpdateMcpRequest {
 	name?: string;
 	transport?: TransportDto;
@@ -87,6 +94,38 @@ export function createApi(baseUrl: string) {
 			return client
 				.post("skills/install", { json: data, timeout: 300000 })
 				.json();
+		},
+		update(
+			agent: string,
+			name: string,
+			data: UpdateSkillRequest,
+			scope: "global" | "project" = "global",
+			projectRoot?: string,
+		): Promise<SkillResponse> {
+			return client
+				.put(`agents/${agent}/skills/${name}`, {
+					searchParams: {
+						scope,
+						...(projectRoot ? { project_root: projectRoot } : {}),
+					},
+					json: data,
+				})
+				.json();
+		},
+		delete(
+			agent: string,
+			name: string,
+			scope: "global" | "project" = "global",
+			projectRoot?: string,
+		): Promise<void> {
+			return client
+				.delete(`agents/${agent}/skills/${name}`, {
+					searchParams: {
+						scope,
+						...(projectRoot ? { project_root: projectRoot } : {}),
+					},
+				})
+				.then(() => undefined);
 		},
 	},
 		mcps: {

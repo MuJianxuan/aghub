@@ -1,5 +1,6 @@
 import { Spinner } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { NuqsAdapter } from "nuqs/adapters/react";
 import { Suspense, useEffect, useState } from "react";
 import { Route, Router, Switch } from "wouter";
 import { ErrorBoundary } from "./components/ui/error-boundary";
@@ -60,57 +61,59 @@ function App() {
 			<ThemeProvider>
 				<ServerProvider>
 					<AgentAvailabilityProvider>
-						<Router>
-							<Switch>
-								<Route path="/">
-									<Redirect to="/mcp" />
-								</Route>
-								<Route path="/skills">
-									<SettingsLayout>
-										<ErrorBoundary>
-											<Suspense
-												fallback={
-													<SkillsPageSkeleton />
-												}
-											>
-												<SkillsPage />
-											</Suspense>
-										</ErrorBoundary>
-									</SettingsLayout>
-								</Route>
-								<Route path="/mcp">
-									<SettingsLayout>
-										<ErrorBoundary>
-											<Suspense
-												fallback={
-													<SkillsPageSkeleton />
-												}
-											>
-												<MCPServersPage />
-											</Suspense>
-										</ErrorBoundary>
-									</SettingsLayout>
-								</Route>
-								<Route path="/settings">
-									<SettingsLayout>
-										<SettingsPage />
-									</SettingsLayout>
-								</Route>
-								<Route path="/settings/custom-agents">
-									<SettingsLayout>
-										<CustomAgentsPage />
-									</SettingsLayout>
-								</Route>
-								<Route path="/projects/:id">
-									<SettingsLayout>
-										<ProjectDetailPage />
-									</SettingsLayout>
-								</Route>
-								<Route>
-									<Redirect to="/mcp" />
-								</Route>
-							</Switch>
-						</Router>
+						<NuqsAdapter>
+							<Router>
+								<Switch>
+									<Route path="/">
+										<Redirect to="/mcp" />
+									</Route>
+									<Route path="/skills">
+										<SettingsLayout>
+											<ErrorBoundary>
+												<Suspense
+													fallback={
+														<SkillsPageSkeleton />
+													}
+												>
+													<SkillsPage />
+												</Suspense>
+											</ErrorBoundary>
+										</SettingsLayout>
+									</Route>
+									<Route path="/mcp">
+										<SettingsLayout>
+											<ErrorBoundary>
+												<Suspense
+													fallback={
+														<SkillsPageSkeleton />
+													}
+												>
+													<MCPServersPage />
+												</Suspense>
+											</ErrorBoundary>
+										</SettingsLayout>
+									</Route>
+									<Route path="/settings">
+										<SettingsLayout>
+											<SettingsPage />
+										</SettingsLayout>
+									</Route>
+									<Route path="/settings/custom-agents">
+										<SettingsLayout>
+											<CustomAgentsPage />
+										</SettingsLayout>
+									</Route>
+									<Route path="/projects/:id">
+										<SettingsLayout>
+											<ProjectDetailPage />
+										</SettingsLayout>
+									</Route>
+									<Route>
+										<Redirect to="/mcp" />
+									</Route>
+								</Switch>
+							</Router>
+						</NuqsAdapter>
 					</AgentAvailabilityProvider>
 				</ServerProvider>
 			</ThemeProvider>

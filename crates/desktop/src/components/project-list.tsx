@@ -11,24 +11,21 @@ import { Link, useLocation } from "wouter";
 import { useProjects, useRemoveProject } from "../hooks/use-projects";
 import type { Project } from "../lib/store";
 import { cn } from "../lib/utils";
-import { CreateProjectDialog, EditProjectDialog } from "./edit-project-dialog";
+import { CreateProjectDialog } from "./edit-project-dialog";
 
 interface ProjectListItemProps {
 	project: Project;
 	isActive: boolean;
-	onEdit: (project: Project) => void;
 }
 
-function ProjectListItem({ project, isActive, onEdit }: ProjectListItemProps) {
+function ProjectListItem({ project, isActive }: ProjectListItemProps) {
 	const { t } = useTranslation();
 	const removeProject = useRemoveProject();
 	const [isOpen, setIsOpen] = useState(false);
 
 	const handleAction = (key: React.Key) => {
 		const keyStr = String(key);
-		if (keyStr === "edit") {
-			onEdit(project);
-		} else if (keyStr === "delete") {
+		if (keyStr === "delete") {
 			removeProject.mutate(project.id);
 		}
 	};
@@ -55,9 +52,6 @@ function ProjectListItem({ project, isActive, onEdit }: ProjectListItemProps) {
 			</Link>
 			<Dropdown.Popover placement="bottom start">
 				<Dropdown.Menu onAction={handleAction}>
-					<Dropdown.Item id="edit" textValue={t("edit")}>
-						<Label>{t("edit")}</Label>
-					</Dropdown.Item>
 					<Dropdown.Item
 						id="delete"
 						textValue={t("remove")}
@@ -76,19 +70,7 @@ export function ProjectList() {
 	const [location] = useLocation();
 	const { data: projects = [] } = useProjects();
 	const [isExpanded, setIsExpanded] = useState(true);
-	const [editingProject, setEditingProject] = useState<Project | null>(null);
-	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
-	const handleEdit = (project: Project) => {
-		setEditingProject(project);
-		setIsEditDialogOpen(true);
-	};
-
-	const handleCloseEdit = () => {
-		setIsEditDialogOpen(false);
-		setEditingProject(null);
-	};
 
 	const ChevronIcon = isExpanded ? ChevronUpIcon : ChevronDownIcon;
 
@@ -121,29 +103,18 @@ export function ProjectList() {
 				{/* Projects List */}
 				{isExpanded && (
 					<div className="flex flex-col gap-0.5">
-						{projects.map((project) => (
-							<ProjectListItem
-								key={project.id}
-								project={project}
-								isActive={
-									location === `/projects/${project.id}`
-								}
-								onEdit={handleEdit}
-							/>
-						))}
+					{projects.map((project) => (
+						<ProjectListItem
+							key={project.id}
+							project={project}
+							isActive={
+								location === `/projects/${project.id}`
+							}
+						/>
+					))}
 					</div>
 				)}
 			</div>
-
-			{/* Edit Dialog */}
-			{editingProject && (
-				<EditProjectDialog
-					key={editingProject.id}
-					project={editingProject}
-					isOpen={isEditDialogOpen}
-					onClose={handleCloseEdit}
-				/>
-			)}
 
 			{/* Create Dialog */}
 			<CreateProjectDialog

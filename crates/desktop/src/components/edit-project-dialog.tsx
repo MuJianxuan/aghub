@@ -10,70 +10,7 @@ import {
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAddProject, useUpdateProject } from "../hooks/use-projects";
-import type { Project } from "../lib/store";
-
-interface EditProjectDialogProps {
-	project: Project;
-	isOpen: boolean;
-	onClose: () => void;
-}
-
-export function EditProjectDialog({
-	project,
-	isOpen,
-	onClose,
-}: EditProjectDialogProps) {
-	const { t } = useTranslation();
-	const updateProject = useUpdateProject();
-	const [name, setName] = useState(project.name);
-
-	const handleSave = () => {
-		if (name.trim()) {
-			updateProject.mutate(
-				{ id: project.id, updates: { name: name.trim() } },
-				{ onSuccess: onClose },
-			);
-		}
-	};
-
-	return (
-		<Modal.Backdrop isOpen={isOpen} onOpenChange={onClose}>
-			<Modal.Container>
-				<Modal.Dialog>
-					<Modal.CloseTrigger />
-					<Modal.Header>
-						<Modal.Heading>{t("editProject")}</Modal.Heading>
-					</Modal.Header>
-					<Modal.Body>
-						<Fieldset>
-							<TextField className="w-full">
-								<Label>{t("projectName")}</Label>
-								<Input
-									value={name}
-									onChange={(e) => setName(e.target.value)}
-									placeholder={t("projectName")}
-								/>
-							</TextField>
-							<TextField className="w-full">
-								<Label>{t("projectPath")}</Label>
-								<Input value={project.path} readOnly />
-							</TextField>
-						</Fieldset>
-					</Modal.Body>
-					<Modal.Footer>
-						<Button slot="close" variant="secondary">
-							{t("cancel")}
-						</Button>
-						<Button onPress={handleSave} isDisabled={!name.trim()}>
-							{t("save")}
-						</Button>
-					</Modal.Footer>
-				</Modal.Dialog>
-			</Modal.Container>
-		</Modal.Backdrop>
-	);
-}
+import { useAddProject } from "../hooks/use-projects";
 
 interface CreateProjectDialogProps {
 	isOpen: boolean;
@@ -94,7 +31,6 @@ export function CreateProjectDialog({
 			const selectedPath = await invoke<string | null>("pick_folder");
 			if (selectedPath) {
 				setPath(selectedPath);
-				// Extract folder name from path
 				const folderName =
 					selectedPath.split(/[\\/]/).filter(Boolean).pop() || "";
 				if (folderName && !name) {
@@ -130,9 +66,8 @@ export function CreateProjectDialog({
 						<Modal.Heading>{t("addProject")}</Modal.Heading>
 					</Modal.Header>
 					<Modal.Body>
-						<Fieldset>
-							{/* Folder Picker Dropzone */}
-							<div className="flex flex-col gap-2">
+					<Fieldset>
+						<div className="flex flex-col gap-2">
 								<Label>{t("projectPath")}</Label>
 								<button
 									type="button"
@@ -156,7 +91,6 @@ export function CreateProjectDialog({
 								)}
 							</div>
 
-							{/* Name Input */}
 							<TextField className="w-full">
 								<Label>{t("projectName")}</Label>
 								<Input

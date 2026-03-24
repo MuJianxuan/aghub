@@ -2,20 +2,16 @@ import {
 	CodeBracketIcon,
 	ExclamationTriangleIcon,
 	FolderIcon,
-	PencilIcon,
 	TrashIcon,
 	XCircleIcon,
 } from "@heroicons/react/24/solid";
 import {
 	Button,
 	Chip,
-	Description,
 	Fieldset,
-	Input,
 	Label,
 	Modal,
 	Spinner,
-	TextArea,
 	TextField,
 } from "@heroui/react";
 import { useTranslation } from "react-i18next";
@@ -46,7 +42,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const { baseUrl } = useServer();
 	const api = createApi(baseUrl);
 
-	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
 	const skill = group.items[0];
@@ -100,16 +95,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 							{skill.name}
 						</h2>
 						<div className="flex items-center gap-1">
-							<Button
-								isIconOnly
-								variant="ghost"
-								size="sm"
-								className="text-muted hover:text-foreground shrink-0"
-								aria-label={t("editSkill")}
-								onPress={() => setEditDialogOpen(true)}
-							>
-								<PencilIcon className="size-4" />
-							</Button>
 							<Button
 								isIconOnly
 								variant="ghost"
@@ -227,13 +212,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 				</div>
 			</div>
 
-			<EditSkillDialog
-				group={group}
-				isOpen={editDialogOpen}
-				onClose={() => setEditDialogOpen(false)}
-				projectPath={projectPath}
-			/>
-
 			<DeleteSkillDialog
 				group={group}
 				isOpen={deleteDialogOpen}
@@ -312,177 +290,6 @@ function LocationItem({
 				</Button>
 			</div>
 		</div>
-	);
-}
-
-interface EditSkillDialogProps {
-	group: SkillGroup;
-	isOpen: boolean;
-	onClose: () => void;
-	projectPath?: string;
-}
-
-function EditSkillDialog({
-	group,
-	isOpen,
-	onClose,
-	projectPath,
-}: EditSkillDialogProps) {
-	const { t } = useTranslation();
-	const { baseUrl } = useServer();
-	const api = createApi(baseUrl);
-	const queryClient = useQueryClient();
-
-	const skill = group.items[0];
-
-	const [formData, setFormData] = useState({
-		description: skill.description ?? "",
-		author: skill.author ?? "",
-		version: skill.version ?? "",
-		tools: skill.tools.join(", "),
-	});
-
-	const updateMutation = useMutation({
-		mutationFn: async (data: typeof formData) => {
-			const results = await Promise.all(
-				group.items.map(async (item) => {
-					if (!item.agent) return null;
-					const scope =
-						item.source === ConfigSource.Project ? "project" : "global";
-					return api.skills.update(
-						item.agent,
-						skill.name,
-						{
-							description: data.description || undefined,
-							author: data.author || undefined,
-							version: data.version || undefined,
-							tools: data.tools
-								.split(",")
-								.map((t) => t.trim())
-								.filter(Boolean),
-						},
-						scope,
-						projectPath,
-					);
-				}),
-			);
-			return results;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["skills"] });
-			queryClient.invalidateQueries({ queryKey: ["project-skills"] });
-			onClose();
-		},
-	});
-
-	const handleSubmit = () => {
-		updateMutation.mutate(formData);
-	};
-
-	return (
-		<Modal.Backdrop isOpen={isOpen} onOpenChange={onClose}>
-			<Modal.Container>
-				<Modal.Dialog className="max-w-lg">
-					<Modal.CloseTrigger />
-					<Modal.Header>
-						<Modal.Heading>{t("editSkill")}</Modal.Heading>
-					</Modal.Header>
-
-					<Modal.Body className="p-2 space-y-4">
-						<p className="text-sm text-muted">
-							{t("affectsAllAgents")}: {group.items.length} {t("locations")}
-						</p>
-
-						<Fieldset>
-							<Fieldset.Group>
-								<TextField className="w-full">
-									<Label>{t("description")}</Label>
-									<TextArea
-										value={formData.description}
-										onChange={(e) =>
-											setFormData((prev) => ({
-												...prev,
-												description: e.target.value,
-											}))
-										}
-										className="min-h-[80px]"
-									/>
-								</TextField>
-							</Fieldset.Group>
-						</Fieldset>
-
-						<Fieldset>
-							<Fieldset.Group>
-								<TextField className="w-full">
-									<Label>{t("author")}</Label>
-									<Input
-										value={formData.author}
-										onChange={(e) =>
-											setFormData((prev) => ({
-												...prev,
-												author: e.target.value,
-											}))
-										}
-									/>
-								</TextField>
-							</Fieldset.Group>
-						</Fieldset>
-
-						<Fieldset>
-							<Fieldset.Group>
-								<TextField className="w-full">
-									<Label>{t("version")}</Label>
-									<Input
-										value={formData.version}
-										onChange={(e) =>
-											setFormData((prev) => ({
-												...prev,
-												version: e.target.value,
-											}))
-										}
-									/>
-								</TextField>
-							</Fieldset.Group>
-						</Fieldset>
-
-						<Fieldset>
-							<Fieldset.Group>
-								<TextField className="w-full">
-									<Label>{t("tools")}</Label>
-									<Input
-										value={formData.tools}
-										onChange={(e) =>
-											setFormData((prev) => ({
-												...prev,
-												tools: e.target.value,
-											}))
-										}
-									/>
-									<Description>{t("toolsDescription")}</Description>
-								</TextField>
-							</Fieldset.Group>
-						</Fieldset>
-					</Modal.Body>
-
-					<Modal.Footer>
-						<Button slot="close" variant="secondary">{t("cancel")}</Button>
-						<Button
-							onPress={handleSubmit}
-							isDisabled={updateMutation.isPending}
-						>
-							{updateMutation.isPending ? (
-								<>
-									<Spinner size="sm" className="mr-2" />
-									{t("saving")}
-								</>
-							) : (
-								t("saveChanges")
-							)}
-						</Button>
-					</Modal.Footer>
-				</Modal.Dialog>
-			</Modal.Container>
-		</Modal.Backdrop>
 	);
 }
 

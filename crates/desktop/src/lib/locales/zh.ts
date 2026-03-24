@@ -150,7 +150,6 @@ export default {
 
 	// Projects
 	addProject: "添加项目",
-	editProject: "编辑项目",
 	projectName: "项目名称",
 	projectPath: "项目路径",
 	projectPathPlaceholder: "/path/to/your/project",

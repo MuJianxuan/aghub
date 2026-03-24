@@ -153,7 +153,6 @@ export default {
 
 	// Projects
 	addProject: "Add Project",
-	editProject: "Edit Project",
 	projectName: "Project Name",
 	projectPath: "Project Path",
 	projectPathPlaceholder: "/path/to/your/project",

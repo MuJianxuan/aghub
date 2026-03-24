@@ -1,4 +1,4 @@
-import { Avatar, Tooltip } from "@heroui/react";
+import { Avatar } from "@heroui/react";
 
 // Import all agent icons as raw SVG strings
 const iconModules = import.meta.glob<{ default: string }>(
@@ -31,7 +31,7 @@ export function AgentIcon({ id, name, size = "lg", variant = "outline" }: AgentI
 
 	if (svg) {
 		// Render SVG inside a square container with border
-		const iconElement = (
+		return (
 			<div
 				className={`
 					flex items-center justify-center rounded-lg
@@ -41,26 +41,16 @@ export function AgentIcon({ id, name, size = "lg", variant = "outline" }: AgentI
 				dangerouslySetInnerHTML={{ __html: svg.default || svg }}
 			/>
 		);
-
-		return (
-			<Tooltip>
-				{iconElement}
-				<Tooltip.Content>{name}</Tooltip.Content>
-			</Tooltip>
-		);
 	}
 
 	// Fallback: Avatar with first letter (square with border)
 	return (
-		<Tooltip>
-			<Avatar
-				size={size === "sm" ? "md" : "lg"}
-				variant="soft"
-				className={variant === "ghost" ? "" : "border border-border"}
-			>
-				<Avatar.Fallback>{fallbackText}</Avatar.Fallback>
-			</Avatar>
-			<Tooltip.Content>{name}</Tooltip.Content>
-		</Tooltip>
+		<Avatar
+			size={size === "sm" ? "md" : "lg"}
+			variant="soft"
+			className={variant === "ghost" ? "" : "border border-border"}
+		>
+			<Avatar.Fallback>{fallbackText}</Avatar.Fallback>
+		</Avatar>
 	);
 }

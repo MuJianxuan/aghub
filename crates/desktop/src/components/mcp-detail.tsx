@@ -188,12 +188,24 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 										key={item.agent ?? "default"}
 										className="flex items-center gap-1"
 									>
-										<AgentIcon
-											id={item.agent ?? "default"}
-											name={item.agent ? item.agent.charAt(0).toUpperCase() + item.agent.slice(1).toLowerCase() : "Default"}
-											size="sm"
-											variant="ghost"
-										/>
+										<Tooltip>
+											<AgentIcon
+												id={item.agent ?? "default"}
+												name={item.agent ? item.agent.charAt(0).toUpperCase() + item.agent.slice(1).toLowerCase() : "Default"}
+												size="sm"
+												variant="ghost"
+											/>
+											<Tooltip.Content>
+												{item.agent
+													? item.agent
+															.charAt(0)
+															.toUpperCase() +
+														item.agent
+															.slice(1)
+															.toLowerCase()
+													: "Default"}
+											</Tooltip.Content>
+										</Tooltip>
 										{!item.enabled && (
 											<Chip
 												size="sm"

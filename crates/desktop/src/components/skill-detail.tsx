@@ -9,7 +9,7 @@ import {
 	TrashIcon,
 	XCircleIcon,
 } from "@heroicons/react/24/solid";
-import { Button, Chip, Modal, Spinner } from "@heroui/react";
+import { Button, Card, Chip, Modal, Spinner } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as pathe from "pathe";
 import { useMemo, useState } from "react";
@@ -131,71 +131,32 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="max-w-3xl p-6">
-					<div className="mb-2 flex items-center justify-between gap-3">
-						<h2 className="truncate text-xl font-semibold text-foreground">
-							{skill.name}
-						</h2>
-						<div className="flex items-center gap-1">
+				<div className="max-w-3xl space-y-4 p-6">
+					{/* Main Info Card */}
+					<Card variant="default">
+						<Card.Header className="flex flex-row items-start justify-between gap-3">
+							<div className="flex-1">
+								<Card.Title className="text-xl">{skill.name}</Card.Title>
+								{skill.description && (
+									<Card.Description className="mt-2">
+										{skill.description}
+									</Card.Description>
+								)}
+							</div>
 							<Button
 								isIconOnly
 								variant="ghost"
 								size="sm"
-								className="
-          shrink-0 text-muted
-          hover:text-danger
-        "
+								className="shrink-0 text-muted hover:text-danger"
 								aria-label={t("deleteSkill")}
 								onPress={() => setDeleteDialogOpen(true)}
 							>
 								<TrashIcon className="size-4" />
 							</Button>
-						</div>
-					</div>
+						</Card.Header>
 
-					{skill.description && (
-						<div className="mb-6">
-							<h3 className="
-         mb-2 text-xs font-medium tracking-wide text-muted uppercase
-       ">
-								{t("description")}
-							</h3>
-							<p className="text-sm text-foreground">
-								{skill.description}
-							</p>
-						</div>
-					)}
-
-					<div className="mb-6">
-						<h3 className="
-        mb-3 text-xs font-medium tracking-wide text-muted uppercase
-      ">
-							{t("locations")} (
-							{globalLocationGroups.length +
-								projectLocationGroups.length}
-							)
-						</h3>
-
-						<CollapsibleLocations
-							locations={[
-								...globalLocationGroups,
-								...projectLocationGroups,
-							]}
-							showAll={showAll}
-							onToggle={() => setShowAll(!showAll)}
-							openFolderMutation={openFolderMutation}
-							editFolderMutation={editFolderMutation}
-						/>
-					</div>
-
-					{(skill.author || skill.version) && (
-						<div className="mb-6">
-							<h3 className="
-         mb-2 text-xs font-medium tracking-wide text-muted uppercase
-       ">
-								{t("metadata")}
-							</h3>
-							<div className="flex gap-6">
+						{(skill.author || skill.version) && (
+							<Card.Content className="flex gap-6 border-t border-border pt-4">
 								{skill.author && (
 									<div>
 										<span className="mb-0.5 block text-xs text-muted">
@@ -216,37 +177,62 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 										</span>
 									</div>
 								)}
-							</div>
-						</div>
-					)}
+							</Card.Content>
+						)}
+					</Card>
 
+					{/* Locations Card */}
+					<Card variant="default">
+						<Card.Header>
+							<Card.Title>
+								{t("locations")} (
+								{globalLocationGroups.length + projectLocationGroups.length})
+							</Card.Title>
+						</Card.Header>
+						<Card.Content>
+							<CollapsibleLocations
+								locations={[
+									...globalLocationGroups,
+									...projectLocationGroups,
+								]}
+								showAll={showAll}
+								onToggle={() => setShowAll(!showAll)}
+								openFolderMutation={openFolderMutation}
+								editFolderMutation={editFolderMutation}
+							/>
+						</Card.Content>
+					</Card>
+
+					{/* Tools Card */}
 					{skill.tools.length > 0 && (
-						<div className="mb-6">
-							<h3 className="
-         mb-2 text-xs font-medium tracking-wide text-muted uppercase
-       ">
-								{t("tools")} ({skill.tools.length})
-							</h3>
-							<div className="flex flex-wrap gap-1.5">
-								{skill.tools.map((tool) => (
-									<Chip key={tool} size="sm">
-										{tool}
-									</Chip>
-								))}
-							</div>
-						</div>
+						<Card variant="default">
+							<Card.Header>
+								<Card.Title>
+									{t("tools")} ({skill.tools.length})
+								</Card.Title>
+							</Card.Header>
+							<Card.Content>
+								<div className="flex flex-wrap gap-1.5">
+									{skill.tools.map((tool) => (
+										<Chip key={tool} size="sm">
+											{tool}
+										</Chip>
+									))}
+								</div>
+							</Card.Content>
+						</Card>
 					)}
 
+					{/* Installation Source Card */}
 					{currentSkillSource && (
-						<div className="mb-6">
-							<h3 className="
-         mb-3 flex items-center gap-2 text-xs font-medium tracking-wide
-         text-muted uppercase
-       ">
-								<GlobeAltIcon className="size-4" />
-								{t("installedFrom")}
-							</h3>
-							<div className="rounded-lg border border-border bg-surface p-3">
+						<Card variant="default">
+							<Card.Header>
+								<Card.Title className="flex items-center gap-2">
+									<GlobeAltIcon className="size-4" />
+									{t("installedFrom")}
+								</Card.Title>
+							</Card.Header>
+							<Card.Content>
 								<p className="truncate text-sm font-medium text-foreground">
 									{currentSkillSource.source}
 								</p>
@@ -259,8 +245,8 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 										{currentSkillSource.hash.slice(0, 8)}...
 									</span>
 								</div>
-							</div>
-						</div>
+							</Card.Content>
+						</Card>
 					)}
 				</div>
 			</div>

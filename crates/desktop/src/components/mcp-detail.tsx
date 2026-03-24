@@ -93,91 +93,84 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="max-w-3xl p-6">
-					{/* Header */}
-					<div className="mb-2 flex items-center justify-between gap-3">
-						<h2 className="truncate text-xl font-semibold text-foreground">
-							{group.items[0].name}
-						</h2>
-						<div className="flex items-center gap-1">
-							<Tooltip delay={0}>
-								<Button
-									isIconOnly
-									variant="tertiary"
-									size="sm"
-									className={copyFeedback ? "text-success" : "text-muted"}
-									aria-label={copyFeedback ? t("copied") : t("copy")}
-									onPress={handleCopy}
-								>
-									{copyFeedback ? (
-										<CheckCircleIcon className="size-4" />
-									) : (
-										<DocumentDuplicateIcon className="size-4" />
-									)}
-								</Button>
-								<Tooltip.Content>
-									{copyFeedback ? t("copied") : t("copyTooltip")}
-								</Tooltip.Content>
-							</Tooltip>
-							<Tooltip delay={0}>
-								<Button
-									isIconOnly
-									variant="tertiary"
-									size="sm"
-									className="
-           shrink-0 text-muted
-           hover:text-foreground
-         "
-									aria-label={t("edit")}
-									onPress={onEdit}
-								>
-									<PencilIcon className="size-4" />
-								</Button>
-								<Tooltip.Content>
-									{t("editTooltip")}
-								</Tooltip.Content>
-							</Tooltip>
-							<Tooltip delay={0}>
-								<Button
-									isIconOnly
-									variant="tertiary"
-									size="sm"
-									className="
-           shrink-0 text-muted
-           hover:text-danger
-         "
-									aria-label={t("remove")}
-									onPress={() => setDeleteDialogOpen(true)}
-								>
-									<TrashIcon className="size-4" />
-								</Button>
-								<Tooltip.Content>
-									{t("deleteTooltip")}
-								</Tooltip.Content>
-							</Tooltip>
-														<Tooltip delay={0}>
-								<Button
-									isIconOnly
-									variant="primary"
-									size="sm"
-									className="
-           shrink-0 text-muted
-           hover:text-foreground
-         "
-									aria-label={t("manageAgents")}
-									onPress={() => setManageDialogOpen(true)}
-								>
-									<UserGroupIcon className="size-4 text-surface" />
-								</Button>
-								<Tooltip.Content>
-									{t("manageAgentsTooltip")}
-								</Tooltip.Content>
-							</Tooltip>
-						</div>
-					</div>
+				<div className="max-w-3xl space-y-4 p-6">
+					{/* Header Card */}
+					<Card variant="default">
+						<Card.Header className="flex flex-row items-start justify-between gap-3">
+							<Card.Title className="text-xl">
+								{group.items[0].name}
+							</Card.Title>
+							<div className="flex items-center gap-1">
+								<Tooltip delay={0}>
+									<Button
+										isIconOnly
+										variant="tertiary"
+										size="sm"
+										className={copyFeedback ? "text-success" : "text-muted"}
+										aria-label={copyFeedback ? t("copied") : t("copy")}
+										onPress={handleCopy}
+									>
+										{copyFeedback ? (
+											<CheckCircleIcon className="size-4" />
+										) : (
+											<DocumentDuplicateIcon className="size-4" />
+										)}
+									</Button>
+									<Tooltip.Content>
+										{copyFeedback ? t("copied") : t("copyTooltip")}
+									</Tooltip.Content>
+								</Tooltip>
+								<Tooltip delay={0}>
+									<Button
+										isIconOnly
+										variant="tertiary"
+										size="sm"
+										className="shrink-0 text-muted hover:text-foreground"
+										aria-label={t("edit")}
+										onPress={onEdit}
+									>
+										<PencilIcon className="size-4" />
+									</Button>
+									<Tooltip.Content>
+										{t("editTooltip")}
+									</Tooltip.Content>
+								</Tooltip>
+								<Tooltip delay={0}>
+									<Button
+										isIconOnly
+										variant="tertiary"
+										size="sm"
+										className="shrink-0 text-muted hover:text-danger"
+										aria-label={t("remove")}
+										onPress={() => setDeleteDialogOpen(true)}
+									>
+										<TrashIcon className="size-4" />
+									</Button>
+									<Tooltip.Content>
+										{t("deleteTooltip")}
+									</Tooltip.Content>
+								</Tooltip>
+								<Tooltip delay={0}>
+									<Button
+										isIconOnly
+										variant="primary"
+										size="sm"
+										className="shrink-0 text-muted hover:text-foreground"
+										aria-label={t("manageAgents")}
+										onPress={() => setManageDialogOpen(true)}
+									>
+										<UserGroupIcon className="size-4 text-surface" />
+									</Button>
+									<Tooltip.Content>
+										{t("manageAgentsTooltip")}
+									</Tooltip.Content>
+								</Tooltip>
+							</div>
+						</Card.Header>
+					</Card>
 
-					{/* Agents Section */}
-					<Card variant="default" className="mb-6">
+					{/* Agents Card */}
+					<Card variant="default">
 						<Card.Header>
 							<Card.Title>
 								{t("agents")} ({group.items.length})
@@ -215,8 +208,8 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 						</Card.Content>
 					</Card>
 
-					{/* Connection / Transport */}
-					<Card variant="default" className="mb-6">
+					{/* Transport Card */}
+					<Card variant="default">
 						<Card.Header>
 							<Card.Title>{t("transport")}</Card.Title>
 						</Card.Header>

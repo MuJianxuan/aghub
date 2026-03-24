@@ -1,11 +1,17 @@
 import { Store } from "@tauri-apps/plugin-store";
+import type { CodeEditorType, TerminalType } from "./api-types";
 
-const CURRENT_VERSION = 2;
+const CURRENT_VERSION = 3;
 
 export interface Project {
 	id: string;
 	name: string;
 	path: string;
+}
+
+export interface IntegrationPreferences {
+	codeEditor?: CodeEditorType;
+	terminal?: TerminalType;
 }
 
 let store: Store | null = null;
@@ -30,6 +36,11 @@ async function migrate(store: Store): Promise<void> {
 	// Migration v1 -> v2: add disabledAgents
 	if (version < 2) {
 		await store.set("disabledAgents", []);
+	}
+
+	// Migration v2 -> v3: add integrationPreferences
+	if (version < 3) {
+		await store.set("integrationPreferences", {});
 	}
 
 	await store.set("version", CURRENT_VERSION);
@@ -105,4 +116,17 @@ export async function disableAgent(agentId: string): Promise<void> {
 export async function enableAgent(agentId: string): Promise<void> {
 	const disabled = await getDisabledAgents();
 	await setDisabledAgents(disabled.filter((id) => id !== agentId));
+}
+
+export async function getIntegrationPreferences(): Promise<IntegrationPreferences> {
+	const store = await getStore();
+	return (await store.get<IntegrationPreferences>("integrationPreferences")) ?? {};
+}
+
+export async function saveIntegrationPreferences(
+	preferences: IntegrationPreferences,
+): Promise<void> {
+	const store = await getStore();
+	await store.set("integrationPreferences", preferences);
+	await store.save();
 }

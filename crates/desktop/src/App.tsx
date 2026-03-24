@@ -13,6 +13,7 @@ import { Redirect } from "./components/redirect";
 import ProjectDetailPage from "./pages/project/detail";
 import SettingsPage from "./pages/settings";
 import CustomAgentsPage from "./pages/settings/custom-agents";
+import IntegrationsPage from "./pages/settings/integrations";
 import MCPServersPage from "./pages/settings/mcp-servers";
 import SkillsPage from "./pages/settings/skills";
 
@@ -99,6 +100,11 @@ function App() {
 								<Route path="/settings/custom-agents">
 									<SettingsLayout>
 										<CustomAgentsPage />
+									</SettingsLayout>
+								</Route>
+								<Route path="/settings/integrations">
+									<SettingsLayout>
+										<IntegrationsPage />
 									</SettingsLayout>
 								</Route>
 								<Route path="/projects/:id">

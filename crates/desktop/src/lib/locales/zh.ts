@@ -26,6 +26,20 @@ export default {
 	english: "English",
 	chinese: "中文",
 
+	// Integrations
+	integrations: "集成",
+	integrationsDescription:
+		"配置您首选的代码编辑器和终端应用程序，用于打开项目。",
+	codeEditors: "代码编辑器",
+	codeEditorsDescription:
+		"选择您首选的代码编辑器来打开项目。Vim 需要在下方选择终端。",
+	terminals: "终端",
+	terminalsDescription:
+		"选择您首选的终端应用程序。这在使用 Vim 打开项目或直接打开终端时使用。",
+	vimRequiresTerminal: "Vim 需要终端才能运行。请在下方选择一个终端。",
+	testEditor: "测试编辑器",
+	testTerminal: "测试终端",
+
 	// Agent Management
 	agentManagementDescription:
 		"管理哪些代理可用于创建技能和 MCP 服务器。禁用你不使用的代理。",

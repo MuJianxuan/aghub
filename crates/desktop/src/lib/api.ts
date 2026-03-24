@@ -1,11 +1,14 @@
 import ky from "ky";
 import type {
+	CodeEditorType,
 	CreateSkillRequest,
 	InstallSkillRequest,
 	InstallSkillResponse,
 	MarketSkill,
 	McpResponse,
 	SkillResponse,
+	TerminalType,
+	ToolInfo,
 	TransportDto,
 } from "./api-types";
 
@@ -221,6 +224,32 @@ export function createApi(baseUrl: string) {
 				return client
 					.get("skills-market/search", { searchParams })
 					.json();
+			},
+		},
+		integrations: {
+			listCodeEditors(): Promise<ToolInfo[]> {
+				return client.get("integrations/code-editors").json();
+			},
+			listTerminals(): Promise<ToolInfo[]> {
+				return client.get("integrations/terminals").json();
+			},
+			openWithEditor(
+				path: string,
+				editor: CodeEditorType,
+				terminal?: TerminalType,
+			): Promise<void> {
+				return client
+					.post("integrations/open-with-editor", {
+						json: { path, editor, terminal },
+					})
+					.then(() => undefined);
+			},
+			openInTerminal(path: string, terminal: TerminalType): Promise<void> {
+				return client
+					.post("integrations/open-in-terminal", {
+						json: { path, terminal },
+					})
+					.then(() => undefined);
 			},
 		},
 	};

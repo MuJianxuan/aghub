@@ -2,6 +2,7 @@ import {
 	BookOpenIcon,
 	Cog6ToothIcon,
 	ServerIcon,
+	WrenchScrewdriverIcon,
 } from "@heroicons/react/24/solid";
 import { Surface } from "@heroui/react";
 import React from "react";
@@ -29,6 +30,12 @@ const menuItems: MenuItem[] = [
 		labelKey: "skills",
 		href: "/skills",
 		icon: BookOpenIcon,
+	},
+	{
+		type: "link",
+		labelKey: "integrations",
+		href: "/settings/integrations",
+		icon: WrenchScrewdriverIcon,
 	},
 ];
 

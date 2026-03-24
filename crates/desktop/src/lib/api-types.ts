@@ -74,3 +74,31 @@ export interface InstallSkillResponse {
 	stderr: string;
 	exit_code: number;
 }
+
+export type CodeEditorType =
+	| "vscode"
+	| "antigravity"
+	| "cursor"
+	| "zed"
+	| "vim";
+
+export type TerminalType =
+	| "alacritty"
+	| "ghostty"
+	| "iterm"
+	| "apple_terminal";
+
+export type ToolType = "code_editor" | "terminal";
+
+export interface ToolInfo {
+	id: string;
+	name: string;
+	installed: boolean;
+	path?: string;
+	tool_type: ToolType;
+}
+
+export interface ToolPreferences {
+	code_editor?: CodeEditorType;
+	terminal?: TerminalType;
+}

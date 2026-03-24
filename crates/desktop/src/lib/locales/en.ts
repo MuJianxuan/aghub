@@ -26,6 +26,21 @@ export default {
 	english: "English",
 	chinese: "中文",
 
+	// Integrations
+	integrations: "Integrations",
+	integrationsDescription:
+		"Configure your preferred code editors and terminal applications for opening projects.",
+	codeEditors: "Code Editors",
+	codeEditorsDescription:
+		"Choose your preferred code editor for opening projects. Vim requires a terminal to be selected below.",
+	terminals: "Terminals",
+	terminalsDescription:
+		"Choose your preferred terminal application. This is used when opening projects in Vim or when opening a terminal directly.",
+	vimRequiresTerminal:
+		"Vim requires a terminal to run. Please select a terminal below.",
+	testEditor: "Test Editor",
+	testTerminal: "Test Terminal",
+
 	// Agent Management
 	agentManagementDescription:
 		"Manage which agents are available for creating skills and MCP servers. Disable agents you don't use.",

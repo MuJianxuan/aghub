@@ -129,7 +129,7 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 			envVars,
 			url,
 			headers,
-			timeout,
+			timeout: timeoutValue,
 		});
 	};
 

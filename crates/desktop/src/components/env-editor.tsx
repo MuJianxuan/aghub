@@ -106,7 +106,7 @@ export function EnvEditor({ value, onChange }: EnvEditorProps) {
 				</div>
 			))}
 			<div className="flex items-center gap-2">
-				<Button variant="ghost" size="sm" onPress={handleAdd}>
+				<Button variant="secondary" size="sm" onPress={handleAdd}>
 					<PlusIcon className="size-4" />
 					{t("envEditor.addKeypair")}
 				</Button>

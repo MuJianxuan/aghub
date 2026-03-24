@@ -20,7 +20,7 @@ export function ResourceSectionHeader({
 			{icon}
 			<span className="flex-1">{title}</span>
 			{count > 0 && (
-				<Chip size="sm" variant="outline">
+				<Chip size="sm">
 					{count}
 				</Chip>
 			)}

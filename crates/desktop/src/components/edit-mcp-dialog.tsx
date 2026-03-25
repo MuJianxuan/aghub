@@ -161,8 +161,8 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 						{group.items.length > 1 && (
 							<div
 								className="
-         mb-4 rounded-lg border border-warning-soft-hover bg-warning/10 p-3
-       "
+          mb-4 rounded-lg border border-warning-soft-hover bg-warning/10 p-3
+        "
 							>
 								<p className="text-sm text-warning">
 									{t("changeWillApplyToAgents", {

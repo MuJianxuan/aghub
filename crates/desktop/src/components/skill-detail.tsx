@@ -51,6 +51,9 @@ interface SkillDetailProps {
 	projectPath?: string;
 }
 
+// Module-scoped regex for better performance
+const GITHUB_PREFIX_REGEX = /^github\//;
+
 function formatAgentName(agent: string): string {
 	return agent.charAt(0).toUpperCase() + agent.slice(1).toLowerCase();
 }
@@ -125,11 +128,8 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const sourceUrl = useMemo(() => {
 		if (!currentSkillSource) return null;
 		if (currentSkillSource.sourceUrl) return currentSkillSource.sourceUrl;
-		if (
-			currentSkillSource.sourceType === "github" &&
-			currentSkillSource.source
-		) {
-			const path = currentSkillSource.source.replace(/^github\//, "");
+		if (currentSkillSource.sourceType === "github" && currentSkillSource.source) {
+			const path = currentSkillSource.source.replace(GITHUB_PREFIX_REGEX, "");
 			return `https://github.com/${path}`;
 		}
 		return null;
@@ -179,7 +179,11 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="max-w-2xl space-y-4 p-6">
+				<div className="
+      max-w-2xl space-y-4 p-4
+      sm:p-5
+      md:p-6
+    ">
 					{/* Main Info Card */}
 					<Card>
 						<Card.Header className="flex flex-row items-start justify-between gap-3">
@@ -193,15 +197,18 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 									</p>
 								)}
 							</div>
-							<div className="flex items-center gap-1">
+							<div className="
+         flex items-center gap-1.5
+         sm:gap-2
+       ">
 								{primarySkillPath && (
 									<>
 										<Tooltip delay={0}>
 											<Button
 												isIconOnly
 												variant="ghost"
-												size="sm"
-												className="text-muted"
+												size="md"
+												className="min-h-11 min-w-11 text-muted"
 												aria-label={t("editInEditor")}
 												onPress={() =>
 													editFolderMutation.mutate(
@@ -215,7 +222,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 												{editFolderMutation.isPending ? (
 													<Spinner size="sm" />
 												) : (
-													<CodeBracketIcon className="size-4" />
+													<CodeBracketIcon className="size-5" />
 												)}
 											</Button>
 											<Tooltip.Content>
@@ -226,8 +233,8 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 											<Button
 												isIconOnly
 												variant="ghost"
-												size="sm"
-												className="text-muted"
+												size="md"
+												className="min-h-11 min-w-11 text-muted"
 												aria-label={t("openFolder")}
 												onPress={() =>
 													openFolderMutation.mutate(
@@ -241,7 +248,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 												{openFolderMutation.isPending ? (
 													<Spinner size="sm" />
 												) : (
-													<FolderIcon className="size-4" />
+													<FolderIcon className="size-5" />
 												)}
 											</Button>
 											<Tooltip.Content>
@@ -254,14 +261,17 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 									<Button
 										isIconOnly
 										variant="ghost"
-										size="sm"
-										className="text-muted hover:text-danger"
+										size="md"
+										className="
+            min-h-11 min-w-11 text-muted
+            hover:text-danger
+          "
 										aria-label={t("deleteSkill")}
 										onPress={() =>
 											setDeleteDialogOpen(true)
 										}
 									>
-										<TrashIcon className="size-4" />
+										<TrashIcon className="size-5" />
 									</Button>
 									<Tooltip.Content>
 										{t("deleteSkill")}
@@ -273,15 +283,17 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 						<Card.Content className="space-y-5">
 							{/* Description */}
 							{skill.description && (
-								<p className="text-sm leading-relaxed text-foreground">
+								<p className="text-sm/relaxed text-foreground">
 									{skill.description}
 								</p>
 							)}
 
 							{/* Tools */}
-							{skill.tools.length > 0 && (
+							{skill.tools.length > 0 ? (
 								<div>
-									<p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">
+									<p className="
+           mb-2 text-xs font-medium tracking-wider text-muted uppercase
+         ">
 										{t("tools")} ({skill.tools.length})
 									</p>
 									<div className="flex flex-wrap gap-1.5">
@@ -296,14 +308,16 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 										))}
 									</div>
 								</div>
-							)}
+							) : null}
 
 							<Separator />
 
 							{/* Locations */}
 							{allLocationGroups.length > 0 && (
 								<div>
-									<p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">
+									<p className="
+           mb-2 text-xs font-medium tracking-wider text-muted uppercase
+         ">
 										{t("locations")} (
 										{allLocationGroups.length})
 									</p>
@@ -333,7 +347,10 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 													!showAllLocations,
 												)
 											}
-											className="mt-2 flex items-center gap-1 text-xs text-muted transition-colors hover:text-foreground"
+											className="
+             mt-2 flex items-center gap-1 text-xs text-muted transition-colors
+             hover:text-foreground
+           "
 										>
 											{showAllLocations ? (
 												<>
@@ -358,10 +375,15 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 							{/* Installation Source */}
 							{currentSkillSource && (
 								<div>
-									<p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">
+									<p className="
+           mb-2 text-xs font-medium tracking-wider text-muted uppercase
+         ">
 										{t("installedFrom")}
 									</p>
-									<div className="flex items-center justify-between gap-2 rounded-lg bg-surface-secondary px-3 py-2">
+									<div className="
+           flex items-center justify-between gap-2 rounded-lg
+           bg-surface-secondary px-3 py-2
+         ">
 										<div className="flex min-w-0 items-center gap-2 text-sm">
 											<GlobeAltIcon className="size-3.5 shrink-0 text-muted" />
 											<span className="min-w-0 truncate text-foreground">
@@ -384,16 +406,12 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 													<Button
 														isIconOnly
 														variant="ghost"
-														size="sm"
-														className="text-muted"
-														aria-label={t(
-															"openInBrowser",
-														)}
-														onPress={() =>
-															openUrl(sourceUrl)
-														}
+														size="md"
+														className="min-h-11 min-w-11 text-muted"
+														aria-label={t("openInBrowser")}
+														onPress={() => openUrl(sourceUrl)}
 													>
-														<LinkIcon className="size-3.5" />
+														<LinkIcon className="size-4" />
 													</Button>
 													<Tooltip.Content>
 														{t("openInBrowser")}
@@ -426,8 +444,16 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 									<Disclosure.Content>
 										<Disclosure.Body className="mt-2">
 											<div
-												className="prose prose-sm max-w-none text-foreground [&_pre]:overflow-x-auto [&_pre]:rounded-md [&_pre]:bg-surface-secondary [&_pre]:p-3 [&_pre]:text-xs [&_code]:rounded [&_code]:bg-surface-secondary [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-xs"
-												// biome-ignore lint: sanitized HTML from DOMPurify
+												role="article"
+												aria-label={t("skillContent")}
+												className="
+              prose prose-sm max-w-none text-foreground
+              [&_code]:rounded-sm [&_code]:bg-surface-secondary [&_code]:px-1
+              [&_code]:py-0.5 [&_code]:text-xs
+              [&_pre]:overflow-x-auto [&_pre]:rounded-md
+              [&_pre]:bg-surface-secondary [&_pre]:p-3 [&_pre]:text-xs
+            "
+												// eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
 												dangerouslySetInnerHTML={{
 													__html: DOMPurify.sanitize(
 														marked.parse(
@@ -472,10 +498,18 @@ function LocationRow({
 	);
 
 	return (
-		<div className="flex items-center justify-between gap-2 rounded-lg bg-surface-secondary px-3 py-2">
+		<div className="
+    flex items-center justify-between gap-2 rounded-lg bg-surface-secondary px-3
+    py-2
+    sm:gap-3
+  ">
 			<div className="min-w-0 flex-1">
 				<p
-					className="truncate font-mono text-xs text-foreground"
+					tabIndex={0}
+					className="
+       cursor-default truncate rounded-sm font-mono text-xs text-foreground
+       focus:ring-2 focus:ring-offset-2 focus:outline-none
+     "
 					title={group.sourcePath}
 				>
 					{folderPath}
@@ -484,17 +518,20 @@ function LocationRow({
 					{group.agents.map(formatAgentName).join(", ")}
 				</p>
 			</div>
-			<div className="flex items-center gap-1">
+			<div className="
+     flex items-center gap-1.5
+     sm:gap-2
+   ">
 				<Tooltip delay={0}>
 					<Button
 						isIconOnly
 						variant="ghost"
-						size="sm"
-						className="text-muted"
+						size="md"
+						className="min-h-11 min-w-11 text-muted"
 						aria-label={t("editInEditor")}
 						onPress={onEditFolder}
 					>
-						<CodeBracketIcon className="size-3.5" />
+						<CodeBracketIcon className="size-4" />
 					</Button>
 					<Tooltip.Content>{t("editInEditor")}</Tooltip.Content>
 				</Tooltip>
@@ -502,12 +539,12 @@ function LocationRow({
 					<Button
 						isIconOnly
 						variant="ghost"
-						size="sm"
-						className="text-muted"
+						size="md"
+						className="min-h-11 min-w-11 text-muted"
 						aria-label={t("openFolder")}
 						onPress={onOpenFolder}
 					>
-						<FolderIcon className="size-3.5" />
+						<FolderIcon className="size-4" />
 					</Button>
 					<Tooltip.Content>{t("openFolder")}</Tooltip.Content>
 				</Tooltip>
@@ -550,14 +587,13 @@ function DeleteSkillDialog({
 				}
 			}
 			return Promise.allSettled(
-				[...byScope].map(([scope, agent]) =>
+				Array.from(byScope, ([scope, agent]) =>
 					api.skills.delete(
 						agent,
 						skill.name,
 						scope as "global" | "project",
 						projectPath,
-					),
-				),
+					)),
 			);
 		},
 		onSettled: () => {
@@ -598,7 +634,9 @@ function DeleteSkillDialog({
 						<div className="space-y-4">
 							{globalItems.length > 0 && (
 								<div>
-									<h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
+									<h4 className="
+           mb-2 text-xs font-medium tracking-wide text-muted uppercase
+         ">
 										{t("globalSkills")}
 									</h4>
 									<div className="space-y-2">
@@ -628,7 +666,9 @@ function DeleteSkillDialog({
 
 							{projectItems.length > 0 && (
 								<div>
-									<h4 className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">
+									<h4 className="
+           mb-2 text-xs font-medium tracking-wide text-muted uppercase
+         ">
 										{t("projectSkills")}
 									</h4>
 									<div className="space-y-2">

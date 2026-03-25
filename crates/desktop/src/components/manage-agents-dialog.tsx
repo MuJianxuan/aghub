@@ -249,8 +249,14 @@ export function ManageAgentsDialog({
 												key={agent.id}
 												value={agent.id}
 												className={cn(
-													"w-full cursor-pointer rounded-lg border border-transparent px-3 py-2.5 transition-colors",
-													"data-[selected]:border-accent/20 data-[selected]:bg-accent-soft/50",
+													`
+               w-full cursor-pointer rounded-lg border border-transparent px-3
+               py-2.5 transition-colors
+             `,
+													`
+               data-selected:border-accent-soft-hover
+               data-selected:bg-accent-soft/50
+             `,
 													"hover:bg-surface-secondary",
 												)}
 											>

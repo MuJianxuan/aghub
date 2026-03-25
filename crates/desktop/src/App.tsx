@@ -31,8 +31,8 @@ function SkillsPageSkeleton() {
 		<div className="flex h-full">
 			<div
 				className="
-     flex w-80 shrink-0 items-center justify-center border-r border-border
-   "
+      flex w-80 shrink-0 items-center justify-center border-r border-border
+    "
 			>
 				<Spinner />
 			</div>

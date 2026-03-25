@@ -129,7 +129,10 @@ function KeyValueSection({
 			{entries.map(([key, value]) => (
 				<div
 					key={key}
-					className="flex items-center justify-between gap-4 rounded-lg bg-surface-secondary px-3 py-1.5"
+					className="
+       flex items-center justify-between gap-4 rounded-lg bg-surface-secondary
+       px-3 py-1.5
+     "
 				>
 					<span className="shrink-0 font-mono text-xs">{key}</span>
 					<span className="truncate font-mono text-xs text-muted">
@@ -278,7 +281,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 										isIconOnly
 										variant="ghost"
 										size="sm"
-										className="text-muted hover:text-danger"
+										className="
+            text-muted
+            hover:text-danger
+          "
 										aria-label={t("deleteTooltip")}
 										onPress={() =>
 											setDeleteDialogOpen(true)
@@ -296,7 +302,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 						<Card.Content className="space-y-5">
 							{/* Agents Section */}
 							<div>
-								<p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted">
+								<p className="
+          mb-2 text-xs font-medium tracking-wider text-muted uppercase
+        ">
 									{t("agents")}
 								</p>
 								<div className="flex flex-wrap gap-2">
@@ -337,7 +345,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 							{/* Connection Details */}
 							<div>
-								<p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted">
+								<p className="
+          mb-1 text-xs font-medium tracking-wider text-muted uppercase
+        ">
 									{t("connection")}
 								</p>
 

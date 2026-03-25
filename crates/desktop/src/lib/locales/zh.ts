@@ -29,6 +29,7 @@ export default {
 	chinese: "中文",
 	noAgentsDescription: "安装 AI 编码代理以在此管理它们。",
 	searchAgents: "搜索代理...",
+	noAgentsMatch: "没有匹配的代理",
 	adjustFiltersDescription: "尝试调整搜索或筛选条件。",
 
 	// Integrations

@@ -31,6 +31,7 @@ export default {
 	chinese: "中文",
 	noAgentsDescription: "Install AI coding agents to manage them here.",
 	searchAgents: "Search agents...",
+	noAgentsMatch: "No agents match",
 	adjustFiltersDescription: "Try adjusting your search or filters.",
 
 	// Integrations

@@ -14,12 +14,12 @@ export function StepIndicator({ currentStep, labels }: StepIndicatorProps) {
 							className={`
          flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium
          ${
-								step < currentStep
-									? "bg-accent-soft text-accent"
-									: step === currentStep
-										? "bg-accent text-accent-foreground"
-										: "bg-accent-soft text-muted"
-							}
+				step < currentStep
+					? "bg-accent-soft text-accent"
+					: step === currentStep
+						? "bg-accent text-accent-foreground"
+						: "bg-accent-soft text-muted"
+			}
        `}
 						>
 							<span
@@ -27,12 +27,12 @@ export function StepIndicator({ currentStep, labels }: StepIndicatorProps) {
           flex size-4.5 items-center justify-center rounded-full text-[10px]
           font-bold
           ${
-									step < currentStep
-										? "bg-accent text-accent-foreground"
-										: step === currentStep
-											? "bg-accent-foreground text-accent"
-											: "bg-muted text-muted"
-								}
+				step < currentStep
+					? "bg-accent text-accent-foreground"
+					: step === currentStep
+						? "bg-accent-foreground text-accent"
+						: "bg-muted text-muted"
+			}
         `}
 							>
 								{step < currentStep ? "✓" : step}
@@ -43,11 +43,7 @@ export function StepIndicator({ currentStep, labels }: StepIndicatorProps) {
 							<div
 								className={`
           h-px w-6
-          ${
-									step < currentStep
-										? "bg-accent"
-										: "bg-muted"
-								}
+          ${step < currentStep ? "bg-accent" : "bg-muted"}
         `}
 							/>
 						)}

@@ -1,11 +1,8 @@
 import { Spinner } from "@heroui/react";
 import { invoke } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
-import type {
-	ServerProviderProps} from "../contexts/server";
-import {
-	ServerContext
-} from "../contexts/server";
+import type { ServerProviderProps } from "../contexts/server";
+import { ServerContext } from "../contexts/server";
 
 export function ServerProvider({ children }: ServerProviderProps) {
 	const [port, setPort] = useState<number | null>(null);
@@ -36,7 +33,9 @@ export function ServerProvider({ children }: ServerProviderProps) {
 	}
 
 	return (
-		<ServerContext value={{ port, baseUrl: `http://localhost:${port}/api/v1` }}>
+		<ServerContext
+			value={{ port, baseUrl: `http://localhost:${port}/api/v1` }}
+		>
 			{children}
 		</ServerContext>
 	);

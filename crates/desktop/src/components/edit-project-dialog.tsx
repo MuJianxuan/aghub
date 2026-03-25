@@ -8,10 +8,10 @@ import {
 	TextField,
 } from "@heroui/react";
 import { open } from "@tauri-apps/plugin-dialog";
+import { basename } from "pathe";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAddProject } from "../hooks/use-projects";
-import { basename } from "pathe";
 
 interface CreateProjectDialogProps {
 	isOpen: boolean;

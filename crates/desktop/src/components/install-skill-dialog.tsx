@@ -12,11 +12,11 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAgentAvailability } from "../hooks/use-agent-availability";
+import { useServer } from "../hooks/use-server";
 import { createApi } from "../lib/api";
 import type { MarketSkill } from "../lib/api-types";
 import { capitalize } from "../lib/mcp-utils";
-import { useAgentAvailability } from "../hooks/use-agent-availability";
-import { useServer } from "../hooks/use-server";
 import { ResultStatusItem } from "./result-status-item";
 import { StepIndicator } from "./step-indicator";
 
@@ -274,9 +274,11 @@ export function InstallSkillDialog({
 								)}
 
 								{selectedSkill && (
-									<div className="
+									<div
+										className="
            rounded-lg border border-accent-soft-hover bg-accent/5 p-3
-         ">
+         "
+									>
 										<p className="mb-1 text-xs tracking-wide text-muted uppercase">
 											{t("selectedSkill")}
 										</p>

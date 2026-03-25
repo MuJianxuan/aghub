@@ -21,7 +21,9 @@ export default function SettingsPage() {
 					}}
 				>
 					<div className="mb-2 flex items-center justify-between">
-						<h2 className="text-xl font-semibold">{t("settings")}</h2>
+						<h2 className="text-xl font-semibold">
+							{t("settings")}
+						</h2>
 
 						<Tabs.ListContainer>
 							<Tabs.List

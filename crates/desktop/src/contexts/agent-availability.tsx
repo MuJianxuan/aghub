@@ -16,7 +16,8 @@ export interface AgentAvailabilityContextValue {
 	refreshDisabledAgents: () => Promise<void>;
 }
 
-export const AgentAvailabilityContext = createContext<AgentAvailabilityContextValue | null>(null);
+export const AgentAvailabilityContext =
+	createContext<AgentAvailabilityContextValue | null>(null);
 
 export function useAgentAvailabilityContext(): AgentAvailabilityContextValue {
 	const ctx = use(AgentAvailabilityContext);

@@ -8,13 +8,13 @@ import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useServer } from "../hooks/use-server";
 import { createApi } from "../lib/api";
 import type {
 	GlobalSkillLockResponse,
 	ProjectSkillLockResponse,
 	SkillResponse,
 } from "../lib/api-types";
-import { useServer } from "../hooks/use-server";
 
 interface SkillGroup {
 	name: string;
@@ -37,7 +37,6 @@ interface SkillListProps {
 	groupBySource?: boolean;
 	projectPath?: string;
 }
-
 
 export function SkillList({
 	skills,
@@ -245,7 +244,9 @@ export function SkillList({
 								aria-label={`Skills from ${sg.source}`}
 								selectionMode="single"
 								selectedKeys={
-									selectedKey ? new Set([selectedKey]) : new Set()
+									selectedKey
+										? new Set([selectedKey])
+										: new Set()
 								}
 								onSelectionChange={(keys) => {
 									if (keys === "all") return;
@@ -278,7 +279,9 @@ export function SkillList({
 					<ListBox
 						aria-label="Ungrouped skills"
 						selectionMode="single"
-						selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
+						selectedKeys={
+							selectedKey ? new Set([selectedKey]) : new Set()
+						}
 						onSelectionChange={(keys) => {
 							if (keys === "all") return;
 							const key = [...keys][0] as string;
@@ -286,19 +289,23 @@ export function SkillList({
 						}}
 						className="p-2"
 					>
-						{[...singleItemGroups, ...unknownGroups].map((group) => (
-							<ListBox.Item
-								key={group.name}
-								id={group.name}
-								textValue={group.name}
-								className="data-selected:bg-surface"
-							>
-								<div className="flex w-full items-center gap-2">
-									<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
-									<Label className="flex-1 truncate">{group.name}</Label>
-								</div>
-							</ListBox.Item>
-						))}
+						{[...singleItemGroups, ...unknownGroups].map(
+							(group) => (
+								<ListBox.Item
+									key={group.name}
+									id={group.name}
+									textValue={group.name}
+									className="data-selected:bg-surface"
+								>
+									<div className="flex w-full items-center gap-2">
+										<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
+										<Label className="flex-1 truncate">
+											{group.name}
+										</Label>
+									</div>
+								</ListBox.Item>
+							),
+						)}
 					</ListBox>
 				)}
 			</div>

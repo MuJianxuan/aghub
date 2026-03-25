@@ -19,13 +19,13 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
+import { useServer } from "../hooks/use-server";
+import { AgentIcon } from "../lib/agent-icons";
 import { createApi } from "../lib/api";
 import type { McpResponse, TransportDto } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
-import { useServer } from "../hooks/use-server";
-import { ManageAgentsDialog } from "./manage-agents-dialog";
-import { AgentIcon } from "../lib/agent-icons";
 import { cn } from "../lib/utils";
+import { ManageAgentsDialog } from "./manage-agents-dialog";
 
 export interface McpGroup {
 	mergeKey: string;
@@ -121,9 +121,7 @@ function KeyValueSection({
 	const entries = data ? Object.entries(data) : [];
 
 	if (entries.length === 0) {
-		return (
-			<p className="py-2 text-xs text-muted">{emptyMessage}</p>
-		);
+		return <p className="py-2 text-xs text-muted">{emptyMessage}</p>;
 	}
 
 	return (
@@ -220,8 +218,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 		transport.type === "sse" || transport.type === "streamable_http"
 			? transport.headers
 			: undefined;
-	const envVars =
-		transport.type === "stdio" ? transport.env : undefined;
+	const envVars = transport.type === "stdio" ? transport.env : undefined;
 	const headersCount = headers ? Object.keys(headers).length : 0;
 	const envCount = envVars ? Object.keys(envVars).length : 0;
 
@@ -234,7 +231,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 						{/* Header: Name + Actions */}
 						<Card.Header className="flex flex-row items-start justify-between gap-3">
 							<div className="min-w-0 flex-1">
-								<h2 className="text-xl font-semibold text-foreground">{group.items[0].name}</h2>
+								<h2 className="text-xl font-semibold text-foreground">
+									{group.items[0].name}
+								</h2>
 								<Card.Description className="mt-1 flex items-center gap-2">
 									<Chip size="sm" variant="soft">
 										{transport.type}
@@ -315,9 +314,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 										>
 											<span className="flex items-center gap-1.5">
 												<AgentIcon
-													id={
-														item.agent ?? "default"
-													}
+													id={item.agent ?? "default"}
 													name={getAgentName(item)}
 													size="sm"
 													variant="ghost"

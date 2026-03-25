@@ -7,7 +7,9 @@ use rocket::serde::json::Json;
 use which::which;
 
 use crate::{
-	dto::integrations::{CodeEditorType, EditSkillFolderRequest, OpenSkillFolderRequest},
+	dto::integrations::{
+		CodeEditorType, EditSkillFolderRequest, OpenSkillFolderRequest,
+	},
 	dto::skill::{
 		CreateSkillRequest, GlobalSkillLockResponse, InstallSkillRequest,
 		InstallSkillResponse, LocalSkillLockEntryResponse,
@@ -33,9 +35,7 @@ fn expand_tilde_path(path: &str) -> std::path::PathBuf {
 }
 
 fn get_parent_folder(path: std::path::PathBuf) -> std::path::PathBuf {
-	path.parent()
-		.map(|p| p.to_path_buf())
-		.unwrap_or(path)
+	path.parent().map(|p| p.to_path_buf()).unwrap_or(path)
 }
 
 fn detect_available_editor() -> Option<CodeEditorType> {
@@ -235,9 +235,7 @@ pub async fn install_skill(
 	let req = body.into_inner();
 
 	let mut cmd = Command::new("npx");
-	cmd.arg("skills")
-		.arg("add")
-		.arg(&req.source);
+	cmd.arg("skills").arg("add").arg(&req.source);
 
 	for agent in &req.agents {
 		cmd.arg("-a").arg(agent);
@@ -253,8 +251,7 @@ pub async fn install_skill(
 		cmd.current_dir(path);
 	}
 
-	cmd.stdout(Stdio::piped())
-		.stderr(Stdio::piped());
+	cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
 	let output = match timeout(Duration::from_secs(300), cmd.output()).await {
 		Ok(Ok(output)) => output,
@@ -337,9 +334,7 @@ pub struct SkillContentQuery {
 }
 
 #[get("/skills/content?<query..>")]
-pub fn get_skill_content(
-	query: SkillContentQuery,
-) -> ApiResult<String> {
+pub fn get_skill_content(query: SkillContentQuery) -> ApiResult<String> {
 	let path = expand_tilde_path(&query.path);
 	let content = std::fs::read_to_string(&path).map_err(|e| {
 		ApiError::new(
@@ -396,10 +391,7 @@ pub struct ProjectLockQuery {
 pub fn get_project_skill_lock(
 	query: ProjectLockQuery,
 ) -> ApiResult<ProjectSkillLockResponse> {
-	let cwd = query
-		.project_path
-		.as_deref()
-		.map(std::path::Path::new);
+	let cwd = query.project_path.as_deref().map(std::path::Path::new);
 	let lock = skill::lock::local::read_local_lock(cwd);
 	let skills: Vec<LocalSkillLockEntryResponse> = lock
 		.skills

@@ -20,19 +20,16 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createApi } from "../lib/api";
-import type { TransportDto } from "../lib/api-types";
-import { buildTransportFromForm } from "../lib/mcp-utils";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useServer } from "../hooks/use-server";
+import { createApi } from "../lib/api";
+import type { TransportDto } from "../lib/api-types";
+import { createEmptyKeyPair, objectToKeyPairs } from "../lib/key-pair-utils";
+import { buildTransportFromForm } from "../lib/mcp-utils";
 import type { EnvVar } from "./env-editor";
 import { EnvEditor } from "./env-editor";
 import type { HttpHeader } from "./http-header-editor";
 import { HttpHeaderEditor } from "./http-header-editor";
-import {
-	createEmptyKeyPair,
-	objectToKeyPairs,
-} from "../lib/key-pair-utils";
 
 interface CreateMcpPanelProps {
 	onDone: () => void;
@@ -75,7 +72,9 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 
 	const [command, setCommand] = useState("");
 	const [args, setArgs] = useState("");
-	const [envVars, setEnvVars] = useState<EnvVar[]>(() => [createEmptyKeyPair()]);
+	const [envVars, setEnvVars] = useState<EnvVar[]>(() => [
+		createEmptyKeyPair(),
+	]);
 
 	const [url, setUrl] = useState("");
 	const [httpHeaders, setHttpHeaders] = useState<HttpHeader[]>(() => [
@@ -90,7 +89,8 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 
 	const createMutation = useMutation({
 		onError: (error) => {
-			const errorMessage = error instanceof Error ? error.message : String(error);
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
 			setError(errorMessage);
 		},
 		mutationFn: ({
@@ -129,7 +129,9 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 		const body = {
 			name: name.trim(),
 			transport,
-			timeout: timeoutValue ? Number.parseInt(timeoutValue, 10) : undefined,
+			timeout: timeoutValue
+				? Number.parseInt(timeoutValue, 10)
+				: undefined,
 		};
 
 		// Create MCP for each selected agent

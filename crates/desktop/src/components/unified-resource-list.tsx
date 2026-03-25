@@ -127,7 +127,9 @@ export function UnifiedResourceList({
 					aria-label={t("refreshResources")}
 					onPress={onRefresh}
 				>
-					<ArrowPathIcon className={cn("size-4", isRefreshing && "animate-spin")} />
+					<ArrowPathIcon
+						className={cn("size-4", isRefreshing && "animate-spin")}
+					/>
 				</Button>
 			</div>
 

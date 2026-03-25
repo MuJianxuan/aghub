@@ -9,8 +9,7 @@ import type { McpGroup } from "../../components/mcp-detail";
 import { McpDetail } from "../../components/mcp-detail";
 import { McpList } from "../../components/mcp-list";
 import { useMcps } from "../../hooks/use-mcps";
-import { getMcpMergeKey } from "../../lib/utils";
-import { cn } from "../../lib/utils";
+import { cn, getMcpMergeKey } from "../../lib/utils";
 
 type RightPanel =
 	| { type: "detail"; selectedKey: string }
@@ -109,7 +108,12 @@ export default function MCPServersPage() {
 						aria-label={t("refreshServers")}
 						onPress={() => refetch()}
 					>
-						<ArrowPathIcon className={cn("size-4", isFetching && "animate-spin")} />
+						<ArrowPathIcon
+							className={cn(
+								"size-4",
+								isFetching && "animate-spin",
+							)}
+						/>
 					</Button>
 				</div>
 
@@ -156,9 +160,7 @@ export default function MCPServersPage() {
 								{t("orCreateNew")}
 							</p>
 						</div>
-						<Button
-							onPress={handleCreate}
-						>
+						<Button onPress={handleCreate}>
 							<PlusIcon className="mr-2 size-4" />
 							{t("addMcpServer")}
 						</Button>

@@ -4,14 +4,13 @@ import { useEffect, useState } from "react";
 import type {
 	AgentAvailabilityProviderProps,
 	AvailableAgent,
-	AgentAvailabilityContextValue} from "../contexts/agent-availability";
-import {
-	AgentAvailabilityContext
+	AgentAvailabilityContextValue,
 } from "../contexts/agent-availability";
+import { AgentAvailabilityContext } from "../contexts/agent-availability";
+import { useServerContext } from "../contexts/server";
 import type { AgentAvailability, AgentInfo } from "../lib/api";
 import { createApi } from "../lib/api";
 import { getDisabledAgents } from "../lib/store";
-import { useServerContext } from "../contexts/server";
 
 export function AgentAvailabilityProvider({
 	children,

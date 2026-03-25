@@ -16,7 +16,7 @@ zip = "2.2"
 tempfile = { workspace = true }
 skills-ref = { git = "https://github.com/AkaraChen/skills-ref" }
 walkdir = "2.5"
-chrono = { version = "0.4", features = ["serde"] }
+chrono = { version = "0.4", features = [ "serde" ] }
 dirs = { workspace = true }
 
 [dev-dependencies]

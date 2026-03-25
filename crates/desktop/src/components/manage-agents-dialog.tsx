@@ -15,12 +15,12 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createApi } from "../lib/api";
-import type { McpResponse } from "../lib/api-types";
-import { ConfigSource } from "../lib/api-types";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useServer } from "../hooks/use-server";
 import { AgentIcon } from "../lib/agent-icons";
+import { createApi } from "../lib/api";
+import type { McpResponse } from "../lib/api-types";
+import { ConfigSource } from "../lib/api-types";
 import { cn } from "../lib/utils";
 
 interface ManageAgentsDialogProps {
@@ -61,9 +61,9 @@ export function ManageAgentsDialog({
 	const initialAgentIdsRef = useRef<Set<string>>(new Set());
 	const prevIsOpenRef = useRef(false);
 	const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
-	const [agentStates, setAgentStates] = useState<
-		Record<string, AgentState>
-	>({});
+	const [agentStates, setAgentStates] = useState<Record<string, AgentState>>(
+		{},
+	);
 	const [isApplying, setIsApplying] = useState(false);
 
 	// Sync initial state when dialog opens/closes — no setState during render
@@ -349,9 +349,7 @@ export function ManageAgentsDialog({
 							onPress={handleApply}
 							isDisabled={!hasChanges || isApplying}
 						>
-							{isApplying
-								? t("applying")
-								: t("applyChanges")}
+							{isApplying ? t("applying") : t("applyChanges")}
 						</Button>
 					</Modal.Footer>
 				</Modal.Dialog>

@@ -11,11 +11,11 @@ import { McpDetail } from "../../components/mcp-detail";
 import { SkillDetail } from "../../components/skill-detail";
 import { UnifiedResourceList } from "../../components/unified-resource-list";
 import { useProjects } from "../../hooks/use-projects";
+import { useServer } from "../../hooks/use-server";
 import { createApi } from "../../lib/api";
 import type { McpResponse, SkillResponse } from "../../lib/api-types";
 import { ConfigSource } from "../../lib/api-types";
 import { getMcpMergeKey } from "../../lib/utils";
-import { useServer } from "../../hooks/use-server";
 
 export default function ProjectDetailPage() {
 	const { t } = useTranslation();
@@ -36,13 +36,21 @@ export default function ProjectDetailPage() {
 	});
 
 	// Fetch MCPs and Skills for this project
-	const { data: mcps = [], refetch: refetchMcps, isFetching: isFetchingMcps } = useQuery({
+	const {
+		data: mcps = [],
+		refetch: refetchMcps,
+		isFetching: isFetchingMcps,
+	} = useQuery({
 		queryKey: ["project-mcps", project?.path],
 		queryFn: () => api.mcps.listAll("all", project?.path),
 		enabled: !!project?.path,
 	});
 
-	const { data: skills = [], refetch: refetchSkills, isFetching: isFetchingSkills } = useQuery({
+	const {
+		data: skills = [],
+		refetch: refetchSkills,
+		isFetching: isFetchingSkills,
+	} = useQuery({
 		queryKey: ["project-skills", project?.path],
 		queryFn: () => api.skills.listAll("all", project?.path),
 		enabled: !!project?.path,
@@ -168,10 +176,12 @@ export default function ProjectDetailPage() {
 				)}
 				{!panelMode && !selectedMcpGroup && !selectedSkillGroup && (
 					<div className="flex h-full flex-col items-center justify-center gap-3">
-						<div className="
+						<div
+							className="
         flex size-16 items-center justify-center rounded-full
         bg-surface-secondary
-      ">
+      "
+						>
 							<FolderIcon className="size-8 text-muted" />
 						</div>
 						<div className="text-center">

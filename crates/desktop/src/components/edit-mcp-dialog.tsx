@@ -13,20 +13,17 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useServer } from "../hooks/use-server";
 import type { UpdateMcpRequest } from "../lib/api";
 import { createApi } from "../lib/api";
 import type { McpResponse, TransportDto } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
+import { createEmptyKeyPair, objectToKeyPairs } from "../lib/key-pair-utils";
 import { buildTransportFromForm, capitalize } from "../lib/mcp-utils";
-import { useServer } from "../hooks/use-server";
 import type { EnvVar } from "./env-editor";
 import { EnvEditor } from "./env-editor";
 import type { HttpHeader } from "./http-header-editor";
 import { HttpHeaderEditor } from "./http-header-editor";
-import {
-	createEmptyKeyPair,
-	objectToKeyPairs,
-} from "../lib/key-pair-utils";
 
 interface EditMcpDialogProps {
 	group: {
@@ -139,7 +136,9 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 
 		const body: UpdateMcpRequest = {
 			name: name.trim() !== primaryServer.name ? name.trim() : undefined,
-				timeout: timeoutValue ? Number.parseInt(timeoutValue, 10) : undefined,
+			timeout: timeoutValue
+				? Number.parseInt(timeoutValue, 10)
+				: undefined,
 		};
 
 		const transport = buildTransport();
@@ -160,9 +159,11 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 					</Modal.Header>
 					<Modal.Body className="p-2">
 						{group.items.length > 1 && (
-							<div className="
+							<div
+								className="
          mb-4 rounded-lg border border-warning-soft-hover bg-warning/10 p-3
-       ">
+       "
+							>
 								<p className="text-sm text-warning">
 									{t("changeWillApplyToAgents", {
 										count: group.items.length,
@@ -302,14 +303,14 @@ export function EditMcpDialog({ group, isOpen, onClose }: EditMcpDialogProps) {
 								<Fieldset.Group>
 									<TextField className="w-full">
 										<Label>{t("timeout")}</Label>
-								<Input
-									type="number"
-									value={timeoutValue}
-									onChange={(e) =>
-										setTimeoutValue(e.target.value)
-									}
-									placeholder="60"
-								/>
+										<Input
+											type="number"
+											value={timeoutValue}
+											onChange={(e) =>
+												setTimeoutValue(e.target.value)
+											}
+											placeholder="60"
+										/>
 										<Description>
 											{t("timeoutHelp")}
 										</Description>

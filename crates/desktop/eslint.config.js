@@ -11,7 +11,7 @@ export default antfu({
 		...tailwind.configs.recommended,
 		settings: {
 			"better-tailwindcss": {
-				entryPoint: "./src/index.css"
-			}
-		}
+				entryPoint: "./src/index.css",
+			},
+		},
 	});

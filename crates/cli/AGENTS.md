@@ -24,13 +24,13 @@ src/
 
 ## WHERE TO LOOK
 
-| Task | Location | Notes |
-|------|----------|-------|
-| Add CLI flag | `src/main.rs` | Modify `Cli` or `Commands` struct |
-| Add subcommand | `src/commands/<name>.rs` + `mod.rs` | Follow existing command pattern |
-| Resource type alias | `src/main.rs:ResourceType` | Add `#[value(alias = "...")]` |
-| Table output format | `src/commands/get.rs` | Uses `tabled` crate |
-| CLI tests | `tests/cli_tests.rs` | Uses `assert_cmd` |
+| Task                | Location                            | Notes                             |
+| ------------------- | ----------------------------------- | --------------------------------- |
+| Add CLI flag        | `src/main.rs`                       | Modify `Cli` or `Commands` struct |
+| Add subcommand      | `src/commands/<name>.rs` + `mod.rs` | Follow existing command pattern   |
+| Resource type alias | `src/main.rs:ResourceType`          | Add `#[value(alias = "...")]`     |
+| Table output format | `src/commands/get.rs`               | Uses `tabled` crate               |
+| CLI tests           | `tests/cli_tests.rs`                | Uses `assert_cmd`                 |
 
 ## COMMANDS
 

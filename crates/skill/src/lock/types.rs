@@ -38,7 +38,10 @@ pub struct SkillLockEntry {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DismissedPrompts {
 	/// Dismissed the find-skills skill installation prompt
-	#[serde(rename = "findSkillsPrompt", skip_serializing_if = "Option::is_none")]
+	#[serde(
+		rename = "findSkillsPrompt",
+		skip_serializing_if = "Option::is_none"
+	)]
 	pub find_skills_prompt: Option<bool>,
 }
 
@@ -53,7 +56,10 @@ pub struct SkillLockFile {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub dismissed: Option<DismissedPrompts>,
 	/// Last selected agents for installation
-	#[serde(rename = "lastSelectedAgents", skip_serializing_if = "Option::is_none")]
+	#[serde(
+		rename = "lastSelectedAgents",
+		skip_serializing_if = "Option::is_none"
+	)]
 	pub last_selected_agents: Option<Vec<String>>,
 }
 

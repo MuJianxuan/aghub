@@ -1,7 +1,7 @@
 import { Card, Switch, Tooltip } from "@heroui/react";
 import { useTranslation } from "react-i18next";
-import { AgentIcon } from "../lib/agent-icons";
 import type { AvailableAgent } from "../contexts/agent-availability";
+import { AgentIcon } from "../lib/agent-icons";
 
 interface AgentCardProps {
 	agent: AvailableAgent;
@@ -66,16 +66,22 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 						<Card.Title>{agent.display_name}</Card.Title>
 						{sources.length > 0 && (
 							<Card.Description>
-								{t("detectedVia", { sources: sources.join(" / ") })}
+								{t("detectedVia", {
+									sources: sources.join(" / "),
+								})}
 							</Card.Description>
 						)}
 					</div>
 					<Tooltip>
 						<Switch
 							isSelected={!agent.isDisabled}
-							onChange={() => onToggle(agent.id, agent.isDisabled)}
+							onChange={() =>
+								onToggle(agent.id, agent.isDisabled)
+							}
 							isDisabled={isUpdating}
-							aria-label={t("toggleAgent", { name: agent.display_name })}
+							aria-label={t("toggleAgent", {
+								name: agent.display_name,
+							})}
 						>
 							<Switch.Control>
 								<Switch.Thumb />
@@ -83,8 +89,12 @@ export function AgentCard({ agent, isUpdating, onToggle }: AgentCardProps) {
 						</Switch>
 						<Tooltip.Content>
 							{agent.isDisabled
-								? t("enableAgentTooltip", { name: agent.display_name })
-								: t("disableAgentTooltip", { name: agent.display_name })}
+								? t("enableAgentTooltip", {
+										name: agent.display_name,
+									})
+								: t("disableAgentTooltip", {
+										name: agent.display_name,
+									})}
 						</Tooltip.Content>
 					</Tooltip>
 				</Card.Content>

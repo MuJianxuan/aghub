@@ -33,10 +33,8 @@ pub mod validator;
 // Re-export commonly used items
 pub use error::SkillError;
 pub use lock::global::{
-	get_all_locked_skills,
-	get_skill_from_lock, get_skill_lock_path,
-	get_skills_by_source, read_skill_lock,
-	remove_skill_from_lock,
+	get_all_locked_skills, get_skill_from_lock, get_skill_lock_path,
+	get_skills_by_source, read_skill_lock, remove_skill_from_lock,
 	DismissedPrompts, SkillLockEntry, SkillLockFile,
 };
 pub use lock::local::{

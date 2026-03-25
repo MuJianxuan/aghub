@@ -44,7 +44,11 @@ export function KeyPairEditor({
 	};
 
 	// Update pair by id
-	const handleChange = (id: string, field: "key" | "value", newValue: string) => {
+	const handleChange = (
+		id: string,
+		field: "key" | "value",
+		newValue: string,
+	) => {
 		onChange(
 			produce(value, (draft) => {
 				const item = draft.find((item) => item.id === id);
@@ -60,17 +64,31 @@ export function KeyPairEditor({
 			{value.map((pair) => (
 				<div key={pair.id} className="flex items-start gap-2">
 					<Input
-						placeholder={keyPlaceholder || t("keyPairEditor.keyPlaceholder")}
-						aria-label={keyPlaceholder || t("keyPairEditor.keyPlaceholder")}
+						placeholder={
+							keyPlaceholder || t("keyPairEditor.keyPlaceholder")
+						}
+						aria-label={
+							keyPlaceholder || t("keyPairEditor.keyPlaceholder")
+						}
 						value={pair.key}
-						onChange={(e) => handleChange(pair.id, "key", e.target.value)}
+						onChange={(e) =>
+							handleChange(pair.id, "key", e.target.value)
+						}
 						className="flex-1"
 					/>
 					<Input
-						placeholder={valuePlaceholder || t("keyPairEditor.valuePlaceholder")}
-						aria-label={valuePlaceholder || t("keyPairEditor.valuePlaceholder")}
+						placeholder={
+							valuePlaceholder ||
+							t("keyPairEditor.valuePlaceholder")
+						}
+						aria-label={
+							valuePlaceholder ||
+							t("keyPairEditor.valuePlaceholder")
+						}
 						value={pair.value}
-						onChange={(e) => handleChange(pair.id, "value", e.target.value)}
+						onChange={(e) =>
+							handleChange(pair.id, "value", e.target.value)
+						}
 						className="flex-1"
 					/>
 					<Button

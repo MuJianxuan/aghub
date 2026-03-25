@@ -16,18 +16,21 @@ interface AgentIconProps {
 	variant?: "outline" | "ghost";
 }
 
-export function AgentIcon({ id, name, size = "lg", variant = "outline" }: AgentIconProps) {
+export function AgentIcon({
+	id,
+	name,
+	size = "lg",
+	variant = "outline",
+}: AgentIconProps) {
 	const iconPath = `../assets/agent/${id}.svg`;
 	const svg = iconModules[iconPath];
 	const fallbackText = name.charAt(0).toUpperCase();
 
-	const sizeClasses = size === "sm"
-		? "size-8 [&_svg]:size-5"
-		: "size-12 [&_svg]:size-8";
+	const sizeClasses =
+		size === "sm" ? "size-8 [&_svg]:size-5" : "size-12 [&_svg]:size-8";
 
-	const variantClasses = variant === "ghost"
-		? ""
-		: "border border-border bg-surface-secondary";
+	const variantClasses =
+		variant === "ghost" ? "" : "border border-border bg-surface-secondary";
 
 	if (svg) {
 		// Render SVG inside a square container with border
@@ -39,7 +42,9 @@ export function AgentIcon({ id, name, size = "lg", variant = "outline" }: AgentI
       ${variantClasses}
     `}
 				// eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-				dangerouslySetInnerHTML={{ __html: (svg.default || svg) as string }}
+				dangerouslySetInnerHTML={{
+					__html: (svg.default || svg) as string,
+				}}
 			/>
 		);
 	}

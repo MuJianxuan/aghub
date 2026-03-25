@@ -20,16 +20,14 @@ import {
 	Spinner,
 	Tooltip,
 } from "@heroui/react";
-import {
-	useMutation,
-	useQuery,
-	useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import * as pathe from "pathe";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useServer } from "../hooks/use-server";
 import { createApi } from "../lib/api";
 import type {
 	GlobalSkillLockResponse,
@@ -37,8 +35,6 @@ import type {
 	SkillResponse,
 } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
-import { useServer } from "../hooks/use-server";
-import { openUrl } from "@tauri-apps/plugin-opener";
 
 interface LocationGroup {
 	sourcePath: string;
@@ -100,9 +96,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const currentSkillSource = useMemo(() => {
 		const skillItem = group.items[0];
 		if (skillItem.source === ConfigSource.Global) {
-			const entry = globalLock?.skills.find(
-				(s) => s.name === skill.name,
-			);
+			const entry = globalLock?.skills.find((s) => s.name === skill.name);
 			if (entry) {
 				return {
 					source: entry.source,
@@ -131,7 +125,10 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const sourceUrl = useMemo(() => {
 		if (!currentSkillSource) return null;
 		if (currentSkillSource.sourceUrl) return currentSkillSource.sourceUrl;
-		if (currentSkillSource.sourceType === "github" && currentSkillSource.source) {
+		if (
+			currentSkillSource.sourceType === "github" &&
+			currentSkillSource.source
+		) {
 			const path = currentSkillSource.source.replace(/^github\//, "");
 			return `https://github.com/${path}`;
 		}
@@ -168,9 +165,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	if (skill.version) metaParts.push(`v${skill.version}`);
 	if (primarySource) {
 		metaParts.push(
-			primarySource === ConfigSource.Project
-				? t("project")
-				: t("global"),
+			primarySource === ConfigSource.Project ? t("project") : t("global"),
 		);
 	}
 
@@ -343,9 +338,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 											{showAllLocations ? (
 												<>
 													<ChevronUpIcon className="size-3.5" />
-													<span>
-														{t("showLess")}
-													</span>
+													<span>{t("showLess")}</span>
 												</>
 											) : (
 												<>
@@ -379,7 +372,10 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 											</span>
 											<span className="shrink-0 font-mono text-xs text-muted">
 												<HashtagIcon className="inline size-3" />
-												{currentSkillSource.hash.slice(0, 8)}
+												{currentSkillSource.hash.slice(
+													0,
+													8,
+												)}
 											</span>
 										</div>
 										{sourceUrl && (
@@ -390,12 +386,18 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 														variant="ghost"
 														size="sm"
 														className="text-muted"
-														aria-label={t("openInBrowser")}
-														onPress={() => openUrl(sourceUrl)}
+														aria-label={t(
+															"openInBrowser",
+														)}
+														onPress={() =>
+															openUrl(sourceUrl)
+														}
 													>
 														<LinkIcon className="size-3.5" />
 													</Button>
-													<Tooltip.Content>{t("openInBrowser")}</Tooltip.Content>
+													<Tooltip.Content>
+														{t("openInBrowser")}
+													</Tooltip.Content>
 												</Tooltip>
 											</div>
 										)}

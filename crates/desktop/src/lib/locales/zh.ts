@@ -89,9 +89,9 @@ export default {
 	timeout: "超时",
 	unknown: "未知",
 	deleteMcpServer: "删除服务器",
-	deleteMcpServerConfirm: '删除「{{name}}」？此操作无法撤销。',
+	deleteMcpServerConfirm: "删除「{{name}}」？此操作无法撤销。",
 	deleteMcpMultipleConfirm:
-		'将从 {{count}} 个代理中移除「{{name}}」（{{agents}}）。此操作无法撤销。',
+		"将从 {{count}} 个代理中移除「{{name}}」（{{agents}}）。此操作无法撤销。",
 	deleting: "删除中...",
 	editMcpServer: "编辑 MCP 服务器",
 	changeWillApplyToAgents: "此更改将应用于 {{count}} 个代理：{{agents}}",

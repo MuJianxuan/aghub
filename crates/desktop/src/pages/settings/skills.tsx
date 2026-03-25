@@ -83,7 +83,12 @@ export default function SkillsPage() {
 						aria-label={t("refreshSkills")}
 						onPress={() => refetch()}
 					>
-						<ArrowPathIcon className={cn("size-4", isFetching && "animate-spin")} />
+						<ArrowPathIcon
+							className={cn(
+								"size-4",
+								isFetching && "animate-spin",
+							)}
+						/>
 					</Button>
 				</div>
 

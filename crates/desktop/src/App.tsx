@@ -29,9 +29,11 @@ const queryClient = new QueryClient({
 function SkillsPageSkeleton() {
 	return (
 		<div className="flex h-full">
-			<div className="
+			<div
+				className="
      flex w-80 shrink-0 items-center justify-center border-r border-border
-   ">
+   "
+			>
 				<Spinner />
 			</div>
 			<div className="flex-1" />

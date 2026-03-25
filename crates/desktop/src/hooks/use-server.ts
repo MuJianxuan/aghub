@@ -1,6 +1,6 @@
 import { use } from "react";
-import { ServerContext } from "../contexts/server";
 import type { ServerContextValue } from "../contexts/server";
+import { ServerContext } from "../contexts/server";
 
 export function useServer(): ServerContextValue {
 	const ctx = use(ServerContext);

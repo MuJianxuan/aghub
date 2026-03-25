@@ -10,9 +10,9 @@ export default function AgentsPanel() {
 	const { t } = useTranslation();
 	const { availableAgents, refreshDisabledAgents } = useAgentAvailability();
 	const [updating, setUpdating] = useState<string | null>(null);
-	const [agentFilter, setAgentFilter] = useState<"all" | "enabled" | "disabled">(
-		"all",
-	);
+	const [agentFilter, setAgentFilter] = useState<
+		"all" | "enabled" | "disabled"
+	>("all");
 	const [agentSearch, setAgentSearch] = useState("");
 
 	const handleToggleAgent = async (
@@ -86,14 +86,18 @@ export default function AgentsPanel() {
 					</Button>
 					<Button
 						size="sm"
-						variant={agentFilter === "enabled" ? "primary" : "ghost"}
+						variant={
+							agentFilter === "enabled" ? "primary" : "ghost"
+						}
 						onPress={() => setAgentFilter("enabled")}
 					>
 						{t("enabled")}
 					</Button>
 					<Button
 						size="sm"
-						variant={agentFilter === "disabled" ? "primary" : "ghost"}
+						variant={
+							agentFilter === "disabled" ? "primary" : "ghost"
+						}
 						onPress={() => setAgentFilter("disabled")}
 					>
 						{t("disabled")}

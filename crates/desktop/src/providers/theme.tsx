@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
-import type {
-	ThemeProviderProps,
-	Theme} from "../contexts/theme";
-import {
-	ThemeContext
-} from "../contexts/theme";
+import type { Theme, ThemeProviderProps } from "../contexts/theme";
+import { ThemeContext } from "../contexts/theme";
 
 function getSystemTheme(): "light" | "dark" {
 	return window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -40,5 +36,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 		}
 	}, [themeState]);
 
-	return <ThemeContext value={{ theme: themeState, setTheme }}>{children}</ThemeContext>;
+	return (
+		<ThemeContext value={{ theme: themeState, setTheme }}>
+			{children}
+		</ThemeContext>
+	);
 }

@@ -206,7 +206,8 @@ mod tests {
 	#[test]
 	fn test_read_local_lock_invalid_structure() {
 		let dir = TempDir::new().unwrap();
-		fs::write(dir.path().join("skills-lock.json"), r#"{"version": 1}"#).unwrap();
+		fs::write(dir.path().join("skills-lock.json"), r#"{"version": 1}"#)
+			.unwrap();
 
 		let lock = read_local_lock(Some(dir.path()));
 		assert_eq!(lock.version, 1);
@@ -244,19 +245,14 @@ mod tests {
 
 		write_local_lock(&lock, Some(dir.path())).unwrap();
 
-		let raw = fs::read_to_string(dir.path().join("skills-lock.json")).unwrap();
+		let raw =
+			fs::read_to_string(dir.path().join("skills-lock.json")).unwrap();
 		assert!(raw.ends_with('\n'));
 
 		let parsed: serde_json::Value = serde_json::from_str(&raw).unwrap();
-		let keys: Vec<_> = parsed["skills"]
-			.as_object()
-			.unwrap()
-			.keys()
-			.collect();
-		assert_eq!(
-			keys,
-			vec!["alpha-skill", "middle-skill", "zebra-skill"]
-		);
+		let keys: Vec<_> =
+			parsed["skills"].as_object().unwrap().keys().collect();
+		assert_eq!(keys, vec!["alpha-skill", "middle-skill", "zebra-skill"]);
 	}
 
 	#[test]
@@ -338,14 +334,8 @@ mod tests {
 
 		let lock = read_local_lock(Some(dir.path()));
 		assert_eq!(lock.skills.len(), 2);
-		assert_eq!(
-			lock.skills.get("skill-a").unwrap().computed_hash,
-			"aaa"
-		);
-		assert_eq!(
-			lock.skills.get("skill-b").unwrap().computed_hash,
-			"bbb"
-		);
+		assert_eq!(lock.skills.get("skill-a").unwrap().computed_hash, "aaa");
+		assert_eq!(lock.skills.get("skill-b").unwrap().computed_hash, "bbb");
 	}
 
 	#[test]
@@ -415,8 +405,10 @@ mod tests {
 			fs::read_to_string(dir.path().join("skills-lock.json")).unwrap();
 
 		// Both branches produce valid JSON with no timestamps to conflict on
-		let parsed_a: serde_json::Value = serde_json::from_str(&branch_a).unwrap();
-		let parsed_b: serde_json::Value = serde_json::from_str(&branch_b).unwrap();
+		let parsed_a: serde_json::Value =
+			serde_json::from_str(&branch_a).unwrap();
+		let parsed_b: serde_json::Value =
+			serde_json::from_str(&branch_b).unwrap();
 
 		assert!(parsed_a["skills"]["skill-a"].is_object());
 		assert!(parsed_a["skills"]["skill-a"]["computedHash"].is_string());

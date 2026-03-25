@@ -1,6 +1,4 @@
-use skill::{
-	write_local_lock, LocalSkillLockEntry, LocalSkillLockFile,
-};
+use skill::{write_local_lock, LocalSkillLockEntry, LocalSkillLockFile};
 use std::path::Path;
 
 /// Test local lock JSON matches TypeScript output
@@ -26,11 +24,14 @@ fn test_local_lock_json_matches_typescript_simple() {
 
 	// Read Rust output
 	let rust_json =
-		std::fs::read_to_string(temp_dir.path().join("skills-lock.json")).unwrap();
+		std::fs::read_to_string(temp_dir.path().join("skills-lock.json"))
+			.unwrap();
 
 	// Compare JSON structures (ignore whitespace differences)
-	let rust_value: serde_json::Value = serde_json::from_str(&rust_json).unwrap();
-	let ts_value: serde_json::Value = serde_json::from_str(&expected_json).unwrap();
+	let rust_value: serde_json::Value =
+		serde_json::from_str(&rust_json).unwrap();
+	let ts_value: serde_json::Value =
+		serde_json::from_str(&expected_json).unwrap();
 
 	assert_eq!(rust_value, ts_value, "JSON mismatch for local-lock-simple");
 }
@@ -65,10 +66,13 @@ fn test_local_lock_json_matches_typescript_sorted() {
 	write_local_lock(&lock, Some(temp_dir.path())).unwrap();
 
 	let rust_json =
-		std::fs::read_to_string(temp_dir.path().join("skills-lock.json")).unwrap();
+		std::fs::read_to_string(temp_dir.path().join("skills-lock.json"))
+			.unwrap();
 
-	let rust_value: serde_json::Value = serde_json::from_str(&rust_json).unwrap();
-	let ts_value: serde_json::Value = serde_json::from_str(&expected_json).unwrap();
+	let rust_value: serde_json::Value =
+		serde_json::from_str(&rust_json).unwrap();
+	let ts_value: serde_json::Value =
+		serde_json::from_str(&expected_json).unwrap();
 
 	assert_eq!(rust_value, ts_value, "JSON mismatch for local-lock-sorted");
 }

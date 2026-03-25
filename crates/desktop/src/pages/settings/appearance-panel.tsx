@@ -3,7 +3,12 @@ import {
 	MoonIcon,
 	SunIcon,
 } from "@heroicons/react/24/solid";
-import { ListBox, Select, ToggleButton, ToggleButtonGroup } from "@heroui/react";
+import {
+	ListBox,
+	Select,
+	ToggleButton,
+	ToggleButtonGroup,
+} from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/use-theme";
 
@@ -33,10 +38,7 @@ export default function AppearancePanel() {
 						selectedKeys={[theme]}
 						onSelectionChange={(keys) =>
 							setTheme(
-								[...keys][0] as
-									| "light"
-									| "dark"
-									| "system",
+								[...keys][0] as "light" | "dark" | "system",
 							)
 						}
 						selectionMode="single"
@@ -73,11 +75,7 @@ export default function AppearancePanel() {
 						</span>
 					</div>
 					<Select
-						value={
-							i18n.language.startsWith("zh")
-								? "zh"
-								: "en"
-						}
+						value={i18n.language.startsWith("zh") ? "zh" : "en"}
 						onChange={(key) => changeLanguage(key as string)}
 						aria-label={t("language")}
 						className="min-w-40"

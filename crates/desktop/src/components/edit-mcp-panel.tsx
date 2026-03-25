@@ -13,20 +13,17 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useServer } from "../hooks/use-server";
 import type { UpdateMcpRequest } from "../lib/api";
 import { createApi } from "../lib/api";
 import type { McpResponse, TransportDto } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
+import { createEmptyKeyPair, objectToKeyPairs } from "../lib/key-pair-utils";
 import { buildTransportFromForm, capitalize } from "../lib/mcp-utils";
-import { useServer } from "../hooks/use-server";
 import type { EnvVar } from "./env-editor";
 import { EnvEditor } from "./env-editor";
 import type { HttpHeader } from "./http-header-editor";
 import { HttpHeaderEditor } from "./http-header-editor";
-import {
-	createEmptyKeyPair,
-	objectToKeyPairs,
-} from "../lib/key-pair-utils";
 
 interface EditMcpPanelProps {
 	group: {
@@ -118,7 +115,8 @@ export function EditMcpPanel({
 			onDone();
 		},
 		onError: (error) => {
-			const errorMessage = error instanceof Error ? error.message : String(error);
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
 			setError(errorMessage);
 			console.error("Failed to update MCP servers:", error);
 		},
@@ -148,7 +146,9 @@ export function EditMcpPanel({
 
 		const body: UpdateMcpRequest = {
 			name: name.trim() !== primaryServer.name ? name.trim() : undefined,
-			timeout: timeoutValue ? Number.parseInt(timeoutValue, 10) : undefined,
+			timeout: timeoutValue
+				? Number.parseInt(timeoutValue, 10)
+				: undefined,
 		};
 
 		const transport = buildTransport();
@@ -315,14 +315,14 @@ export function EditMcpPanel({
 							<Fieldset.Group>
 								<TextField className="w-full">
 									<Label>{t("timeout")}</Label>
-								<Input
-									type="number"
-									value={timeoutValue}
-									onChange={(e) =>
-										setTimeoutValue(e.target.value)
-									}
-									placeholder="60"
-								/>
+									<Input
+										type="number"
+										value={timeoutValue}
+										onChange={(e) =>
+											setTimeoutValue(e.target.value)
+										}
+										placeholder="60"
+									/>
 									<Description>
 										{t("timeoutHelp")}
 									</Description>

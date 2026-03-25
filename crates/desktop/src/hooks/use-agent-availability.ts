@@ -1,6 +1,6 @@
 import { use } from "react";
-import { AgentAvailabilityContext } from "../contexts/agent-availability";
 import type { AgentAvailabilityContextValue } from "../contexts/agent-availability";
+import { AgentAvailabilityContext } from "../contexts/agent-availability";
 
 export function useAgentAvailability(): AgentAvailabilityContextValue {
 	const ctx = use(AgentAvailabilityContext);

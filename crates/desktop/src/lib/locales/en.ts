@@ -36,7 +36,8 @@ export default {
 	// Integrations
 	integrations: "Integrations",
 	codeEditors: "Code Editor",
-	codeEditorsDescription: "Choose your preferred code editor for opening files",
+	codeEditorsDescription:
+		"Choose your preferred code editor for opening files",
 
 	// Agent Management
 	agentManagementDescription:
@@ -91,8 +92,7 @@ export default {
 	timeout: "Timeout",
 	unknown: "unknown",
 	deleteMcpServer: "Delete server",
-	deleteMcpServerConfirm:
-		'Delete "{{name}}"? This can\'t be undone.',
+	deleteMcpServerConfirm: 'Delete "{{name}}"? This can\'t be undone.',
 	deleteMcpMultipleConfirm:
 		'This removes "{{name}}" from {{count}} agents ({{agents}}). This can\'t be undone.',
 	deleting: "Deleting...",

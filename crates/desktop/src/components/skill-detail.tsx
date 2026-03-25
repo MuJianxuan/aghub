@@ -22,8 +22,6 @@ import {
 } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import DOMPurify from "dompurify";
-import { marked } from "marked";
 import * as pathe from "pathe";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -443,26 +441,16 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 									</Disclosure.Heading>
 									<Disclosure.Content>
 										<Disclosure.Body className="mt-2">
-											<div
+											<pre
 												role="article"
 												aria-label={t("skillContent")}
 												className="
-              prose prose-sm max-w-none text-foreground
-              [&_code]:rounded-sm [&_code]:bg-surface-secondary [&_code]:px-1
-              [&_code]:py-0.5 [&_code]:text-xs
-              [&_pre]:overflow-x-auto [&_pre]:rounded-md
-              [&_pre]:bg-surface-secondary [&_pre]:p-3 [&_pre]:text-xs
+              overflow-x-auto whitespace-pre-wrap break-words rounded-md
+              bg-surface-secondary p-3 font-mono text-xs text-foreground
             "
-												// eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
-												dangerouslySetInnerHTML={{
-													__html: DOMPurify.sanitize(
-														marked.parse(
-															skillContent,
-															{ async: false },
-														) as string,
-													),
-												}}
-											/>
+											>
+												{skillContent}
+											</pre>
 										</Disclosure.Body>
 									</Disclosure.Content>
 								</Disclosure>

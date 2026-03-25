@@ -2,9 +2,9 @@ import { Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import type {
+	AgentAvailabilityContextValue,
 	AgentAvailabilityProviderProps,
 	AvailableAgent,
-	AgentAvailabilityContextValue,
 } from "../contexts/agent-availability";
 import { AgentAvailabilityContext } from "../contexts/agent-availability";
 import { useServerContext } from "../contexts/server";

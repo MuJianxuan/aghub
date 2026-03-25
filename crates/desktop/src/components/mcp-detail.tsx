@@ -17,7 +17,7 @@ import {
 	Tooltip,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useServer } from "../hooks/use-server";
 import { AgentIcon } from "../lib/agent-icons";
@@ -302,9 +302,11 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 						<Card.Content className="space-y-5">
 							{/* Agents Section */}
 							<div>
-								<p className="
+								<p
+									className="
           mb-2 text-xs font-medium tracking-wider text-muted uppercase
-        ">
+        "
+								>
 									{t("agents")}
 								</p>
 								<div className="flex flex-wrap gap-2">
@@ -345,9 +347,11 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 							{/* Connection Details */}
 							<div>
-								<p className="
+								<p
+									className="
           mb-1 text-xs font-medium tracking-wider text-muted uppercase
-        ">
+        "
+								>
 									{t("connection")}
 								</p>
 

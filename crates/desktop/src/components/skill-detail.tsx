@@ -126,8 +126,14 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const sourceUrl = useMemo(() => {
 		if (!currentSkillSource) return null;
 		if (currentSkillSource.sourceUrl) return currentSkillSource.sourceUrl;
-		if (currentSkillSource.sourceType === "github" && currentSkillSource.source) {
-			const path = currentSkillSource.source.replace(GITHUB_PREFIX_REGEX, "");
+		if (
+			currentSkillSource.sourceType === "github" &&
+			currentSkillSource.source
+		) {
+			const path = currentSkillSource.source.replace(
+				GITHUB_PREFIX_REGEX,
+				"",
+			);
 			return `https://github.com/${path}`;
 		}
 		return null;
@@ -177,11 +183,13 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="
+				<div
+					className="
       max-w-2xl space-y-4 p-4
       sm:p-5
       md:p-6
-    ">
+    "
+				>
 					{/* Main Info Card */}
 					<Card>
 						<Card.Header className="flex flex-row items-start justify-between gap-3">
@@ -195,10 +203,12 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 									</p>
 								)}
 							</div>
-							<div className="
+							<div
+								className="
          flex items-center gap-1.5
          sm:gap-2
-       ">
+       "
+							>
 								{primarySkillPath && (
 									<>
 										<Tooltip delay={0}>
@@ -289,9 +299,11 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 							{/* Tools */}
 							{skill.tools.length > 0 ? (
 								<div>
-									<p className="
+									<p
+										className="
            mb-2 text-xs font-medium tracking-wider text-muted uppercase
-         ">
+         "
+									>
 										{t("tools")} ({skill.tools.length})
 									</p>
 									<div className="flex flex-wrap gap-1.5">
@@ -313,9 +325,11 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 							{/* Locations */}
 							{allLocationGroups.length > 0 && (
 								<div>
-									<p className="
+									<p
+										className="
            mb-2 text-xs font-medium tracking-wider text-muted uppercase
-         ">
+         "
+									>
 										{t("locations")} (
 										{allLocationGroups.length})
 									</p>
@@ -373,15 +387,19 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 							{/* Installation Source */}
 							{currentSkillSource && (
 								<div>
-									<p className="
+									<p
+										className="
            mb-2 text-xs font-medium tracking-wider text-muted uppercase
-         ">
+         "
+									>
 										{t("installedFrom")}
 									</p>
-									<div className="
+									<div
+										className="
            flex items-center justify-between gap-2 rounded-lg
            bg-surface-secondary px-3 py-2
-         ">
+         "
+									>
 										<div className="flex min-w-0 items-center gap-2 text-sm">
 											<GlobeAltIcon className="size-3.5 shrink-0 text-muted" />
 											<span className="min-w-0 truncate text-foreground">
@@ -406,8 +424,12 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 														variant="ghost"
 														size="md"
 														className="min-h-11 min-w-11 text-muted"
-														aria-label={t("openInBrowser")}
-														onPress={() => openUrl(sourceUrl)}
+														aria-label={t(
+															"openInBrowser",
+														)}
+														onPress={() =>
+															openUrl(sourceUrl)
+														}
 													>
 														<LinkIcon className="size-4" />
 													</Button>
@@ -486,11 +508,13 @@ function LocationRow({
 	);
 
 	return (
-		<div className="
+		<div
+			className="
     flex items-center justify-between gap-2 rounded-lg bg-surface-secondary px-3
     py-2
     sm:gap-3
-  ">
+  "
+		>
 			<div className="min-w-0 flex-1">
 				<p
 					tabIndex={0}
@@ -506,10 +530,12 @@ function LocationRow({
 					{group.agents.map(formatAgentName).join(", ")}
 				</p>
 			</div>
-			<div className="
+			<div
+				className="
      flex items-center gap-1.5
      sm:gap-2
-   ">
+   "
+			>
 				<Tooltip delay={0}>
 					<Button
 						isIconOnly
@@ -567,9 +593,7 @@ function DeleteSkillDialog({
 			for (const item of group.items) {
 				if (!item.agent) continue;
 				const scope =
-					item.source === ConfigSource.Project
-						? "project"
-						: "global";
+					item.source === ConfigSource.Project ? "project" : "global";
 				if (!byScope.has(scope)) {
 					byScope.set(scope, item.agent);
 				}
@@ -581,7 +605,8 @@ function DeleteSkillDialog({
 						skill.name,
 						scope as "global" | "project",
 						projectPath,
-					)),
+					),
+				),
 			);
 		},
 		onSettled: () => {
@@ -622,9 +647,11 @@ function DeleteSkillDialog({
 						<div className="space-y-4">
 							{globalItems.length > 0 && (
 								<div>
-									<h4 className="
+									<h4
+										className="
            mb-2 text-xs font-medium tracking-wide text-muted uppercase
-         ">
+         "
+									>
 										{t("globalSkills")}
 									</h4>
 									<div className="space-y-2">
@@ -654,9 +681,11 @@ function DeleteSkillDialog({
 
 							{projectItems.length > 0 && (
 								<div>
-									<h4 className="
+									<h4
+										className="
            mb-2 text-xs font-medium tracking-wide text-muted uppercase
-         ">
+         "
+									>
 										{t("projectSkills")}
 									</h4>
 									<div className="space-y-2">

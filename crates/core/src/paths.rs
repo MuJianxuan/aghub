@@ -109,41 +109,26 @@ mod tests {
 		let openclaw = crate::registry::get(super::super::AgentType::Openclaw);
 		let cline = crate::registry::get(super::super::AgentType::Cline);
 
+		assert_eq!((cursor.project_path)(dir), dir.join(".cursor/mcp.json"));
 		assert_eq!(
-			(cursor.project_path)(dir).to_str().unwrap(),
-			"/test_project/.cursor/mcp.json"
+			(windsurf.project_path)(dir),
+			dir.join(".windsurf/mcp_config.json")
+		);
+		assert_eq!((copilot.project_path)(dir), dir.join(".vscode/mcp.json"));
+		assert_eq!((roocode.project_path)(dir), dir.join(".roo/mcp.json"));
+		assert_eq!(
+			(gemini.project_path)(dir),
+			dir.join(".gemini/settings.json")
+		);
+		assert_eq!((codex.project_path)(dir), dir.join(".codex/config.toml"));
+		assert_eq!(
+			(antigravity.project_path)(dir),
+			dir.join(".gemini/antigravity/mcp_config.json")
 		);
 		assert_eq!(
-			(windsurf.project_path)(dir).to_str().unwrap(),
-			"/test_project/.windsurf/mcp_config.json"
+			(openclaw.project_path)(dir),
+			dir.join(".openclaw/openclaw.json")
 		);
-		assert_eq!(
-			(copilot.project_path)(dir).to_str().unwrap(),
-			"/test_project/.vscode/mcp.json"
-		);
-		assert_eq!(
-			(roocode.project_path)(dir).to_str().unwrap(),
-			"/test_project/.roo/mcp.json"
-		);
-		assert_eq!(
-			(gemini.project_path)(dir).to_str().unwrap(),
-			"/test_project/.gemini/settings.json"
-		);
-		assert_eq!(
-			(codex.project_path)(dir).to_str().unwrap(),
-			"/test_project/.codex/config.toml"
-		);
-		assert_eq!(
-			(antigravity.project_path)(dir).to_str().unwrap(),
-			"/test_project/.gemini/antigravity/mcp_config.json"
-		);
-		assert_eq!(
-			(openclaw.project_path)(dir).to_str().unwrap(),
-			"/test_project/.openclaw/openclaw.json"
-		);
-		assert_eq!(
-			(cline.project_path)(dir).to_str().unwrap(),
-			"/test_project/.cline/mcp.json"
-		);
+		assert_eq!((cline.project_path)(dir), dir.join(".cline/mcp.json"));
 	}
 }

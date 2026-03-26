@@ -1,5 +1,7 @@
 import {
 	CheckCircleIcon,
+	ChevronDownIcon,
+	ChevronUpIcon,
 	ClipboardDocumentIcon,
 	DocumentDuplicateIcon,
 	ExclamationTriangleIcon,
@@ -149,6 +151,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [manageDialogOpen, setManageDialogOpen] = useState(false);
 	const [copyFeedback, setCopyFeedback] = useState(false);
+	const [showAllHeaders, setShowAllHeaders] = useState(false);
 	const { baseUrl } = useServer();
 	const api = useMemo(() => createApi(baseUrl), [baseUrl]);
 	const queryClient = useQueryClient();
@@ -225,6 +228,15 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	const headersCount = headers ? Object.keys(headers).length : 0;
 	const envCount = envVars ? Object.keys(envVars).length : 0;
 
+	// Headers display logic
+	const headerEntries = headers ? Object.entries(headers) : [];
+	const displayedHeaders =
+		showAllHeaders || headerEntries.length <= 2
+			? headerEntries
+			: headerEntries.slice(0, 2);
+	const hasMoreHeaders = headerEntries.length > 2;
+	const hiddenHeaderCount = headerEntries.length - 2;
+
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
@@ -238,9 +250,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									{group.items[0].name}
 								</h2>
 								<Card.Description className="mt-1 flex items-center gap-2">
-									<Chip size="sm" variant="soft">
-										{transport.type}
-									</Chip>
 									{primarySource && (
 										<Chip
 											size="sm"
@@ -343,8 +352,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 								</div>
 							</div>
 
-							<Separator />
-
 							{/* Connection Details */}
 							<div>
 								<p
@@ -410,31 +417,66 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 							{/* Headers (HTTP transports) */}
 							{(transport.type === "sse" ||
-								transport.type === "streamable_http") && (
-								<Disclosure>
-									<Disclosure.Heading>
-										<Button
-											slot="trigger"
-											variant="ghost"
-											size="sm"
-											className="w-full justify-between text-muted"
+								transport.type === "streamable_http") &&
+								headersCount > 0 && (
+									<div>
+										<p
+											className="
+           mb-2 text-xs font-medium tracking-wider text-muted uppercase
+         "
 										>
 											{t("headersCount", {
 												count: headersCount,
 											})}
-											<Disclosure.Indicator />
-										</Button>
-									</Disclosure.Heading>
-									<Disclosure.Content>
-										<Disclosure.Body>
-											<KeyValueSection
-												data={headers}
-												emptyMessage={t("noHeaders")}
-											/>
-										</Disclosure.Body>
-									</Disclosure.Content>
-								</Disclosure>
-							)}
+										</p>
+										<div className="space-y-1">
+											{displayedHeaders.map(([key, value]) => (
+												<div
+													key={key}
+													className="
+                   flex items-center justify-between gap-4 rounded-lg
+                   bg-surface-secondary px-3 py-1.5
+                 "
+												>
+													<span className="shrink-0 font-mono text-xs">
+														{key}
+													</span>
+													<span className="truncate font-mono text-xs text-muted">
+														{value}
+													</span>
+												</div>
+											))}
+										</div>
+										{hasMoreHeaders && (
+											<button
+												type="button"
+												onClick={() =>
+													setShowAllHeaders(!showAllHeaders)
+												}
+												className="
+                 mt-2 flex items-center gap-1 text-xs text-muted transition-colors
+                 hover:text-foreground
+               "
+											>
+												{showAllHeaders ? (
+													<>
+														<ChevronUpIcon className="size-3.5" />
+														<span>{t("showLess")}</span>
+													</>
+												) : (
+													<>
+														<ChevronDownIcon className="size-3.5" />
+														<span>
+															{t("showMore", {
+																count: hiddenHeaderCount,
+															})}
+														</span>
+													</>
+												)}
+											</button>
+										)}
+									</div>
+								)}
 
 							{/* Environment Variables (stdio) */}
 							{transport.type === "stdio" && (
@@ -462,8 +504,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									</Disclosure.Content>
 								</Disclosure>
 							)}
-
-							<Separator />
 
 							{/* Action Buttons */}
 							<div className="flex gap-2">

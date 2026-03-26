@@ -67,9 +67,11 @@ export default function MCPServersPage() {
 		: null;
 
 	const effectivePanel: RightPanel =
-		panel.type !== "empty" ? panel : selectedKey
-			? { type: "detail", selectedKey }
-			: { type: "empty" };
+		panel.type !== "empty"
+			? panel
+			: selectedKey
+				? { type: "detail", selectedKey }
+				: { type: "empty" };
 
 	return (
 		<div className="flex h-full">

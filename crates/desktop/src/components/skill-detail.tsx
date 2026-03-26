@@ -200,23 +200,19 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 				>
 					{/* Main Info Card */}
 					<Card>
-						<Card.Header className="flex flex-row items-start justify-between gap-3">
-							<div className="min-w-0 flex-1">
-								<h2 className="text-xl font-semibold text-foreground">
-									{skill.name}
-								</h2>
-								{metaParts.length > 0 && (
-									<p className="mt-1 text-sm text-muted">
-										{metaParts.join(" · ")}
-									</p>
-								)}
-							</div>
-							<div
-								className="
+						<Card.Header className="flex flex-col items-start gap-3">
+							<div className="flex w-full flex-row items-start justify-between gap-3">
+								<div className="min-w-0 flex-1">
+									<h2 className="text-xl font-semibold text-foreground">
+										{skill.name}
+									</h2>
+								</div>
+								<div
+									className="
           flex items-center gap-1.5
           sm:gap-2
         "
-							>
+								>
 								{primarySkillPath && (
 									<>
 										<Tooltip delay={0}>
@@ -293,7 +289,13 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 										{t("deleteSkill")}
 									</Tooltip.Content>
 								</Tooltip>
+								</div>
 							</div>
+							{metaParts.length > 0 && (
+								<p className="text-sm text-muted">
+									{metaParts.join(" · ")}
+								</p>
+							)}
 						</Card.Header>
 
 						<Card.Content className="space-y-5">
@@ -516,29 +518,29 @@ function LocationRow({
 	);
 
 	return (
-		<div className="flex items-center justify-between gap-2 rounded-lg bg-surface-secondary px-3 py-2 sm:gap-3">
+		<div className="flex items-center justify-between gap-3 rounded-lg bg-surface-secondary px-4 py-3">
 			<div className="min-w-0 flex-1">
-				<div className="flex items-center gap-1.5">
+				<div className="flex items-center gap-2">
 					{group.canonicalPath && (
 						<Tooltip delay={0}>
-							<LinkIcon className="size-3 shrink-0 text-muted" />
+							<LinkIcon className="size-3.5 shrink-0 text-muted" />
 							<Tooltip.Content>{t("symlink")}</Tooltip.Content>
 						</Tooltip>
 					)}
 					<p
 						tabIndex={0}
-						className="cursor-default truncate rounded-sm font-mono text-xs text-foreground focus:ring-2 focus:ring-offset-2 focus:outline-none"
+						className="cursor-default truncate rounded-sm font-mono text-sm text-foreground focus:ring-2 focus:ring-offset-2 focus:outline-none"
 						title={group.sourcePath}
 					>
 						{folderPath}
 					</p>
 				</div>
-				<p className="text-xs text-muted">
+				<p className="mt-1 text-xs text-muted">
 					{group.agents.map(formatAgentName).join(", ")}
 				</p>
 				{group.canonicalPath && (
 					<p
-						className="truncate font-mono text-xs text-muted/60"
+						className="mt-1 truncate font-mono text-xs text-muted/60"
 						title={group.canonicalPath}
 					>
 						{t("symlinkTarget", {
@@ -547,13 +549,13 @@ function LocationRow({
 					</p>
 				)}
 			</div>
-			<div className="flex items-center gap-1.5 sm:gap-2">
+			<div className="flex shrink-0 items-center gap-1">
 				<Tooltip delay={0}>
 					<Button
 						isIconOnly
 						variant="ghost"
-						size="md"
-						className="min-h-11 min-w-11 text-muted"
+						size="sm"
+						className="size-8 text-muted"
 						aria-label={t("editInEditor")}
 						onPress={onEditFolder}
 					>
@@ -565,8 +567,8 @@ function LocationRow({
 					<Button
 						isIconOnly
 						variant="ghost"
-						size="md"
-						className="min-h-11 min-w-11 text-muted"
+						size="sm"
+						className="size-8 text-muted"
 						aria-label={t("openFolder")}
 						onPress={onOpenFolder}
 					>

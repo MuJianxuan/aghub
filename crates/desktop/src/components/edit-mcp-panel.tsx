@@ -305,7 +305,7 @@ export function EditMcpPanel({
 					</Fieldset>
 				)}
 
-				<Disclosure className="pt-4">
+				<Disclosure className="mb-6 pt-4">
 					<Disclosure.Trigger className="flex w-full items-center justify-between">
 						{t("advanced")}
 						<Disclosure.Indicator />

@@ -144,12 +144,18 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 	// Group locations across all items
 	const allLocationGroups = useMemo(() => {
-		const map = new Map<string, { agents: string[]; canonicalPath?: string }>();
+		const map = new Map<
+			string,
+			{ agents: string[]; canonicalPath?: string }
+		>();
 		for (const item of group.items) {
 			const path = item.source_path ?? "";
 			if (path === "") continue;
 			if (!map.has(path)) {
-				map.set(path, { agents: [], canonicalPath: item.canonical_path });
+				map.set(path, {
+					agents: [],
+					canonicalPath: item.canonical_path,
+				});
 			}
 			if (item.agent) {
 				map.get(path)?.agents.push(item.agent);
@@ -535,7 +541,9 @@ function LocationRow({
 						className="truncate font-mono text-xs text-muted/60"
 						title={group.canonicalPath}
 					>
-						{t("symlinkTarget", { target: pathe.dirname(group.canonicalPath) })}
+						{t("symlinkTarget", {
+							target: pathe.dirname(group.canonicalPath),
+						})}
 					</p>
 				)}
 			</div>

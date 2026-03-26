@@ -107,6 +107,7 @@ export function ManageAgentsDialog({
 			if (isSelected && !isCurrentAgent) return "adding";
 			if (!isSelected && isCurrentAgent) return "removing";
 			if (isSelected && isCurrentAgent) return "installed";
+			if (!isSelected && !isCurrentAgent) return "unconfigured";
 			return null;
 		},
 		[currentAgentIds, selectedSet],
@@ -394,6 +395,15 @@ export function ManageAgentsDialog({
 																	<Description className="text-xs text-muted">
 																		{t(
 																			"alreadyAdded",
+																		)}
+																	</Description>
+																)}
+															{!state &&
+																diffLabel ===
+																	"unconfigured" && (
+																	<Description className="text-xs text-muted">
+																		{t(
+																			"unconfigured",
 																		)}
 																	</Description>
 																)}

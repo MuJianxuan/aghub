@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
 import { EditMcpPanel } from "../../components/edit-mcp-panel";
-import { ImportMcpDialog } from "../../components/import-mcp-dialog";
+import { ImportMcpPanel } from "../../components/import-mcp-panel";
 import type { McpGroup } from "../../components/mcp-detail";
 import { McpDetail } from "../../components/mcp-detail";
 import { McpList } from "../../components/mcp-list";
@@ -15,6 +15,7 @@ import { cn, getMcpMergeKey } from "../../lib/utils";
 type RightPanel =
 	| { type: "detail"; selectedKey: string }
 	| { type: "create" }
+	| { type: "import" }
 	| { type: "edit"; selectedKey: string }
 	| { type: "empty" };
 
@@ -24,7 +25,6 @@ export default function MCPServersPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [panel, setPanel] = useState<RightPanel>({ type: "empty" });
 	const [selectedKey, setSelectedKey] = useQueryState("server");
-	const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
 	const groupedMcps = useMemo(() => {
 		const map = new Map<string, McpGroup>();
@@ -54,6 +54,11 @@ export default function MCPServersPage() {
 	const handleCreate = () => {
 		setSelectedKey(null);
 		setPanel({ type: "create" });
+	};
+
+	const handleImport = () => {
+		setSelectedKey(null);
+		setPanel({ type: "import" });
 	};
 
 	const handlePanelDone = () => {
@@ -111,7 +116,7 @@ export default function MCPServersPage() {
 									if (key === "manual") {
 										handleCreate();
 									} else if (key === "import") {
-										setIsImportDialogOpen(true);
+										handleImport();
 									}
 								}}
 							>
@@ -172,6 +177,9 @@ export default function MCPServersPage() {
 				{effectivePanel.type === "create" && (
 					<CreateMcpPanel onDone={handlePanelDone} />
 				)}
+				{effectivePanel.type === "import" && (
+					<ImportMcpPanel onDone={handlePanelDone} />
+				)}
 				{effectivePanel.type === "edit" && selectedGroup && (
 					<EditMcpPanel
 						key={selectedGroup.mergeKey}
@@ -197,11 +205,6 @@ export default function MCPServersPage() {
 					</div>
 				)}
 			</div>
-
-			<ImportMcpDialog
-				isOpen={isImportDialogOpen}
-				onClose={() => setIsImportDialogOpen(false)}
-			/>
 		</div>
 	);
 }

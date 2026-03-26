@@ -67,7 +67,7 @@ export function CreateProjectDialog({
 					<Modal.Header>
 						<Modal.Heading>{t("addProject")}</Modal.Heading>
 					</Modal.Header>
-					<Modal.Body>
+					<Modal.Body className="p-2">
 						<Fieldset>
 							<div className="flex flex-col gap-2">
 								<Label>{t("projectPath")}</Label>
@@ -94,16 +94,18 @@ export function CreateProjectDialog({
 										value={path}
 										readOnly
 										className="mt-2"
+										variant="secondary"
 									/>
 								)}
 							</div>
 
-							<TextField className="w-full">
+							<TextField className="w-full" variant="secondary">
 								<Label>{t("projectName")}</Label>
 								<Input
 									value={name}
 									onChange={(e) => setName(e.target.value)}
 									placeholder={t("projectName")}
+									variant="secondary"
 								/>
 							</TextField>
 						</Fieldset>

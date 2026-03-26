@@ -416,7 +416,9 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 														viewBox="0 0 24 24"
 														fill="currentColor"
 													>
-														<path d={siGithub.path} />
+														<path
+															d={siGithub.path}
+														/>
 													</svg>
 												) : (
 													<GlobeAltIcon className="size-3.5 shrink-0 text-muted" />

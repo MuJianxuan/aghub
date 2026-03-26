@@ -168,7 +168,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 		}));
 	}, [group.items]);
 
-
 	// Metadata pieces for subtitle
 	const metaParts: string[] = [];
 	if (skill.author) metaParts.push(skill.author);

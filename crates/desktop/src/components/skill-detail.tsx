@@ -430,7 +430,9 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 											</div>
 											<div className="mt-1 flex items-center gap-3 text-xs text-muted">
 												<span>
-													{currentSkillSource.sourceType}
+													{
+														currentSkillSource.sourceType
+													}
 												</span>
 												<span className="font-mono">
 													<HashtagIcon className="inline size-3" />

@@ -53,10 +53,14 @@ export function ManageAgentsDialog({
 	const queryClient = useQueryClient();
 	const { availableAgents } = useAgentAvailability();
 
+	// Safely handle undefined/null data
 	const usableAgents = useMemo(
-		() => availableAgents.filter((a) => a.isUsable),
+		() => (availableAgents ?? []).filter((a) => a?.isUsable),
 		[availableAgents],
 	);
+
+	// Validate group data
+	const hasValidGroup = group?.items && Array.isArray(group.items);
 
 	const initialAgentIdsRef = useRef<Set<string>>(new Set());
 	const prevIsOpenRef = useRef(false);
@@ -108,6 +112,10 @@ export function ManageAgentsDialog({
 		[currentAgentIds, selectedSet],
 	);
 
+	const handleSelectionChange = useCallback((values: (string | number)[]) => {
+		setSelectedAgents(values as string[]);
+	}, []);
+
 	const onCloseAndReset = () => {
 		setAgentStates({});
 		setIsApplying(false);
@@ -115,8 +123,21 @@ export function ManageAgentsDialog({
 	};
 
 	const handleApply = async () => {
+		// Guard against missing data
+		if (!hasValidGroup || group.items.length === 0) {
+			toast.danger(t("invalidConfiguration"));
+			return;
+		}
+
 		setIsApplying(true);
 		const primary = group.items[0];
+
+		// Validate primary item
+		if (!primary?.name || !primary.transport) {
+			toast.danger(t("invalidMcpConfiguration"));
+			setIsApplying(false);
+			return;
+		}
 
 		// Mark all changing agents as pending
 		const pendingStates: Record<string, AgentState> = {};
@@ -136,7 +157,8 @@ export function ManageAgentsDialog({
 			})),
 		];
 
-		await Promise.all(
+		// Execute all operations and collect results
+		const results = await Promise.all(
 			operations.map(async ({ id, action }) => {
 				try {
 					if (action === "install") {
@@ -165,26 +187,31 @@ export function ManageAgentsDialog({
 							projectPath,
 						);
 					}
-					successCount++;
-					setAgentStates((prev) => ({
-						...prev,
-						[id]: { status: "success" },
-					}));
+					return { id, status: "success" as const, error: undefined };
 				} catch (err) {
-					errorCount++;
-					setAgentStates((prev) => ({
-						...prev,
-						[id]: {
-							status: "error",
-							error:
-								err instanceof Error
-									? err.message
-									: String(err),
-						},
-					}));
+					return {
+						id,
+						status: "error" as const,
+						error: err instanceof Error ? err.message : String(err),
+					};
 				}
 			}),
 		);
+
+		// Count successes and errors
+		results.forEach((result) => {
+			if (result.status === "success") {
+				successCount++;
+			} else {
+				errorCount++;
+			}
+		});
+
+		// Batch update all agent states at once
+		const newAgentStates = Object.fromEntries(
+			results.map((r) => [r.id, { status: r.status, error: r.error }]),
+		);
+		setAgentStates(newAgentStates);
 
 		// Wait for query cache to refresh so the detail panel updates
 		await Promise.all([
@@ -215,131 +242,187 @@ export function ManageAgentsDialog({
 	return (
 		<Modal.Backdrop isOpen={isOpen} onOpenChange={onCloseAndReset}>
 			<Modal.Container>
-				<Modal.Dialog className="max-w-md">
+				<Modal.Dialog className="w-[calc(100vw-2rem)] max-w-md sm:max-w-lg">
 					<Modal.CloseTrigger />
 					<Modal.Header>
 						<Modal.Heading>{t("manageAgents")}</Modal.Heading>
 					</Modal.Header>
 
 					<Modal.Body>
-						{usableAgents.length === 0 ? (
+						{!hasValidGroup ? (
+							<p className="text-sm text-muted">
+								{t("invalidConfiguration")}
+							</p>
+						) : usableAgents.length === 0 ? (
 							<p className="text-sm text-muted">
 								{t("noTargetAgents")}
 							</p>
 						) : (
-							<CheckboxGroup
-								value={selectedAgents}
-								onChange={(values) =>
-									setSelectedAgents(values as string[])
-								}
-								isDisabled={isApplying}
+							<div
+								className={cn(
+									"transition-opacity",
+									isApplying && "opacity-50",
+								)}
 							>
-								<Label className="sr-only">
-									{t("selectAgentsForMcp")}
-								</Label>
-								<div className="space-y-1">
-									{usableAgents.map((agent) => {
-										const diffLabel = getAgentDiffLabel(
-											agent.id,
-										);
-										const state = agentStates[agent.id];
+								<CheckboxGroup
+									value={selectedAgents}
+									onChange={handleSelectionChange}
+									isDisabled={isApplying}
+								>
+									<Label className="sr-only">
+										{t("selectAgentsForMcp")}
+									</Label>
+									<div className="space-y-1">
+										{usableAgents.map((agent) => {
+											const diffLabel = getAgentDiffLabel(
+												agent.id,
+											);
+											const state = agentStates[agent.id];
 
-										return (
-											<Checkbox
-												key={agent.id}
-												value={agent.id}
-												className={cn(
-													`
-               w-full cursor-pointer rounded-lg border border-transparent px-3
-               py-2.5 transition-colors
-             `,
-													`
-               data-selected:border-accent-soft-hover
-               data-selected:bg-accent-soft/50
-             `,
-													"hover:bg-surface-secondary",
-												)}
-											>
-												<Checkbox.Control>
-													<Checkbox.Indicator />
-												</Checkbox.Control>
-												<Checkbox.Content className="flex-1">
-													<div className="flex items-center justify-between">
-														<div className="flex items-center gap-2">
-															<AgentIcon
-																id={agent.id}
-																name={
-																	agent.display_name
-																}
-																size="sm"
-																variant="ghost"
-															/>
-															<Label>
-																{
-																	agent.display_name
-																}
-															</Label>
-														</div>
-														<div className="flex items-center gap-1.5">
-															{/* Status indicator during apply */}
-															{state?.status ===
-																"pending" && (
-																<ArrowPathIcon className="size-3.5 animate-spin text-muted" />
-															)}
-															{state?.status ===
-																"success" && (
-																<CheckCircleIcon className="size-3.5 text-success" />
-															)}
-															{state?.status ===
-																"error" && (
-																<XCircleIcon className="size-3.5 text-danger" />
-															)}
+											return (
+												<Checkbox
+													key={agent.id}
+													value={agent.id}
+													className={cn(
+														"w-full cursor-pointer rounded-lg border border-transparent px-4 py-3 transition-colors sm:px-3 sm:py-2.5",
+														"data-selected:border-accent-soft-hover data-selected:bg-accent-soft/50",
+														"hover:bg-surface-secondary",
+													)}
+												>
+													<Checkbox.Control>
+														<Checkbox.Indicator />
+													</Checkbox.Control>
+													<Checkbox.Content className="flex-1">
+														<div className="flex min-w-0 items-center justify-between gap-2">
+															<div className="flex min-w-0 items-center gap-2">
+																<AgentIcon
+																	id={
+																		agent.id
+																	}
+																	name={
+																		agent.display_name
+																	}
+																	size="sm"
+																	variant="ghost"
+																/>
+																<Label className="truncate">
+																	{
+																		agent.display_name
+																	}
+																</Label>
+															</div>
+															<div className="flex shrink-0 items-center gap-1.5">
+																{/* Status indicator during apply */}
+																{state?.status ===
+																	"pending" && (
+																	<span
+																		aria-live="polite"
+																		className="flex items-center gap-1"
+																	>
+																		<ArrowPathIcon
+																			className="size-3.5 animate-spin text-muted"
+																			aria-label={t(
+																				"processing",
+																			)}
+																		/>
+																		<span className="sr-only">
+																			{t(
+																				"processing",
+																			)}
+																		</span>
+																	</span>
+																)}
+																{state?.status ===
+																	"success" && (
+																	<span
+																		aria-live="polite"
+																		className="flex items-center gap-1"
+																	>
+																		<CheckCircleIcon
+																			className="size-3.5 text-success"
+																			aria-label={t(
+																				"success",
+																			)}
+																		/>
+																		<span className="sr-only">
+																			{t(
+																				"success",
+																			)}
+																		</span>
+																	</span>
+																)}
+																{state?.status ===
+																	"error" && (
+																	<span
+																		aria-live="assertive"
+																		className="flex items-center gap-1"
+																	>
+																		<XCircleIcon
+																			className="size-3.5 text-danger"
+																			aria-label={t(
+																				"failed",
+																			)}
+																		/>
+																		<span className="sr-only">
+																			{t(
+																				"failed",
+																			)}
+																		</span>
+																	</span>
+																)}
 
-															{/* Diff label */}
-															{!state &&
-																diffLabel ===
-																	"adding" && (
-																	<Description className="text-xs text-success">
-																		+{" "}
-																		{t(
-																			"adding",
-																		)}
-																	</Description>
-																)}
-															{!state &&
-																diffLabel ===
-																	"removing" && (
-																	<Description className="text-xs text-danger">
-																		&minus;{" "}
-																		{t(
-																			"removing",
-																		)}
-																	</Description>
-																)}
-															{!state &&
-																diffLabel ===
-																	"installed" && (
-																	<Description className="text-xs text-muted">
-																		{t(
-																			"alreadyAdded",
-																		)}
-																	</Description>
-																)}
+																{/* Diff label */}
+																{!state &&
+																	diffLabel ===
+																		"adding" && (
+																		<Description className="text-xs text-success">
+																			+{" "}
+																			{t(
+																				"adding",
+																			)}
+																		</Description>
+																	)}
+																{!state &&
+																	diffLabel ===
+																		"removing" && (
+																		<Description className="text-xs text-danger">
+																			&minus;{" "}
+																			{t(
+																				"removing",
+																			)}
+																		</Description>
+																	)}
+																{!state &&
+																	diffLabel ===
+																		"installed" && (
+																		<Description className="text-xs text-muted">
+																			{t(
+																				"alreadyAdded",
+																			)}
+																		</Description>
+																	)}
+															</div>
 														</div>
-													</div>
-													{state?.status ===
-														"error" &&
-														state.error && (
-															<Description className="mt-1 text-xs text-danger">
-																{state.error}
-															</Description>
-														)}
-												</Checkbox.Content>
-											</Checkbox>
-										);
-									})}
-								</div>
-							</CheckboxGroup>
+														{state?.status ===
+															"error" &&
+															state.error && (
+																<Description
+																	className="mt-1 text-xs text-danger"
+																	role="alert"
+																	aria-live="assertive"
+																>
+																	{
+																		state.error
+																	}
+																</Description>
+															)}
+													</Checkbox.Content>
+												</Checkbox>
+											);
+										})}
+									</div>
+								</CheckboxGroup>
+							</div>
 						)}
 					</Modal.Body>
 

@@ -107,6 +107,11 @@ From `tauri.conf.json`:
 - NEVER modify Tauri capabilities without security review
 - NEVER expose system APIs without explicit permissions in `capabilities/`
 
+### Async State Management
+
+- NEVER use `useEffect` for data fetching or side effects, use `useQuery` from React Query or custom hooks instead.
+- NEVER use `{error && <div>{error.message}</div>}` for error handling, just use HeroUI's toast system for consistent UX.
+
 ### You might not need effect
 
 - NEVER use `useEffect` to sync state, use `useMemo` and `handleXXX` instead.

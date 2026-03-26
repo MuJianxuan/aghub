@@ -170,6 +170,8 @@ export default {
 	connection: "连接",
 	addToAgent: "添加到代理",
 	copyConfig: "复制为 JSON",
+	copyConfigSuccess: "已复制到剪贴板",
+	copyConfigError: "复制到剪贴板失败",
 	global: "全局",
 	project: "项目",
 	headersCount: "请求头 ({{count}})",
@@ -177,6 +179,8 @@ export default {
 	noHeaders: "无请求头",
 	noEnvVars: "无环境变量",
 	timeoutSeconds: "{{seconds}}秒",
+	deleteMcpSuccess: "MCP 服务器删除成功",
+	deleteMcpError: "删除 MCP 服务器失败",
 
 	// Install Skill Dialog
 	installSkill: "安装技能",

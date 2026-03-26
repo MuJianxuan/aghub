@@ -8,7 +8,16 @@ import {
 	PlusIcon,
 	TrashIcon,
 } from "@heroicons/react/24/solid";
-import { Button, Card, Chip, Modal, Tooltip } from "@heroui/react";
+import {
+	Button,
+	Card,
+	Chip,
+	Modal,
+	Spinner,
+	Toast,
+	Tooltip,
+	toast,
+} from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,16 +50,21 @@ function DetailRow({
 	value: string;
 	mono?: boolean;
 }) {
+	// Truncate very long values to prevent overflow
+	const displayValue =
+		value.length > 200 ? `${value.slice(0, 200)}...` : value;
+
 	return (
 		<div className="flex items-start justify-between gap-4 py-2">
 			<span className="shrink-0 text-sm text-muted">{label}</span>
 			<span
 				className={cn(
-					"text-right text-sm break-all",
+					"text-right text-sm break-all min-w-0 flex-1",
 					mono && "font-mono text-xs",
 				)}
+				title={value.length > 200 ? value : undefined}
 			>
-				{value}
+				{displayValue}
 			</span>
 		</div>
 	);
@@ -88,9 +102,13 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 			queryClient.invalidateQueries({ queryKey: ["mcps"] });
 			queryClient.invalidateQueries({ queryKey: ["project-mcps"] });
 			setDeleteDialogOpen(false);
+			toast.success(t("deleteMcpSuccess"));
 		},
 		onError: (error) => {
 			console.error("Failed to delete MCP servers:", error);
+			toast.error(
+				error instanceof Error ? error.message : t("deleteMcpError"),
+			);
 		},
 	});
 
@@ -106,8 +124,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 		try {
 			await navigator.clipboard.writeText(configJson);
 			setCopyFeedback(true);
-		} catch {
-			setCopyFeedback(true);
+			toast.success(t("copyConfigSuccess"));
+		} catch (error) {
+			console.error("Failed to copy config:", error);
+			toast.error(t("copyConfigError"));
 		}
 	};
 
@@ -160,13 +180,13 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="max-w-2xl space-y-4 p-6">
+				<div className="w-full max-w-2xl space-y-4 p-4 sm:p-6">
 					{/* Unified Detail Card */}
 					<Card>
 						{/* Header: Name + Actions */}
 						<Card.Header className="flex flex-row items-start justify-between gap-3">
 							<div className="min-w-0 flex-1">
-								<h2 className="text-xl font-semibold text-foreground">
+								<h2 className="text-xl font-semibold text-foreground truncate">
 									{group.items[0].name}
 								</h2>
 								<Card.Description className="mt-1 flex items-center gap-2">
@@ -189,13 +209,13 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									)}
 								</Card.Description>
 							</div>
-							<div className="flex items-center gap-1">
+							<div className="flex items-center gap-2">
 								<Tooltip delay={0}>
 									<Button
 										isIconOnly
 										variant="ghost"
-										size="sm"
-										className="text-muted"
+										size="md"
+										className="text-muted min-w-[44px] min-h-[44px]"
 										aria-label={t("editTooltip")}
 										onPress={onEdit}
 									>
@@ -209,11 +229,8 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									<Button
 										isIconOnly
 										variant="ghost"
-										size="sm"
-										className="
-            text-muted
-            hover:text-danger
-          "
+										size="md"
+										className="text-muted hover:text-danger min-w-[44px] min-h-[44px]"
 										aria-label={t("deleteTooltip")}
 										onPress={() =>
 											setDeleteDialogOpen(true)
@@ -228,16 +245,12 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 							</div>
 						</Card.Header>
 
-						<Card.Content className="flex flex-col gap-5">
+						<Card.Content className="flex flex-col gap-6">
 							{/* Agents Section */}
-							<div>
-								<p
-									className="
-           mb-2 text-xs font-medium tracking-wider text-muted uppercase
-         "
-								>
+							<div className="space-y-3">
+								<h3 className="text-xs font-medium tracking-wider text-muted uppercase">
 									{t("agents")}
-								</p>
+								</h3>
 								<div className="flex flex-wrap gap-2">
 									{group.items.map((item) => (
 										<Chip
@@ -249,20 +262,20 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 													: "tertiary"
 											}
 											color="default"
-											className="pr-3"
+											className="pr-3 max-w-full"
 										>
-											<span className="flex items-center gap-1.5">
+											<span className="flex items-center gap-1.5 truncate">
 												<AgentIcon
 													id={item.agent ?? "default"}
 													name={getAgentName(item)}
 													size="sm"
 													variant="ghost"
 												/>
-												<span>
+												<span className="truncate">
 													{getAgentName(item)}
 												</span>
 												{!item.enabled && (
-													<span className="text-xs text-warning">
+													<span className="shrink-0 text-xs text-warning">
 														({t("disabled")})
 													</span>
 												)}
@@ -273,14 +286,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 							</div>
 
 							{/* Connection Details */}
-							<div>
-								<p
-									className="
-           mb-1 text-xs font-medium tracking-wider text-muted uppercase
-         "
-								>
+							<div className="space-y-3">
+								<h3 className="text-xs font-medium tracking-wider text-muted uppercase">
 									{t("connection")}
-								</p>
+								</h3>
 
 								{/* Type row */}
 								<DetailRow
@@ -337,16 +346,12 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 							{(transport.type === "sse" ||
 								transport.type === "streamable_http") &&
 								headersCount > 0 && (
-									<div>
-										<p
-											className="
-           mb-2 text-xs font-medium tracking-wider text-muted uppercase
-         "
-										>
+									<div className="space-y-3">
+										<h3 className="text-xs font-medium tracking-wider text-muted uppercase">
 											{t("headersCount", {
 												count: headersCount,
 											})}
-										</p>
+										</h3>
 										<div className="space-y-1">
 											{displayedHeaders.map(
 												([key, value]) => (
@@ -404,16 +409,12 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 							{/* Environment Variables (stdio) */}
 							{transport.type === "stdio" && envCount > 0 && (
-								<div>
-									<p
-										className="
-           mb-2 text-xs font-medium tracking-wider text-muted uppercase
-         "
-									>
+								<div className="space-y-3">
+									<h3 className="text-xs font-medium tracking-wider text-muted uppercase">
 										{t("envCount", {
 											count: envCount,
 										})}
-									</p>
+									</h3>
 									<div className="space-y-1">
 										{displayedEnvVars.map(
 											([key, value]) => (
@@ -468,25 +469,29 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 							)}
 
 							{/* Action Buttons */}
-							<div className="flex gap-2">
+							<div className="pt-4 border-t border-default-200 flex flex-col sm:flex-row gap-3">
 								<Button
 									variant="secondary"
 									size="sm"
 									onPress={handleCopyConfig}
+									className="min-h-[44px]"
 								>
 									{copyFeedback ? (
 										<CheckCircleIcon className="size-4 text-success" />
 									) : (
 										<DocumentDuplicateIcon className="size-4" />
 									)}
-									{copyFeedback
-										? t("copied")
-										: t("copyConfig")}
+									<span aria-live="polite">
+										{copyFeedback
+											? t("copied")
+											: t("copyConfig")}
+									</span>
 								</Button>
 								<Button
 									variant="primary"
 									size="sm"
 									onPress={() => setManageDialogOpen(true)}
+									className="min-h-[44px]"
 								>
 									<PlusIcon className="size-4" />
 									{t("addToAgent")}
@@ -532,18 +537,25 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 							<Button
 								slot="close"
 								variant="secondary"
+								size="md"
 								onPress={() => setDeleteDialogOpen(false)}
+								disabled={deleteMutation.isPending}
+								className="min-h-[44px]"
 							>
 								{t("cancel")}
 							</Button>
 							<Button
 								variant="danger"
+								size="md"
 								onPress={() => deleteMutation.mutate(group)}
 								isDisabled={deleteMutation.isPending}
+								className="min-h-[44px] min-w-[120px]"
 							>
-								{deleteMutation.isPending
-									? t("deleting")
-									: t("deleteMcpServer")}
+								{deleteMutation.isPending ? (
+									<Spinner size="sm" />
+								) : (
+									t("deleteMcpServer")
+								)}
 							</Button>
 						</Modal.Footer>
 					</Modal.Dialog>

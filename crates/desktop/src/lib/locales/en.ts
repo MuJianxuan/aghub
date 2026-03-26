@@ -186,6 +186,8 @@ export default {
 	connection: "Connection",
 	addToAgent: "Add to Agent",
 	copyConfig: "Copy as JSON",
+	copyConfigSuccess: "Copied to clipboard",
+	copyConfigError: "Failed to copy to clipboard",
 	global: "Global",
 	project: "Project",
 	headersCount: "Headers ({{count}})",
@@ -193,6 +195,8 @@ export default {
 	noHeaders: "No headers",
 	noEnvVars: "No environment variables",
 	timeoutSeconds: "{{seconds}}s",
+	deleteMcpSuccess: "MCP server deleted successfully",
+	deleteMcpError: "Failed to delete MCP server",
 
 	// Projects
 	addProject: "Add Project",

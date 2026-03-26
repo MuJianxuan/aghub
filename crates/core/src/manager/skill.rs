@@ -48,6 +48,68 @@ fn read_existing_body(path: &Path) -> Result<Option<String>> {
 	Ok(body_start.map(|start| content[start..].to_string()))
 }
 
+/// Remove a skill's file or directory from disk.
+///
+/// Handles three cases:
+/// 1. Symlink — only unlink the symlink directory, leave the target intact
+/// 2. Named directory (e.g. `skills/my-skill/SKILL.md`) — remove entire dir
+/// 3. Standalone file — remove just the file
+fn remove_skill_path(
+	path: &Path,
+	safe_name: &str,
+	is_symlink: bool,
+) -> Result<()> {
+	if is_symlink {
+		let Some(parent) = path.parent() else {
+			return Ok(());
+		};
+		let is_link = parent
+			.symlink_metadata()
+			.map(|m| m.file_type().is_symlink())
+			.unwrap_or(false);
+		if is_link {
+			std::fs::remove_file(parent).map_err(|e| {
+				ConfigError::Io(std::io::Error::new(
+					e.kind(),
+					format!(
+						"Failed to remove symlink '{}': {}",
+						parent.display(),
+						e
+					),
+				))
+			})?;
+		}
+		return Ok(());
+	}
+
+	let Some(parent) = path.parent() else {
+		return std::fs::remove_file(path).map_err(|e| e.into());
+	};
+
+	let is_named_dir =
+		parent.file_name().and_then(|n| n.to_str()) == Some(safe_name);
+	if is_named_dir {
+		std::fs::remove_dir_all(parent).map_err(|e| {
+			ConfigError::Io(std::io::Error::new(
+				e.kind(),
+				format!(
+					"Failed to remove directory '{}': {}",
+					parent.display(),
+					e
+				),
+			))
+		})?;
+	} else {
+		std::fs::remove_file(path).map_err(|e| {
+			ConfigError::Io(std::io::Error::new(
+				e.kind(),
+				format!("Failed to remove file '{}': {}", path.display(), e),
+			))
+		})?;
+	}
+	Ok(())
+}
+
 impl ConfigManager {
 	pub fn add_skill(&mut self, skill: Skill) -> Result<()> {
 		let target_dir = self.target_skills_dir();
@@ -202,68 +264,7 @@ impl ConfigManager {
 
 		if let Some(path) = file_path {
 			if path.exists() {
-				if is_symlink {
-					// Only remove the symlink, not the target
-					if let Some(parent) = path.parent() {
-						if parent
-							.symlink_metadata()
-							.map(|m| m.file_type().is_symlink())
-							.unwrap_or(false)
-						{
-							std::fs::remove_file(parent).map_err(|e| {
-								ConfigError::Io(std::io::Error::new(
-									e.kind(),
-									format!(
-										"Failed to remove skill \
-											 symlink '{}': {}",
-										parent.display(),
-										e
-									),
-								))
-							})?;
-						}
-					}
-				} else if let Some(parent) = path.parent() {
-					if parent.file_name().and_then(|n| n.to_str())
-						== Some(&safe_name)
-					{
-						std::fs::remove_dir_all(parent).map_err(|e| {
-							ConfigError::Io(std::io::Error::new(
-								e.kind(),
-								format!(
-									"Failed to remove skill \
-										 directory '{}': {}",
-									parent.display(),
-									e
-								),
-							))
-						})?;
-					} else {
-						std::fs::remove_file(&path).map_err(|e| {
-							ConfigError::Io(std::io::Error::new(
-								e.kind(),
-								format!(
-									"Failed to remove skill \
-									 file '{}': {}",
-									path.display(),
-									e
-								),
-							))
-						})?;
-					}
-				} else {
-					std::fs::remove_file(&path).map_err(|e| {
-						ConfigError::Io(std::io::Error::new(
-							e.kind(),
-							format!(
-								"Failed to remove skill file \
-								 '{}': {}",
-								path.display(),
-								e
-							),
-						))
-					})?;
-				}
+				remove_skill_path(&path, &safe_name, is_symlink)?;
 			}
 		}
 

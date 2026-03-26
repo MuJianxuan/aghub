@@ -215,7 +215,7 @@ export function SkillList({
 		return (
 			<div className="flex-1 overflow-y-auto">
 				{sourceGroups.map((sg) => (
-					<div key={sg.source}>
+					<div key={sg.source} className="border-y border-divider">
 						<button
 							type="button"
 							onClick={() => toggleSource(sg.source)}

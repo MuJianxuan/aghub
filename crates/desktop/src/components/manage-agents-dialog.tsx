@@ -274,7 +274,7 @@ export function ManageAgentsDialog({
 									<Label className="sr-only">
 										{t("selectAgentsForMcp")}
 									</Label>
-									<div className="flex flex-col gap-1.5">
+									<div className="flex flex-col gap-1">
 										{usableAgents.map((agent) => {
 											const diffLabel = getAgentDiffLabel(
 												agent.id,
@@ -291,7 +291,7 @@ export function ManageAgentsDialog({
 														"data-[selected=true]:bg-accent/10",
 													)}
 												>
-													<Checkbox.Control className="absolute top-2 right-3 size-4 rounded-full before:rounded-full">
+													<Checkbox.Control className="absolute top-1/2 right-3 size-5 -translate-y-1/2 rounded-full before:rounded-full">
 														<Checkbox.Indicator />
 													</Checkbox.Control>
 													<Checkbox.Content className="flex flex-row items-start justify-start gap-3">

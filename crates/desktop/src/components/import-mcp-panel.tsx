@@ -227,31 +227,31 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 							{parsedConfig && (
 								<div className="space-y-4">
 									<div>
-										<p className="mb-1 text-xs font-medium tracking-wide text-foreground uppercase">
+										<p className="mb-1 text-xs tracking-wide text-muted uppercase">
 											{t("serverName")}
 										</p>
-										<p className="font-semibold text-foreground">
+										<p className="text-foreground">
 											{parsedConfig.name}
 										</p>
 									</div>
 
 									<div>
-										<p className="mb-1 text-xs font-medium tracking-wide text-foreground uppercase">
+										<p className="mb-1 text-xs tracking-wide text-muted uppercase">
 											{t("transportType")}
 										</p>
-										<p className="text-sm font-medium text-foreground">
+										<p className="text-sm text-foreground">
 											{parsedConfig.transportType}
 										</p>
 									</div>
 
 									<div>
-										<p className="mb-1 text-xs font-medium tracking-wide text-foreground uppercase">
+										<p className="mb-1 text-xs tracking-wide text-muted uppercase">
 											{parsedConfig.transportType ===
 											"stdio"
 												? t("command")
 												: "URL"}
 										</p>
-										<p className="text-sm font-medium text-foreground">
+										<p className="text-sm text-foreground">
 											{parsedConfig.transportType ===
 											"stdio"
 												? parsedConfig.config.command
@@ -260,11 +260,11 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 									</div>
 
 									<div>
-										<p className="mb-2 text-xs font-medium tracking-wide text-foreground uppercase">
+										<p className="mb-2 text-xs tracking-wide text-muted uppercase">
 											{t("selectAgentsForMcp")}
 										</p>
 										{usableAgents.length === 0 ? (
-											<p className="text-sm font-medium text-foreground">
+											<p className="text-sm text-foreground">
 												{t("noTargetAgents")}
 											</p>
 										) : (

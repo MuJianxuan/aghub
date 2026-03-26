@@ -186,7 +186,7 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 				</Card.Header>
 
 				<Card.Content>
-					<Fieldset variant="secondary">
+					<Fieldset>
 						<Fieldset.Group>
 							<TextField className="w-full" variant="secondary">
 								<Label>{t("jsonConfig")}</Label>

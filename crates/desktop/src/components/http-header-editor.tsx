@@ -7,7 +7,7 @@ export type HttpHeader = KeyPair;
 interface HttpHeaderEditorProps {
 	value: HttpHeader[];
 	onChange: (value: HttpHeader[]) => void;
-	variant?: "default" | "secondary";
+	variant?: "primary" | "secondary";
 }
 
 export function HttpHeaderEditor({

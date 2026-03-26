@@ -155,7 +155,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 
 				<Card.Content>
 					<Form>
-						<Fieldset variant="secondary">
+						<Fieldset>
 							<Fieldset.Group>
 								<TextField
 									className="w-full"
@@ -174,7 +174,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 							</Fieldset.Group>
 						</Fieldset>
 
-						<Fieldset variant="secondary">
+						<Fieldset>
 							<Fieldset.Group>
 								<Select
 									className="w-full"
@@ -190,7 +190,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 									variant="secondary"
 								>
 									<Label>{t("transportType")}</Label>
-									<Select.Trigger variant="secondary">
+									<Select.Trigger>
 										<Select.Value />
 										<Select.Indicator />
 									</Select.Trigger>
@@ -221,7 +221,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 						</Fieldset>
 
 						{transportType === "stdio" && (
-							<Fieldset variant="secondary">
+							<Fieldset>
 								<Fieldset.Group>
 									<TextField
 										className="w-full"
@@ -268,7 +268,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 
 						{(transportType === "sse" ||
 							transportType === "streamable_http") && (
-							<Fieldset variant="secondary">
+							<Fieldset>
 								<Fieldset.Group>
 									<TextField
 										className="w-full"
@@ -296,7 +296,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 							</Fieldset>
 						)}
 
-						<Fieldset variant="secondary">
+						<Fieldset>
 							<Fieldset.Group>
 								<AgentSelector
 									agents={usableAgents}
@@ -316,7 +316,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 								<Disclosure.Indicator />
 							</Disclosure.Trigger>
 							<Disclosure.Content>
-								<Fieldset variant="secondary">
+								<Fieldset>
 									<Fieldset.Group>
 										<TextField
 											className="w-full"

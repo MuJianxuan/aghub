@@ -12,7 +12,7 @@ interface KeyPairEditorProps {
 	onChange: (value: KeyPair[]) => void;
 	keyPlaceholder?: string;
 	valuePlaceholder?: string;
-	variant?: "default" | "secondary";
+	variant?: "primary" | "secondary";
 }
 
 export function KeyPairEditor({

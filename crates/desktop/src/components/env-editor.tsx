@@ -11,7 +11,7 @@ export type EnvVar = KeyPair;
 interface EnvEditorProps {
 	value: EnvVar[];
 	onChange: (value: EnvVar[]) => void;
-	variant?: "default" | "secondary";
+	variant?: "primary" | "secondary";
 }
 
 export function EnvEditor({ value, onChange, variant }: EnvEditorProps) {

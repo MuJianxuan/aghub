@@ -14,7 +14,6 @@ import {
 	Chip,
 	Modal,
 	Spinner,
-	Toast,
 	Tooltip,
 	toast,
 } from "@heroui/react";

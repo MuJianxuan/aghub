@@ -219,6 +219,8 @@ export default {
 	showLess: "Show less",
 	skillContent: "Content",
 	noContent: "No content",
+	symlink: "Symlink",
+	symlinkTarget: "→ {{target}}",
 
 	// Env Editor
 	envEditor: {

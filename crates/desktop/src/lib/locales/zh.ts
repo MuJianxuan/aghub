@@ -214,6 +214,8 @@ export default {
 	showLess: "收起",
 	skillContent: "内容",
 	noContent: "暂无内容",
+	symlink: "软链接",
+	symlinkTarget: "→ {{target}}",
 
 	// Env Editor
 	envEditor: {

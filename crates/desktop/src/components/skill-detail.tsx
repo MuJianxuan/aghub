@@ -37,6 +37,7 @@ import { ConfigSource } from "../lib/api-types";
 interface LocationGroup {
 	sourcePath: string;
 	agents: string[];
+	canonicalPath?: string;
 }
 
 export interface SkillGroup {
@@ -143,20 +144,21 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 	// Group locations across all items
 	const allLocationGroups = useMemo(() => {
-		const map = new Map<string, string[]>();
+		const map = new Map<string, { agents: string[]; canonicalPath?: string }>();
 		for (const item of group.items) {
 			const path = item.source_path ?? "";
 			if (path === "") continue;
 			if (!map.has(path)) {
-				map.set(path, []);
+				map.set(path, { agents: [], canonicalPath: item.canonical_path });
 			}
 			if (item.agent) {
-				map.get(path)?.push(item.agent);
+				map.get(path)?.agents.push(item.agent);
 			}
 		}
-		return Array.from(map.entries()).map(([sourcePath, agents]) => ({
+		return Array.from(map.entries()).map(([sourcePath, data]) => ({
 			sourcePath,
-			agents,
+			agents: data.agents,
+			canonicalPath: data.canonicalPath,
 		}));
 	}, [group.items]);
 
@@ -508,34 +510,36 @@ function LocationRow({
 	);
 
 	return (
-		<div
-			className="
-     flex items-center justify-between gap-2 rounded-lg bg-surface-secondary
-     px-3 py-2
-     sm:gap-3
-   "
-		>
+		<div className="flex items-center justify-between gap-2 rounded-lg bg-surface-secondary px-3 py-2 sm:gap-3">
 			<div className="min-w-0 flex-1">
-				<p
-					tabIndex={0}
-					className="
-       cursor-default truncate rounded-sm font-mono text-xs text-foreground
-       focus:ring-2 focus:ring-offset-2 focus:outline-none
-     "
-					title={group.sourcePath}
-				>
-					{folderPath}
-				</p>
+				<div className="flex items-center gap-1.5">
+					{group.canonicalPath && (
+						<Tooltip delay={0}>
+							<LinkIcon className="size-3 shrink-0 text-muted" />
+							<Tooltip.Content>{t("symlink")}</Tooltip.Content>
+						</Tooltip>
+					)}
+					<p
+						tabIndex={0}
+						className="cursor-default truncate rounded-sm font-mono text-xs text-foreground focus:ring-2 focus:ring-offset-2 focus:outline-none"
+						title={group.sourcePath}
+					>
+						{folderPath}
+					</p>
+				</div>
 				<p className="text-xs text-muted">
 					{group.agents.map(formatAgentName).join(", ")}
 				</p>
+				{group.canonicalPath && (
+					<p
+						className="truncate font-mono text-xs text-muted/60"
+						title={group.canonicalPath}
+					>
+						{t("symlinkTarget", { target: pathe.dirname(group.canonicalPath) })}
+					</p>
+				)}
 			</div>
-			<div
-				className="
-      flex items-center gap-1.5
-      sm:gap-2
-    "
-			>
+			<div className="flex items-center gap-1.5 sm:gap-2">
 				<Tooltip delay={0}>
 					<Button
 						isIconOnly

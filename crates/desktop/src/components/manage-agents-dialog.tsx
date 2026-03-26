@@ -268,6 +268,7 @@ export function ManageAgentsDialog({
 									value={selectedAgents}
 									onChange={handleSelectionChange}
 									isDisabled={isApplying}
+									className="items-stretch"
 								>
 									<Label className="sr-only">
 										{t("selectAgentsForMcp")}
@@ -285,7 +286,7 @@ export function ManageAgentsDialog({
 													value={agent.id}
 													variant="secondary"
 													className={cn(
-														"group relative flex w-full flex-col gap-4 rounded-3xl bg-surface px-5 py-4 transition-all",
+														"group relative flex w-full flex-col items-stretch gap-4 rounded-3xl bg-surface px-5 py-4 transition-all",
 														"data-[selected=true]:bg-accent/10",
 													)}
 												>

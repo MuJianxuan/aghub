@@ -79,17 +79,37 @@ export default function AgentsPanel() {
 				<ToggleButtonGroup
 					selectedKeys={[agentFilter]}
 					onSelectionChange={(keys) =>
-						setAgentFilter([...keys][0] as "all" | "enabled" | "disabled")
+						setAgentFilter(
+							[...keys][0] as "all" | "enabled" | "disabled",
+						)
 					}
 					selectionMode="single"
 					disallowEmptySelection
 					size="sm"
 				>
-					<ToggleButton id="all" variant="ghost" className={'bg-surface'}>{t("all")}</ToggleButton>
+					<ToggleButton
+						id="all"
+						variant="ghost"
+						className={"bg-surface"}
+					>
+						{t("all")}
+					</ToggleButton>
 					<ToggleButtonGroup.Separator />
-					<ToggleButton id="enabled" variant="ghost" className={'bg-surface'}>{t("enabled")}</ToggleButton>
+					<ToggleButton
+						id="enabled"
+						variant="ghost"
+						className={"bg-surface"}
+					>
+						{t("enabled")}
+					</ToggleButton>
 					<ToggleButtonGroup.Separator />
-					<ToggleButton id="disabled" variant="ghost" className={'bg-surface'}>{t("disabled")}</ToggleButton>
+					<ToggleButton
+						id="disabled"
+						variant="ghost"
+						className={"bg-surface"}
+					>
+						{t("disabled")}
+					</ToggleButton>
 				</ToggleButtonGroup>
 			</div>
 

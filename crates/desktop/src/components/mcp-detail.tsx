@@ -21,7 +21,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useServer } from "../hooks/use-server";
-import { AgentIcon } from "../lib/agent-icons";
+import { AgentIcon, sortAgentObjects } from "../lib/agent-icons";
+import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { createApi } from "../lib/api";
 import type { McpResponse, TransportDto } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
@@ -71,6 +72,7 @@ function DetailRow({
 
 export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	const { t } = useTranslation();
+	const { allAgents } = useAgentAvailability();
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [manageDialogOpen, setManageDialogOpen] = useState(false);
 	const [copyFeedback, setCopyFeedback] = useState(false);
@@ -251,7 +253,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									{t("agents")}
 								</h3>
 								<div className="flex flex-wrap gap-2">
-									{group.items.map((item) => (
+									{sortAgentObjects(group.items, allAgents).map((item) => (
 										<Chip
 											key={item.agent ?? "default"}
 											size="sm"

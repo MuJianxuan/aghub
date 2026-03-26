@@ -26,6 +26,8 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { siGithub } from "simple-icons";
 import { useServer } from "../hooks/use-server";
+import { useAgentAvailability } from "../hooks/use-agent-availability";
+import { sortAgents } from "../lib/agent-icons";
 import { createApi } from "../lib/api";
 import type {
 	GlobalSkillLockResponse,
@@ -59,6 +61,7 @@ function formatAgentName(agent: string): string {
 
 export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const { t } = useTranslation();
+	const { allAgents } = useAgentAvailability();
 	const { baseUrl } = useServer();
 	const api = useMemo(() => createApi(baseUrl), [baseUrl]);
 
@@ -163,10 +166,10 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 		}
 		return Array.from(map.entries()).map(([sourcePath, data]) => ({
 			sourcePath,
-			agents: data.agents,
+			agents: sortAgents(data.agents, allAgents),
 			canonicalPath: data.canonicalPath,
 		}));
-	}, [group.items]);
+	}, [group.items, allAgents]);
 
 	// Metadata pieces for subtitle
 	const metaParts: string[] = [];

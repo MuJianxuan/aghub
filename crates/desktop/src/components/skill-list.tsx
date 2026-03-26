@@ -9,7 +9,8 @@ import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useServer } from "../hooks/use-server";
-import { AgentIcon } from "../lib/agent-icons";
+import { AgentIcon, sortAgents } from "../lib/agent-icons";
+import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { createApi } from "../lib/api";
 import type {
 	GlobalSkillLockResponse,
@@ -22,13 +23,14 @@ function formatAgentName(agent: string): string {
 }
 
 function SkillAgentIcons({ items }: { items: SkillResponse[] }) {
+	const { allAgents } = useAgentAvailability();
 	const agents = useMemo(() => {
 		const set = new Set<string>();
 		for (const item of items) {
 			if (item.agent) set.add(item.agent);
 		}
-		return Array.from(set).sort();
-	}, [items]);
+		return sortAgents(Array.from(set), allAgents);
+	}, [items, allAgents]);
 
 	if (agents.length === 0) {
 		return null;

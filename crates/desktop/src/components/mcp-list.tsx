@@ -3,7 +3,8 @@ import { Label, ListBox, Tooltip } from "@heroui/react";
 import Fuse from "fuse.js";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { AgentIcon } from "../lib/agent-icons";
+import { AgentIcon, sortAgents } from "../lib/agent-icons";
+import { useAgentAvailability } from "../hooks/use-agent-availability";
 import type { McpResponse } from "../lib/api-types";
 import { getMcpMergeKey } from "../lib/utils";
 
@@ -12,13 +13,14 @@ function formatAgentName(agent: string): string {
 }
 
 function McpAgentIcons({ items }: { items: McpResponse[] }) {
+	const { allAgents } = useAgentAvailability();
 	const agents = useMemo(() => {
 		const set = new Set<string>();
 		for (const item of items) {
 			if (item.agent) set.add(item.agent);
 		}
-		return Array.from(set).sort();
-	}, [items]);
+		return sortAgents(Array.from(set), allAgents);
+	}, [items, allAgents]);
 
 	if (agents.length === 0) {
 		return null;

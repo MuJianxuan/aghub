@@ -1,14 +1,4 @@
-import { MagnifyingGlassIcon, PlusIcon } from "@heroicons/react/24/solid";
-import type { Selection } from "@heroui/react";
-import {
-	Button,
-	ListBox,
-	Modal,
-	SearchField,
-	Spinner,
-	Tag,
-	TagGroup,
-} from "@heroui/react";
+import { Button, ListBox, Modal, SearchField, Spinner } from "@heroui/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,6 +7,7 @@ import { useServer } from "../hooks/use-server";
 import { createApi } from "../lib/api";
 import type { MarketSkill } from "../lib/api-types";
 import { capitalize } from "../lib/mcp-utils";
+import { AgentSelector } from "./agent-selector";
 import { ResultStatusItem } from "./result-status-item";
 import { StepIndicator } from "./step-indicator";
 
@@ -88,10 +79,6 @@ export function InstallSkillDialog({
 
 	const handleSkillSelect = (skill: MarketSkill) => {
 		setSelectedSkill(skill);
-	};
-
-	const handleAgentSelectionChange = (keys: Selection) => {
-		setSelectedAgents(keys as Set<string>);
 	};
 
 	const handleInstall = async () => {
@@ -292,53 +279,14 @@ export function InstallSkillDialog({
 								)}
 
 								{/* Agent selection */}
-								<div>
-									<p className="mb-3 text-sm text-muted">
-										{t("selectAgentsForSkill")}
-									</p>
-
-									{skillAgents.length === 0 ? (
-										<div className="py-6 text-center">
-											<MagnifyingGlassIcon className="mx-auto mb-2 size-8 text-muted" />
-											<p className="text-sm text-muted">
-												{t("noTargetAgents")}
-											</p>
-										</div>
-									) : (
-										<TagGroup
-											selectionMode="multiple"
-											selectedKeys={selectedAgents}
-											onSelectionChange={
-												handleAgentSelectionChange
-											}
-											variant="surface"
-										>
-											<TagGroup.List className="flex-wrap">
-												{skillAgents.map((agent) => {
-													const isSelected =
-														selectedAgents.has(
-															agent.id,
-														);
-													return (
-														<Tag
-															key={agent.id}
-															id={agent.id}
-														>
-															<div className="flex items-center gap-1.5">
-																{
-																	agent.display_name
-																}
-																{isSelected && (
-																	<PlusIcon className="size-3" />
-																)}
-															</div>
-														</Tag>
-													);
-												})}
-											</TagGroup.List>
-										</TagGroup>
-									)}
-								</div>
+								<AgentSelector
+									agents={skillAgents}
+									selectedKeys={selectedAgents}
+									onSelectionChange={setSelectedAgents}
+									emptyMessage={t("noTargetAgents")}
+									showSelectedIcon
+									varient="secondary"
+								/>
 							</div>
 						)}
 

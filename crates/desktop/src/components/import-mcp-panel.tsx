@@ -4,8 +4,6 @@ import {
 	Fieldset,
 	Label,
 	Modal,
-	Tag,
-	TagGroup,
 	TextArea,
 	TextField,
 } from "@heroui/react";
@@ -16,6 +14,7 @@ import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useServer } from "../hooks/use-server";
 import { createApi } from "../lib/api";
 import type { TransportDto } from "../lib/api-types";
+import { AgentSelector } from "./agent-selector";
 
 interface ImportMcpPanelProps {
 	onDone: () => void;
@@ -260,40 +259,15 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 									</div>
 
 									<div>
-										<p className="mb-2 text-xs tracking-wide text-muted uppercase">
-											{t("selectAgentsForMcp")}
-										</p>
-										{usableAgents.length === 0 ? (
-											<p className="text-sm text-foreground">
-												{t("noTargetAgents")}
-											</p>
-										) : (
-											<TagGroup
-												selectionMode="multiple"
-												selectedKeys={selectedAgents}
-												onSelectionChange={(keys) =>
-													setSelectedAgents(
-														keys as Set<string>,
-													)
-												}
-												variant="surface"
-											>
-												<TagGroup.List className="flex-wrap">
-													{usableAgents.map(
-														(agent) => (
-															<Tag
-																key={agent.id}
-																id={agent.id}
-															>
-																{
-																	agent.display_name
-																}
-															</Tag>
-														),
-													)}
-												</TagGroup.List>
-											</TagGroup>
-										)}
+										<AgentSelector
+											agents={usableAgents}
+											selectedKeys={selectedAgents}
+											onSelectionChange={
+												setSelectedAgents
+											}
+											label={t("selectAgentsForMcp")}
+											emptyMessage={t("noTargetAgents")}
+										/>
 									</div>
 								</div>
 							)}

@@ -1,5 +1,4 @@
 import { CodeBracketIcon } from "@heroicons/react/24/solid";
-import type { Selection } from "@heroui/react";
 import {
 	Button,
 	Description,
@@ -11,8 +10,6 @@ import {
 	ListBox,
 	Modal,
 	Select,
-	Tag,
-	TagGroup,
 	TextArea,
 	TextField,
 	Tooltip,
@@ -26,6 +23,7 @@ import { createApi } from "../lib/api";
 import type { TransportDto } from "../lib/api-types";
 import { objectToKeyPairs } from "../lib/key-pair-utils";
 import { buildTransportFromForm } from "../lib/mcp-utils";
+import { AgentSelector } from "./agent-selector";
 import type { EnvVar } from "./env-editor";
 import { EnvEditor } from "./env-editor";
 import type { HttpHeader } from "./http-header-editor";
@@ -159,10 +157,6 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 		selectedAgents.size,
 		usableAgents.length,
 	]);
-
-	const handleSelectionChange = (keys: Selection) => {
-		setSelectedAgents(keys as Set<string>);
-	};
 
 	const handleImportJson = () => {
 		setParseError("");
@@ -359,35 +353,14 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 
 				<Fieldset>
 					<Fieldset.Group>
-						{usableAgents.length === 0 ? (
-							<div className="flex flex-col gap-2">
-								<Label>{t("agents")}</Label>
-								<div className="text-sm text-muted">
-									<p className="mb-1 font-medium">
-										{t("noAgentsAvailable")}
-									</p>
-									<p className="text-xs">
-										{t("noAgentsAvailableHelp")}
-									</p>
-								</div>
-							</div>
-						) : (
-							<TagGroup
-								selectionMode="multiple"
-								selectedKeys={selectedAgents}
-								onSelectionChange={handleSelectionChange}
-								variant="surface"
-							>
-								<Label>{t("agents")}</Label>
-								<TagGroup.List className="flex-wrap">
-									{usableAgents.map((agent) => (
-										<Tag key={agent.id} id={agent.id}>
-											{agent.display_name}
-										</Tag>
-									))}
-								</TagGroup.List>
-							</TagGroup>
-						)}
+						<AgentSelector
+							agents={usableAgents}
+							selectedKeys={selectedAgents}
+							onSelectionChange={setSelectedAgents}
+							label={t("agents")}
+							emptyMessage={t("noAgentsAvailable")}
+							emptyHelpText={t("noAgentsAvailableHelp")}
+						/>
 					</Fieldset.Group>
 				</Fieldset>
 

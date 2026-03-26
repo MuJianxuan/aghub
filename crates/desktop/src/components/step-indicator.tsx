@@ -25,13 +25,13 @@ export function StepIndicator({ currentStep, labels }: StepIndicatorProps) {
 							<span
 								className={`
           flex size-4.5 items-center justify-center rounded-full text-[10px]
-          font-bold
+          font-bold shrink-0
           ${
 				step < currentStep
 					? "bg-accent text-accent-foreground"
 					: step === currentStep
 						? "bg-accent-foreground text-accent"
-						: "bg-muted text-muted"
+						: "bg-muted text-muted-foreground"
 			}
         `}
 							>

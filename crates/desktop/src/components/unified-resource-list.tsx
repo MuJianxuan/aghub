@@ -1,6 +1,7 @@
 import {
 	ArrowPathIcon,
 	BookOpenIcon,
+	CommandLineIcon,
 	PlusIcon,
 	ServerIcon,
 } from "@heroicons/react/24/solid";
@@ -20,7 +21,7 @@ interface UnifiedResourceListProps {
 	selectedType: "mcp" | "skill" | null;
 	onSelect: (key: string, type: "mcp" | "skill") => void;
 	onCreateMcp: () => void;
-	onCreateSkill: () => void;
+	onCreateSkill: (type: "market" | "local") => void;
 	onRefresh: () => void;
 	isRefreshing?: boolean;
 	searchQuery: string;
@@ -101,7 +102,8 @@ export function UnifiedResourceList({
 						<Dropdown.Menu
 							onAction={(key) => {
 								if (key === "mcp") onCreateMcp();
-								else if (key === "skill") onCreateSkill();
+								else if (key === "skill-market") onCreateSkill("market");
+								else if (key === "skill-local") onCreateSkill("local");
 							}}
 						>
 							<Dropdown.Item id="mcp" textValue={t("mcpServers")}>
@@ -110,10 +112,16 @@ export function UnifiedResourceList({
 									<span>{t("mcpServers")}</span>
 								</div>
 							</Dropdown.Item>
-							<Dropdown.Item id="skill" textValue={t("skills")}>
+							<Dropdown.Item id="skill-market" textValue={t("installFromMarket")}>
 								<div className="flex items-center gap-2">
 									<BookOpenIcon className="size-4" />
-									<span>{t("skills")}</span>
+									<span>{t("installFromMarket")}</span>
+								</div>
+							</Dropdown.Item>
+							<Dropdown.Item id="skill-local" textValue={t("addLocalSkill")}>
+								<div className="flex items-center gap-2">
+									<CommandLineIcon className="size-4" />
+									<span>{t("addLocalSkill")}</span>
 								</div>
 							</Dropdown.Item>
 						</Dropdown.Menu>

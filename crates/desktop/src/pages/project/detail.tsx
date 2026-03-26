@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "wouter";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
+import { AddLocalSkillDialog } from "../../components/add-local-skill-dialog";
 import { EditMcpPanel } from "../../components/edit-mcp-panel";
 import { InstallSkillDialog } from "../../components/install-skill-dialog";
 import { McpDetail } from "../../components/mcp-detail";
@@ -26,9 +27,10 @@ export default function ProjectDetailPage() {
 	const api = createApi(baseUrl);
 
 	const [panelMode, setPanelMode] = useState<
-		"create-mcp" | "edit-mcp" | null
+		"create-mcp" | "edit-mcp" | "create-skill" | null
 	>(null);
 	const [isInstallSkillOpen, setIsInstallSkillOpen] = useState(false);
+	const [isAddLocalSkillOpen, setIsAddLocalSkillOpen] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedResource, setSelectedResource] = useQueryState("resource");
 	const [resourceType, setResourceType] = useQueryState("type", {
@@ -137,7 +139,10 @@ export default function ProjectDetailPage() {
 				selectedType={resourceType as "mcp" | "skill" | null}
 				onSelect={handleSelect}
 				onCreateMcp={() => setPanelMode("create-mcp")}
-				onCreateSkill={() => setIsInstallSkillOpen(true)}
+				onCreateSkill={(type) => {
+					if (type === "market") setIsInstallSkillOpen(true);
+					else if (type === "local") setIsAddLocalSkillOpen(true);
+				}}
 				onRefresh={handleRefresh}
 				isRefreshing={isRefreshing}
 				searchQuery={searchQuery}
@@ -199,6 +204,11 @@ export default function ProjectDetailPage() {
 			<InstallSkillDialog
 				isOpen={isInstallSkillOpen}
 				onClose={() => setIsInstallSkillOpen(false)}
+				projectPath={project?.path}
+			/>
+			<AddLocalSkillDialog
+				isOpen={isAddLocalSkillOpen}
+				onClose={() => setIsAddLocalSkillOpen(false)}
 				projectPath={project?.path}
 			/>
 		</div>

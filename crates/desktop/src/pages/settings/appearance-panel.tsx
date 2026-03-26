@@ -75,6 +75,7 @@ export default function AppearancePanel() {
 						</span>
 					</div>
 					<Select
+						variant="secondary"
 						value={i18n.language.startsWith("zh") ? "zh" : "en"}
 						onChange={(key) => changeLanguage(key as string)}
 						aria-label={t("language")}

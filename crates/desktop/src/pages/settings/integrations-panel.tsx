@@ -56,6 +56,7 @@ export default function IntegrationsPanel() {
 						</span>
 					</div>
 					<Select
+						variant="secondary"
 						selectedKey={selectedEditor || null}
 						onSelectionChange={handleEditorChange}
 						aria-label={t("codeEditors")}

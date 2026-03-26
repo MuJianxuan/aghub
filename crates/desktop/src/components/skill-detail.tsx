@@ -213,64 +213,6 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
           sm:gap-2
         "
 								>
-									{primarySkillPath && (
-										<>
-											<Tooltip delay={0}>
-												<Button
-													isIconOnly
-													variant="ghost"
-													size="md"
-													className="min-h-11 min-w-11 text-muted"
-													aria-label={t(
-														"editInEditor",
-													)}
-													onPress={() =>
-														editFolderMutation.mutate(
-															primarySkillPath,
-														)
-													}
-													isDisabled={
-														editFolderMutation.isPending
-													}
-												>
-													{editFolderMutation.isPending ? (
-														<Spinner size="sm" />
-													) : (
-														<CodeBracketIcon className="size-5" />
-													)}
-												</Button>
-												<Tooltip.Content>
-													{t("editInEditor")}
-												</Tooltip.Content>
-											</Tooltip>
-											<Tooltip delay={0}>
-												<Button
-													isIconOnly
-													variant="ghost"
-													size="md"
-													className="min-h-11 min-w-11 text-muted"
-													aria-label={t("openFolder")}
-													onPress={() =>
-														openFolderMutation.mutate(
-															primarySkillPath,
-														)
-													}
-													isDisabled={
-														openFolderMutation.isPending
-													}
-												>
-													{openFolderMutation.isPending ? (
-														<Spinner size="sm" />
-													) : (
-														<FolderIcon className="size-5" />
-													)}
-												</Button>
-												<Tooltip.Content>
-													{t("openFolder")}
-												</Tooltip.Content>
-											</Tooltip>
-										</>
-									)}
 									<Tooltip delay={0}>
 										<Button
 											isIconOnly

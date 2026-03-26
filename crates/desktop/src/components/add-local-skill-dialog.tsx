@@ -65,6 +65,17 @@ export function AddLocalSkillDialog({
 
 	const [error, setError] = useState<string | null>(null);
 
+	const handleClose = () => {
+		setError(null);
+		setName("");
+		setDescription("");
+		setAuthor("");
+		setToolsInput("");
+		setImportPath("");
+		setMode("create");
+		onClose();
+	};
+
 	const invalidateCache = () => {
 		queryClient.invalidateQueries({ queryKey: ["skills"] });
 		queryClient.invalidateQueries({ queryKey: ["project-skills"] });
@@ -192,17 +203,6 @@ export function AddLocalSkillDialog({
 		if (skillAgents.length === 0) return false;
 		return true;
 	}, [importPath, importAgents.size, skillAgents.length]);
-
-	const handleClose = () => {
-		setError(null);
-		setName("");
-		setDescription("");
-		setAuthor("");
-		setToolsInput("");
-		setImportPath("");
-		setMode("create");
-		onClose();
-	};
 
 	const isPending = createMutation.isPending || importMutation.isPending;
 

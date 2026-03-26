@@ -1,5 +1,6 @@
 import {
 	Button,
+	Card,
 	Description,
 	Fieldset,
 	Label,
@@ -169,12 +170,6 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 
 	return (
 		<div className="h-full max-w-3xl overflow-y-auto p-6">
-			<div className="mb-6 flex items-center gap-3">
-				<h2 className="text-xl font-semibold text-foreground">
-					{t("importFromJson")}
-				</h2>
-			</div>
-
 			{error && (
 				<div className="mb-4 rounded-lg border border-danger/30 bg-danger-soft p-3">
 					<p className="text-sm text-danger">
@@ -183,33 +178,51 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 				</div>
 			)}
 
-			<Fieldset>
-				<Fieldset.Group>
-					<TextField className="w-full">
-						<Label>{t("jsonConfig")}</Label>
-						<TextArea
-							value={jsonText}
-							onChange={(e) => setJsonText(e.target.value)}
-							placeholder={t("jsonConfigPlaceholder")}
-							className="min-h-75 font-mono text-sm"
-						/>
-						<Description>{t("jsonConfigHelp")}</Description>
-					</TextField>
-					{parseError && (
-						<div className="text-sm text-danger">{parseError}</div>
-					)}
-				</Fieldset.Group>
-			</Fieldset>
+			<Card>
+				<Card.Header>
+					<h2 className="text-xl font-semibold text-foreground">
+						{t("importFromJson")}
+					</h2>
+				</Card.Header>
 
-			{/* Actions */}
-			<div className="mt-6 flex justify-end gap-2">
-				<Button variant="secondary" onPress={onDone}>
-					{t("cancel")}
-				</Button>
-				<Button onPress={handleParseJson} isDisabled={!jsonText.trim()}>
-					{t("parseAndImport")}
-				</Button>
-			</div>
+				<Card.Content>
+					<Fieldset variant="secondary">
+						<Fieldset.Group>
+							<TextField className="w-full" variant="secondary">
+								<Label>{t("jsonConfig")}</Label>
+								<TextArea
+									value={jsonText}
+									onChange={(e) =>
+										setJsonText(e.target.value)
+									}
+									placeholder={t("jsonConfigPlaceholder")}
+									className="min-h-75 font-mono text-sm"
+									variant="secondary"
+								/>
+								<Description>{t("jsonConfigHelp")}</Description>
+							</TextField>
+							{parseError && (
+								<div className="text-sm text-danger">
+									{parseError}
+								</div>
+							)}
+						</Fieldset.Group>
+					</Fieldset>
+
+					{/* Actions */}
+					<div className="mt-6 flex justify-end gap-2">
+						<Button variant="secondary" onPress={onDone}>
+							{t("cancel")}
+						</Button>
+						<Button
+							onPress={handleParseJson}
+							isDisabled={!jsonText.trim()}
+						>
+							{t("parseAndImport")}
+						</Button>
+					</div>
+				</Card.Content>
+			</Card>
 
 			{/* Confirmation Dialog */}
 			<Modal.Backdrop
@@ -267,6 +280,7 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 											}
 											label={t("selectAgentsForMcp")}
 											emptyMessage={t("noTargetAgents")}
+											variant="secondary"
 										/>
 									</div>
 								</div>

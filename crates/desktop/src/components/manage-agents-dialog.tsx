@@ -274,7 +274,7 @@ export function ManageAgentsDialog({
 									<Label className="sr-only">
 										{t("selectAgentsForMcp")}
 									</Label>
-									<div className="flex flex-col gap-2">
+									<div className="flex flex-col gap-1.5">
 										{usableAgents.map((agent) => {
 											const diffLabel = getAgentDiffLabel(
 												agent.id,
@@ -287,14 +287,14 @@ export function ManageAgentsDialog({
 													value={agent.id}
 													variant="secondary"
 													className={cn(
-														"group relative flex w-full flex-col items-stretch gap-4 rounded-3xl bg-surface px-5 py-4 transition-all",
+														"group relative flex w-full flex-col items-stretch gap-2 rounded-2xl bg-surface px-3 py-2.5 transition-all",
 														"data-[selected=true]:bg-accent/10",
 													)}
 												>
-													<Checkbox.Control className="absolute top-3 right-4 size-5 rounded-full before:rounded-full">
+													<Checkbox.Control className="absolute top-2 right-3 size-4 rounded-full before:rounded-full">
 														<Checkbox.Indicator />
 													</Checkbox.Control>
-													<Checkbox.Content className="flex flex-row items-start justify-start gap-4">
+													<Checkbox.Content className="flex flex-row items-start justify-start gap-3">
 														<AgentIcon
 															id={agent.id}
 															name={
@@ -303,8 +303,8 @@ export function ManageAgentsDialog({
 															size="sm"
 															variant="ghost"
 														/>
-														<div className="flex flex-1 flex-col gap-1">
-															<Label className="truncate">
+														<div className="flex flex-1 flex-col gap-0.5">
+															<Label className="truncate text-sm">
 																{
 																	agent.display_name
 																}

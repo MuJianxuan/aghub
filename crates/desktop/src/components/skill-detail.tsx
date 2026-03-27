@@ -555,14 +555,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 													</Button>
 												</div>
 											)}
-											<SkillTree
-												root={skillTree}
-												onOpenPath={(path) =>
-													openInEditorMutation.mutate(
-														path,
-													)
-												}
-											/>
+											<SkillTree root={skillTree} />
 										</div>
 									</Accordion.Body>
 								</Accordion.Panel>
@@ -582,23 +575,13 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	);
 }
 
-function SkillTree({
-	root,
-	onOpenPath,
-}: {
-	root: SkillTreeNodeResponse;
-	onOpenPath: (path: string) => void;
-}) {
+function SkillTree({ root }: { root: SkillTreeNodeResponse }) {
 	const items = flattenTree(root);
 
 	return (
 		<div className="rounded-xl border border-default-200/60 bg-surface-secondary/60 p-2">
 			{items.map((node, index) => (
-				<TreeNodeRow
-					key={`${node.path}-${index}`}
-					node={node}
-					onOpenPath={onOpenPath}
-				/>
+				<TreeNodeRow key={`${node.path}-${index}`} node={node} />
 			))}
 		</div>
 	);
@@ -623,18 +606,14 @@ function flattenTree(
 
 function TreeNodeRow({
 	node,
-	onOpenPath,
 }: {
 	node: SkillTreeNodeResponse & { depth?: number };
-	onOpenPath: (path: string) => void;
 }) {
 	return (
-		<button
-			type="button"
-			onClick={() => onOpenPath(node.path)}
+		<div
 			className="
-				flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left
-				text-sm text-foreground transition-colors hover:bg-content2
+				flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm
+				text-foreground
 			"
 			style={{ paddingLeft: `${(node.depth ?? 0) * 16 + 8}px` }}
 			title={node.path}
@@ -645,7 +624,7 @@ function TreeNodeRow({
 				<DocumentIcon className="size-4 shrink-0 text-muted" />
 			)}
 			<span className="min-w-0 flex-1 truncate">{node.name}</span>
-		</button>
+		</div>
 	);
 }
 

@@ -7,7 +7,7 @@ import {
 import { Chip, Label, ListBox, Tooltip } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useFavorites } from "../hooks/use-favorites";
@@ -84,11 +84,12 @@ interface SkillListProps {
 	skills: SkillResponse[];
 	selectedKeys: Set<string>;
 	searchQuery: string;
-	onSelectionChange: (keys: Set<string>) => void;
+	onSelectionChange: (keys: Set<string>, clickedKey?: string) => void;
 	emptyMessage?: string;
 	groupBySource?: boolean;
 	projectPath?: string;
 	selectionMode?: "none" | "single" | "multiple";
+	isMultiSelectMode?: boolean;
 }
 
 export function SkillList({
@@ -100,6 +101,7 @@ export function SkillList({
 	groupBySource = false,
 	projectPath,
 	selectionMode = "single",
+	isMultiSelectMode = false,
 }: SkillListProps) {
 	const { t } = useTranslation();
 	const { baseUrl } = useServer();
@@ -293,10 +295,67 @@ export function SkillList({
 		});
 	};
 
-	const handleSelectionChange = (keys: "all" | Set<React.Key>) => {
-		if (keys === "all") return;
-		onSelectionChange(new Set(Array.from(keys).map(String)));
-	};
+	const modifiersRef = useRef({
+		shift: false,
+		meta: false,
+	});
+	const lastClickedRef = useRef<string | null>(null);
+
+	useEffect(() => {
+		const handler = (e: PointerEvent) => {
+			modifiersRef.current = {
+				shift: e.shiftKey,
+				meta: e.metaKey || e.ctrlKey,
+			};
+		};
+		window.addEventListener("pointerdown", handler, true);
+		return () => window.removeEventListener("pointerdown", handler, true);
+	}, []);
+
+	const createSelectionHandler =
+		(orderedKeys: string[]) => (keys: "all" | Set<React.Key>) => {
+			if (keys === "all") return;
+			const newKeys = new Set(Array.from(keys).map(String));
+			const added = [...newKeys].find((k) => !selectedKeys.has(k));
+			const removed = [...selectedKeys].find((k) => !newKeys.has(k));
+			const clicked = added ?? removed;
+
+			if (!clicked) {
+				onSelectionChange(newKeys);
+				return;
+			}
+
+			let finalKeys: Set<string>;
+
+			if (modifiersRef.current.shift && lastClickedRef.current) {
+				const start = orderedKeys.indexOf(lastClickedRef.current);
+				const end = orderedKeys.indexOf(clicked);
+				if (start !== -1 && end !== -1) {
+					const [from, to] = [
+						Math.min(start, end),
+						Math.max(start, end),
+					];
+					finalKeys = new Set(orderedKeys.slice(from, to + 1));
+				} else {
+					finalKeys = new Set([...selectedKeys, clicked]);
+				}
+			} else if (!isMultiSelectMode && !modifiersRef.current.meta) {
+				finalKeys = new Set([clicked]);
+			} else {
+				finalKeys = new Set(selectedKeys);
+				if (finalKeys.has(clicked)) {
+					finalKeys.delete(clicked);
+				} else {
+					finalKeys.add(clicked);
+				}
+			}
+
+			if (!modifiersRef.current.shift) {
+				lastClickedRef.current = clicked;
+			}
+
+			onSelectionChange(finalKeys, clicked);
+		};
 
 	// Helper to render a skill item
 	const renderSkillItem = (skillGroup: SkillGroup) => (
@@ -365,7 +424,9 @@ export function SkillList({
 								selectionMode={selectionMode}
 								selectionBehavior="toggle"
 								selectedKeys={selectedKeys}
-								onSelectionChange={handleSelectionChange}
+								onSelectionChange={createSelectionHandler(
+									sg.skills.map((s) => s.name),
+								)}
 								className="p-2 pl-6"
 							>
 								{sg.skills.map(renderSkillItem)}
@@ -380,7 +441,11 @@ export function SkillList({
 						selectionMode={selectionMode}
 						selectionBehavior="toggle"
 						selectedKeys={selectedKeys}
-						onSelectionChange={handleSelectionChange}
+						onSelectionChange={createSelectionHandler(
+							[...singleItemGroups, ...unknownGroups].map(
+								(s) => s.name,
+							),
+						)}
 						className="p-2"
 					>
 						{[...singleItemGroups, ...unknownGroups].map(
@@ -407,7 +472,9 @@ export function SkillList({
 				selectionMode={selectionMode}
 				selectionBehavior="toggle"
 				selectedKeys={selectedKeys}
-				onSelectionChange={handleSelectionChange}
+				onSelectionChange={createSelectionHandler(
+					filteredByName.map((s) => s.name),
+				)}
 				className="p-2"
 			>
 				{filteredByName.map(renderSkillItem)}

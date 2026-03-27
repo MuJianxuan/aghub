@@ -75,20 +75,20 @@ export default function MCPServersPage() {
 		return new Set<string>();
 	}, [selectedKeys, activeGroup, isMultiSelectMode]);
 
-	const handleSelectionChange = (keys: Set<string>) => {
-		const prevKeys = selectedKeys;
+	const handleSelectionChange = (keys: Set<string>, clickedKey?: string) => {
 		setSelectedKeys(keys);
 
-		// 找到刚点击的项（新增或移除的那个）
-		const added = [...keys].find((k) => !prevKeys.has(k));
-		const removed = [...prevKeys].find((k) => !keys.has(k));
-		const clicked = added ?? removed;
-
-		if (clicked) {
-			setSelectedKey(clicked);
-			setPanel({ type: "detail", selectedKey: clicked });
+		if (clickedKey) {
+			setSelectedKey(clickedKey);
+			setPanel({
+				type: "detail",
+				selectedKey: clickedKey,
+			});
 		}
 
+		if (keys.size > 1 && !isMultiSelectMode) {
+			setIsMultiSelectMode(true);
+		}
 		if (keys.size === 0 && isMultiSelectMode) {
 			setIsMultiSelectMode(false);
 		}
@@ -203,7 +203,8 @@ export default function MCPServersPage() {
 					selectedKeys={effectiveSelectedKeys}
 					searchQuery={searchQuery}
 					onSelectionChange={handleSelectionChange}
-					selectionMode={isMultiSelectMode ? "multiple" : "single"}
+					selectionMode="multiple"
+					isMultiSelectMode={isMultiSelectMode}
 				/>
 			</div>
 

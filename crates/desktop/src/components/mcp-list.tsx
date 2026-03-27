@@ -5,7 +5,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { Label, ListBox, Tooltip } from "@heroui/react";
 import Fuse from "fuse.js";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useFavorites } from "../hooks/use-favorites";
@@ -70,9 +70,10 @@ interface McpListProps {
 	mcps: McpResponse[];
 	selectedKeys: Set<string>;
 	searchQuery: string;
-	onSelectionChange: (keys: Set<string>) => void;
+	onSelectionChange: (keys: Set<string>, clickedKey?: string) => void;
 	emptyMessage?: string;
 	selectionMode?: "none" | "single" | "multiple";
+	isMultiSelectMode?: boolean;
 }
 
 export function McpList({
@@ -82,6 +83,7 @@ export function McpList({
 	onSelectionChange,
 	emptyMessage,
 	selectionMode = "single",
+	isMultiSelectMode = false,
 }: McpListProps) {
 	const { t } = useTranslation();
 
@@ -131,9 +133,63 @@ export function McpList({
 		});
 	}, [filteredGroups, isMcpStarred]);
 
+	const modifiersRef = useRef({
+		shift: false,
+		meta: false,
+	});
+	const lastClickedRef = useRef<string | null>(null);
+
+	useEffect(() => {
+		const handler = (e: PointerEvent) => {
+			modifiersRef.current = {
+				shift: e.shiftKey,
+				meta: e.metaKey || e.ctrlKey,
+			};
+		};
+		window.addEventListener("pointerdown", handler, true);
+		return () => window.removeEventListener("pointerdown", handler, true);
+	}, []);
+
 	const handleSelectionChange = (keys: "all" | Set<React.Key>) => {
 		if (keys === "all") return;
-		onSelectionChange(new Set(Array.from(keys).map(String)));
+		const newKeys = new Set(Array.from(keys).map(String));
+		const added = [...newKeys].find((k) => !selectedKeys.has(k));
+		const removed = [...selectedKeys].find((k) => !newKeys.has(k));
+		const clicked = added ?? removed;
+
+		if (!clicked) {
+			onSelectionChange(newKeys);
+			return;
+		}
+
+		let finalKeys: Set<string>;
+
+		if (modifiersRef.current.shift && lastClickedRef.current) {
+			const allKeys = sortedGroups.map((g) => g.mergeKey);
+			const start = allKeys.indexOf(lastClickedRef.current);
+			const end = allKeys.indexOf(clicked);
+			if (start !== -1 && end !== -1) {
+				const [from, to] = [Math.min(start, end), Math.max(start, end)];
+				finalKeys = new Set(allKeys.slice(from, to + 1));
+			} else {
+				finalKeys = new Set([...selectedKeys, clicked]);
+			}
+		} else if (!isMultiSelectMode && !modifiersRef.current.meta) {
+			finalKeys = new Set([clicked]);
+		} else {
+			finalKeys = new Set(selectedKeys);
+			if (finalKeys.has(clicked)) {
+				finalKeys.delete(clicked);
+			} else {
+				finalKeys.add(clicked);
+			}
+		}
+
+		if (!modifiersRef.current.shift) {
+			lastClickedRef.current = clicked;
+		}
+
+		onSelectionChange(finalKeys, clicked);
 	};
 
 	const getTransportIcon = (

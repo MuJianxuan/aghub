@@ -1,4 +1,5 @@
 import {
+	Alert,
 	Button,
 	Card,
 	Description,
@@ -139,11 +140,14 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 	return (
 		<div className="h-full max-w-3xl overflow-y-auto p-6">
 			{error && (
-				<div className="mb-4 rounded-lg border border-danger/30 bg-danger-soft p-3">
-					<p className="text-sm text-danger">
-						{t("createError", { error })}
-					</p>
-				</div>
+				<Alert className="mb-4" status="danger">
+					<Alert.Indicator />
+					<Alert.Content>
+						<Alert.Description>
+							{t("createError", { error })}
+						</Alert.Description>
+					</Alert.Content>
+				</Alert>
 			)}
 
 			<Card>

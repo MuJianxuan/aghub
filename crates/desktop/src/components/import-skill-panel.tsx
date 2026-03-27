@@ -1,5 +1,13 @@
 import { DocumentIcon, FolderOpenIcon } from "@heroicons/react/24/outline";
-import { Button, Card, Fieldset, Form, Input, Label } from "@heroui/react";
+import {
+	Alert,
+	Button,
+	Card,
+	Fieldset,
+	Form,
+	Input,
+	Label,
+} from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useMemo, useState } from "react";
@@ -118,14 +126,14 @@ export function ImportSkillPanel({
 	return (
 		<div className="h-full max-w-3xl overflow-y-auto p-6">
 			{error && (
-				<div
-					role="alert"
-					className="mb-4 rounded-lg border border-danger/30 bg-danger-soft p-3"
-				>
-					<p className="text-sm text-danger">
-						{t("importError", { error })}
-					</p>
-				</div>
+				<Alert className="mb-4" status="danger">
+					<Alert.Indicator />
+					<Alert.Content>
+						<Alert.Description>
+							{t("importError", { error })}
+						</Alert.Description>
+					</Alert.Content>
+				</Alert>
 			)}
 
 			<Card>

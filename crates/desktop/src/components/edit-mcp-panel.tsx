@@ -191,19 +191,14 @@ export function EditMcpPanel({
 			)}
 
 			{error && (
-				<div className="mb-4 rounded-lg border border-danger/30 bg-danger/10 p-3">
-					<p className="text-sm text-danger">
-						{t("saveError", { error })}
-					</p>
-				</div>
-			)}
-
-			{error && (
-				<div className="mb-4 rounded-lg border border-danger/30 bg-danger-soft p-3">
-					<p className="text-sm text-danger">
-						{t("saveError", { error })}
-					</p>
-				</div>
+				<Alert className="mb-4" status="danger">
+					<Alert.Indicator />
+					<Alert.Content>
+						<Alert.Description>
+							{t("saveError", { error })}
+						</Alert.Description>
+					</Alert.Content>
+				</Alert>
 			)}
 
 			<Form>

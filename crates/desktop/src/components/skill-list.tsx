@@ -82,22 +82,24 @@ interface SourceGroup {
 
 interface SkillListProps {
 	skills: SkillResponse[];
-	selectedKey: string | null;
+	selectedKeys: Set<string>;
 	searchQuery: string;
-	onSelect: (key: string) => void;
+	onSelectionChange: (keys: Set<string>) => void;
 	emptyMessage?: string;
 	groupBySource?: boolean;
 	projectPath?: string;
+	selectionMode?: "none" | "single" | "multiple";
 }
 
 export function SkillList({
 	skills,
-	selectedKey,
+	selectedKeys,
 	searchQuery,
-	onSelect,
+	onSelectionChange,
 	emptyMessage,
 	groupBySource = false,
 	projectPath,
+	selectionMode = "single",
 }: SkillListProps) {
 	const { t } = useTranslation();
 	const { baseUrl } = useServer();
@@ -155,7 +157,7 @@ export function SkillList({
 			const bStarred = isSkillStarred(b.name);
 			if (aStarred && !bStarred) return -1;
 			if (!aStarred && bStarred) return 1;
-			return 0; // maintain search or original order
+			return 0;
 		});
 	}, [fuse, groupedByName, searchQuery, isSkillStarred]);
 
@@ -291,6 +293,32 @@ export function SkillList({
 		});
 	};
 
+	const handleSelectionChange = (keys: "all" | Set<React.Key>) => {
+		if (keys === "all") return;
+		onSelectionChange(new Set(Array.from(keys).map(String)));
+	};
+
+	// Helper to render a skill item
+	const renderSkillItem = (skillGroup: SkillGroup) => (
+		<ListBox.Item
+			key={skillGroup.name}
+			id={skillGroup.name}
+			textValue={skillGroup.name}
+			className="data-selected:bg-surface"
+		>
+			<div className="flex w-full items-center gap-2">
+				<div className="relative inline-flex size-4 shrink-0 items-center justify-center">
+					<BookOpenIcon className="size-4 text-muted" />
+					{isSkillStarred(skillGroup.name) && (
+						<StarIconSolid className="absolute -bottom-1 -left-1 size-2.5 text-warning" />
+					)}
+				</div>
+				<Label className="flex-1 truncate">{skillGroup.name}</Label>
+				<SkillAgentIcons items={skillGroup.items} />
+			</div>
+		</ListBox.Item>
+	);
+
 	if (groupBySource) {
 		const hasItems =
 			sourceGroups.length > 0 ||
@@ -334,44 +362,13 @@ export function SkillList({
 						{expandedSources.has(sg.source) && (
 							<ListBox
 								aria-label={`Skills from ${sg.source}`}
-								selectionMode="single"
-								selectedKeys={
-									selectedKey
-										? new Set([selectedKey])
-										: new Set()
-								}
-								onSelectionChange={(keys) => {
-									if (keys === "all") return;
-									const key = [...keys][0] as string;
-									if (key) onSelect(key);
-								}}
+								selectionMode={selectionMode}
+								selectionBehavior="toggle"
+								selectedKeys={selectedKeys}
+								onSelectionChange={handleSelectionChange}
 								className="p-2 pl-6"
 							>
-								{sg.skills.map((skillGroup) => (
-									<ListBox.Item
-										key={skillGroup.name}
-										id={skillGroup.name}
-										textValue={skillGroup.name}
-										className="data-selected:bg-surface"
-									>
-										<div className="flex w-full items-center gap-2">
-											<div className="relative inline-flex size-4 shrink-0 items-center justify-center">
-												<BookOpenIcon className="size-4 text-muted" />
-												{isSkillStarred(
-													skillGroup.name,
-												) && (
-													<StarIconSolid className="absolute -bottom-1 -left-1 size-2.5 text-warning" />
-												)}
-											</div>
-											<Label className="flex-1 truncate">
-												{skillGroup.name}
-											</Label>
-											<SkillAgentIcons
-												items={skillGroup.items}
-											/>
-										</div>
-									</ListBox.Item>
-								))}
+								{sg.skills.map(renderSkillItem)}
 							</ListBox>
 						)}
 					</div>
@@ -380,39 +377,14 @@ export function SkillList({
 				{(singleItemGroups.length > 0 || unknownGroups.length > 0) && (
 					<ListBox
 						aria-label="Ungrouped skills"
-						selectionMode="single"
-						selectedKeys={
-							selectedKey ? new Set([selectedKey]) : new Set()
-						}
-						onSelectionChange={(keys) => {
-							if (keys === "all") return;
-							const key = [...keys][0] as string;
-							if (key) onSelect(key);
-						}}
+						selectionMode={selectionMode}
+						selectionBehavior="toggle"
+						selectedKeys={selectedKeys}
+						onSelectionChange={handleSelectionChange}
 						className="p-2"
 					>
 						{[...singleItemGroups, ...unknownGroups].map(
-							(group) => (
-								<ListBox.Item
-									key={group.name}
-									id={group.name}
-									textValue={group.name}
-									className="data-selected:bg-surface"
-								>
-									<div className="flex w-full items-center gap-2">
-										<div className="relative inline-flex size-4 shrink-0 items-center justify-center">
-											<BookOpenIcon className="size-4 text-muted" />
-											{isSkillStarred(group.name) && (
-												<StarIconSolid className="absolute -bottom-1 -left-1 size-2.5 text-warning" />
-											)}
-										</div>
-										<Label className="flex-1 truncate">
-											{group.name}
-										</Label>
-										<SkillAgentIcons items={group.items} />
-									</div>
-								</ListBox.Item>
-							),
+							renderSkillItem,
 						)}
 					</ListBox>
 				)}
@@ -429,36 +401,17 @@ export function SkillList({
 	}
 
 	return (
-		<ListBox
-			aria-label="Skills"
-			selectionMode="single"
-			selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
-			onSelectionChange={(keys) => {
-				if (keys === "all") return;
-				const key = [...keys][0] as string;
-				if (key) onSelect(key);
-			}}
-			className="p-2"
-		>
-			{filteredByName.map((group) => (
-				<ListBox.Item
-					key={group.name}
-					id={group.name}
-					textValue={group.name}
-					className="data-selected:bg-surface"
-				>
-					<div className="flex w-full items-center gap-2">
-						<div className="relative inline-flex size-4 shrink-0 items-center justify-center">
-							<BookOpenIcon className="size-4 text-muted" />
-							{isSkillStarred(group.name) && (
-								<StarIconSolid className="absolute -bottom-1 -left-1 size-2.5 text-warning" />
-							)}
-						</div>
-						<Label className="flex-1 truncate">{group.name}</Label>
-						<SkillAgentIcons items={group.items} />
-					</div>
-				</ListBox.Item>
-			))}
-		</ListBox>
+		<div className="flex-1 overflow-y-auto">
+			<ListBox
+				aria-label="Skills"
+				selectionMode={selectionMode}
+				selectionBehavior="toggle"
+				selectedKeys={selectedKeys}
+				onSelectionChange={handleSelectionChange}
+				className="p-2"
+			>
+				{filteredByName.map(renderSkillItem)}
+			</ListBox>
+		</div>
 	);
 }

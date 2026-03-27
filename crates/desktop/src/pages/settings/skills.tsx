@@ -1,16 +1,13 @@
-import {
-	ArrowDownTrayIcon,
-	ArrowPathIcon,
-	CommandLineIcon,
-	PlusIcon,
-} from "@heroicons/react/24/solid";
+import { ArrowPathIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { Button, Dropdown } from "@heroui/react";
 import { useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BulkDeleteDialog } from "../../components/bulk-delete-dialog";
 import { CreateSkillPanel } from "../../components/create-skill-panel";
 import { ImportSkillPanel } from "../../components/import-skill-panel";
 import { ListSearchHeader } from "../../components/list-search-header";
+import { MultiSelectFloatingBar } from "../../components/multi-select-floating-bar";
 import { SkillDetail } from "../../components/skill-detail";
 import { SkillList } from "../../components/skill-list";
 import { useSkills } from "../../hooks/use-skills";
@@ -22,9 +19,16 @@ export default function SkillsPage() {
 	const { data: skills, refetch, isFetching } = useSkills();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedName, setSelectedName] = useQueryState("skill");
+	const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+	const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+
 	const [panelMode, setPanelMode] = useState<"create" | "import" | null>(
 		null,
 	);
+
 	const groupedSkills = useMemo(() => {
 		const map = new Map<string, SkillResponse[]>();
 		for (const skill of skills) {
@@ -39,23 +43,52 @@ export default function SkillsPage() {
 	}, [skills]);
 
 	const activeGroup = useMemo(() => {
-		if (!selectedName) {
-			return groupedSkills[0] ?? null;
+		if (selectedName) {
+			return groupedSkills.find((g) => g.name === selectedName) ?? null;
 		}
-		return groupedSkills.find((g) => g.name === selectedName) ?? null;
+		return groupedSkills[0] ?? null;
 	}, [selectedName, groupedSkills]);
 
-	const handleSelect = (name: string) => {
-		setSelectedName(name);
+	// 多选模式下被选中的所有 groups（用于批量删除）
+	const selectedGroups = useMemo(() => {
+		return groupedSkills.filter((g) => selectedKeys.has(g.name));
+	}, [selectedKeys, groupedSkills]);
+
+	// ListBox 高亮用的 keys
+	const effectiveSelectedKeys = useMemo(() => {
+		if (selectedKeys.size > 0) return selectedKeys;
+		if (activeGroup && !isMultiSelectMode) {
+			return new Set([activeGroup.name]);
+		}
+		return new Set<string>();
+	}, [selectedKeys, activeGroup, isMultiSelectMode]);
+
+	const handleSelectionChange = (keys: Set<string>) => {
+		const prevKeys = selectedKeys;
+		setSelectedKeys(keys);
+
+		const added = [...keys].find((k) => !prevKeys.has(k));
+		const removed = [...prevKeys].find((k) => !keys.has(k));
+		const clicked = added ?? removed;
+
+		if (clicked) {
+			setSelectedName(clicked);
+		}
+
+		if (keys.size === 0 && isMultiSelectMode) {
+			setIsMultiSelectMode(false);
+		}
 		setPanelMode(null);
 	};
 
 	const handleCreateSkill = () => {
+		setSelectedKeys(new Set());
 		setSelectedName(null);
 		setPanelMode("create");
 	};
 
 	const handleImportSkill = () => {
+		setSelectedKeys(new Set());
 		setSelectedName(null);
 		setPanelMode("import");
 	};
@@ -70,6 +103,22 @@ export default function SkillsPage() {
 					placeholder={t("searchSkills")}
 					ariaLabel={t("searchSkills")}
 				>
+					<Button
+						variant={isMultiSelectMode ? "primary" : "ghost"}
+						size="sm"
+						className="shrink-0 font-medium"
+						aria-label={t("multiSelect")}
+						onPress={() => {
+							setIsMultiSelectMode((prev) => !prev);
+							if (isMultiSelectMode) {
+								handleSelectionChange(new Set());
+							}
+						}}
+					>
+						{isMultiSelectMode
+							? t("doneSelecting")
+							: t("selectItems")}
+					</Button>
 					<Dropdown>
 						<Button
 							isIconOnly
@@ -94,19 +143,13 @@ export default function SkillsPage() {
 									id="create"
 									textValue={t("createCustomSkill")}
 								>
-									<div className="flex items-center gap-2">
-										<CommandLineIcon className="size-4" />
-										<span>{t("createCustomSkill")}</span>
-									</div>
+									{t("createCustomSkill")}
 								</Dropdown.Item>
 								<Dropdown.Item
 									id="import"
 									textValue={t("importFromFile")}
 								>
-									<div className="flex items-center gap-2">
-										<ArrowDownTrayIcon className="size-4" />
-										<span>{t("importFromFile")}</span>
-									</div>
+									{t("importFromFile")}
 								</Dropdown.Item>
 							</Dropdown.Menu>
 						</Dropdown.Popover>
@@ -131,14 +174,15 @@ export default function SkillsPage() {
 				{/* Skills List */}
 				<SkillList
 					skills={skills}
-					selectedKey={selectedName ?? activeGroup?.name ?? null}
+					selectedKeys={effectiveSelectedKeys}
 					searchQuery={searchQuery}
-					onSelect={handleSelect}
+					onSelectionChange={handleSelectionChange}
+					selectionMode={isMultiSelectMode ? "multiple" : "single"}
 					groupBySource={true}
 				/>
 			</div>
 
-			<div className="flex-1 overflow-hidden">
+			<div className="flex-1 overflow-hidden relative">
 				{panelMode === "create" ? (
 					<CreateSkillPanel onDone={() => setPanelMode(null)} />
 				) : panelMode === "import" ? (
@@ -154,6 +198,25 @@ export default function SkillsPage() {
 						</div>
 					</div>
 				)}
+
+				{isMultiSelectMode && selectedKeys.size > 0 && (
+					<MultiSelectFloatingBar
+						selectedCount={selectedKeys.size}
+						totalCount={groupedSkills.length}
+						onDelete={() => setIsBulkDeleteDialogOpen(true)}
+					/>
+				)}
+
+				<BulkDeleteDialog
+					isOpen={isBulkDeleteDialogOpen}
+					onClose={() => setIsBulkDeleteDialogOpen(false)}
+					groups={selectedGroups.map((g) => ({
+						key: g.name,
+						items: g.items,
+					}))}
+					onSuccess={() => handleSelectionChange(new Set())}
+					resourceType="skill"
+				/>
 			</div>
 		</div>
 	);

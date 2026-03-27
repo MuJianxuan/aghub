@@ -1,13 +1,9 @@
-import {
-	ArrowDownTrayIcon,
-	ArrowPathIcon,
-	PlusIcon,
-	ServerIcon,
-} from "@heroicons/react/24/solid";
+import { ArrowPathIcon, PlusIcon } from "@heroicons/react/24/solid";
 import { Button, Dropdown } from "@heroui/react";
 import { useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { BulkDeleteDialog } from "../../components/bulk-delete-dialog";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
 import { EditMcpPanel } from "../../components/edit-mcp-panel";
 import { ImportMcpPanel } from "../../components/import-mcp-panel";
@@ -15,6 +11,7 @@ import { ListSearchHeader } from "../../components/list-search-header";
 import type { McpGroup } from "../../components/mcp-detail";
 import { McpDetail } from "../../components/mcp-detail";
 import { McpList } from "../../components/mcp-list";
+import { MultiSelectFloatingBar } from "../../components/multi-select-floating-bar";
 import { useMcps } from "../../hooks/use-mcps";
 import { cn, getMcpMergeKey } from "../../lib/utils";
 
@@ -31,6 +28,11 @@ export default function MCPServersPage() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [panel, setPanel] = useState<RightPanel>({ type: "empty" });
 	const [selectedKey, setSelectedKey] = useQueryState("server");
+	const [selectedKeys, setSelectedKeys] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+	const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
 
 	const groupedMcps = useMemo(() => {
 		const map = new Map<string, McpGroup>();
@@ -52,17 +54,54 @@ export default function MCPServersPage() {
 		return Array.from(map.values());
 	}, [mcps]);
 
-	const handleSelect = (key: string) => {
-		setSelectedKey(key);
-		setPanel({ type: "detail", selectedKey: key });
+	const activeGroup = useMemo(() => {
+		if (selectedKey) {
+			return groupedMcps.find((g) => g.mergeKey === selectedKey) ?? null;
+		}
+		return groupedMcps[0] ?? null;
+	}, [selectedKey, groupedMcps]);
+
+	// 多选模式下被选中的所有 groups（用于批量删除）
+	const selectedGroups = useMemo(() => {
+		return groupedMcps.filter((g) => selectedKeys.has(g.mergeKey));
+	}, [selectedKeys, groupedMcps]);
+
+	// ListBox 高亮用的 keys
+	const effectiveSelectedKeys = useMemo(() => {
+		if (selectedKeys.size > 0) return selectedKeys;
+		if (activeGroup && !isMultiSelectMode) {
+			return new Set([activeGroup.mergeKey]);
+		}
+		return new Set<string>();
+	}, [selectedKeys, activeGroup, isMultiSelectMode]);
+
+	const handleSelectionChange = (keys: Set<string>) => {
+		const prevKeys = selectedKeys;
+		setSelectedKeys(keys);
+
+		// 找到刚点击的项（新增或移除的那个）
+		const added = [...keys].find((k) => !prevKeys.has(k));
+		const removed = [...prevKeys].find((k) => !keys.has(k));
+		const clicked = added ?? removed;
+
+		if (clicked) {
+			setSelectedKey(clicked);
+			setPanel({ type: "detail", selectedKey: clicked });
+		}
+
+		if (keys.size === 0 && isMultiSelectMode) {
+			setIsMultiSelectMode(false);
+		}
 	};
 
 	const handleCreate = () => {
+		setSelectedKeys(new Set());
 		setSelectedKey(null);
 		setPanel({ type: "create" });
 	};
 
 	const handleImport = () => {
+		setSelectedKeys(new Set());
 		setSelectedKey(null);
 		setPanel({ type: "import" });
 	};
@@ -75,16 +114,10 @@ export default function MCPServersPage() {
 		setPanel({ type: "detail", selectedKey: mergeKey });
 	};
 
-	const selectedGroup = selectedKey
-		? groupedMcps.find((g) => g.mergeKey === selectedKey)
-		: null;
-
-	const effectivePanel: RightPanel =
-		panel.type !== "empty"
-			? panel
-			: selectedKey
-				? { type: "detail", selectedKey }
-				: { type: "empty" };
+	const showDetail =
+		panel.type !== "create" &&
+		panel.type !== "import" &&
+		panel.type !== "edit";
 
 	return (
 		<div className="flex h-full">
@@ -96,6 +129,22 @@ export default function MCPServersPage() {
 					placeholder={t("searchServers")}
 					ariaLabel={t("searchServers")}
 				>
+					<Button
+						variant={isMultiSelectMode ? "primary" : "ghost"}
+						size="sm"
+						className="shrink-0 font-medium"
+						aria-label={t("multiSelect")}
+						onPress={() => {
+							setIsMultiSelectMode((prev) => !prev);
+							if (isMultiSelectMode) {
+								handleSelectionChange(new Set());
+							}
+						}}
+					>
+						{isMultiSelectMode
+							? t("doneSelecting")
+							: t("selectItems")}
+					</Button>
 					<Dropdown>
 						<Button
 							isIconOnly
@@ -120,19 +169,13 @@ export default function MCPServersPage() {
 									id="manual"
 									textValue={t("manualCreation")}
 								>
-									<div className="flex items-center gap-2">
-										<ServerIcon className="size-4" />
-										<span>{t("manualCreation")}</span>
-									</div>
+									{t("manualCreation")}
 								</Dropdown.Item>
 								<Dropdown.Item
 									id="import"
 									textValue={t("importFromJson")}
 								>
-									<div className="flex items-center gap-2">
-										<ArrowDownTrayIcon className="size-4" />
-										<span>{t("importFromJson")}</span>
-									</div>
+									{t("importFromJson")}
 								</Dropdown.Item>
 							</Dropdown.Menu>
 						</Dropdown.Popover>
@@ -157,40 +200,40 @@ export default function MCPServersPage() {
 				{/* Servers List */}
 				<McpList
 					mcps={mcps}
-					selectedKey={selectedKey}
+					selectedKeys={effectiveSelectedKeys}
 					searchQuery={searchQuery}
-					onSelect={handleSelect}
+					onSelectionChange={handleSelectionChange}
+					selectionMode={isMultiSelectMode ? "multiple" : "single"}
 				/>
 			</div>
 
 			{/* Server Detail Panel */}
-			<div className="flex-1 overflow-hidden">
-				{effectivePanel.type === "detail" && selectedGroup && (
+			<div className="flex-1 overflow-hidden relative">
+				{panel.type === "create" && (
+					<CreateMcpPanel onDone={handlePanelDone} />
+				)}
+				{panel.type === "import" && (
+					<ImportMcpPanel onDone={handlePanelDone} />
+				)}
+				{panel.type === "edit" && activeGroup && (
+					<EditMcpPanel
+						key={activeGroup.mergeKey}
+						group={activeGroup}
+						onDone={() => handleEditDone(activeGroup.mergeKey)}
+					/>
+				)}
+				{showDetail && activeGroup && (
 					<McpDetail
-						group={selectedGroup}
+						group={activeGroup}
 						onEdit={() =>
 							setPanel({
 								type: "edit",
-								selectedKey: selectedGroup.mergeKey,
+								selectedKey: activeGroup.mergeKey,
 							})
 						}
 					/>
 				)}
-				{effectivePanel.type === "create" && (
-					<CreateMcpPanel onDone={handlePanelDone} />
-				)}
-				{effectivePanel.type === "import" && (
-					<ImportMcpPanel onDone={handlePanelDone} />
-				)}
-				{effectivePanel.type === "edit" && selectedGroup && (
-					<EditMcpPanel
-						key={selectedGroup.mergeKey}
-						group={selectedGroup}
-						onDone={handleEditDone}
-					/>
-				)}
-				{(effectivePanel.type === "empty" ||
-					(effectivePanel.type === "detail" && !selectedGroup)) && (
+				{showDetail && !activeGroup && (
 					<div className="flex h-full flex-col items-center justify-center gap-4">
 						<div className="text-center">
 							<p className="mb-2 text-sm text-muted">
@@ -206,6 +249,25 @@ export default function MCPServersPage() {
 						</Button>
 					</div>
 				)}
+
+				{isMultiSelectMode && selectedKeys.size > 0 && (
+					<MultiSelectFloatingBar
+						selectedCount={selectedKeys.size}
+						totalCount={groupedMcps.length}
+						onDelete={() => setIsBulkDeleteDialogOpen(true)}
+					/>
+				)}
+
+				<BulkDeleteDialog
+					isOpen={isBulkDeleteDialogOpen}
+					onClose={() => setIsBulkDeleteDialogOpen(false)}
+					groups={selectedGroups.map((g) => ({
+						key: g.mergeKey,
+						items: g.items,
+					}))}
+					onSuccess={() => handleSelectionChange(new Set())}
+					resourceType="mcp"
+				/>
 			</div>
 		</div>
 	);

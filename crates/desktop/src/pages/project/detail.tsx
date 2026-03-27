@@ -116,9 +116,13 @@ export default function ProjectDetailPage() {
 			? groupedSkills.find((g) => g.name === selectedResource)
 			: null;
 
-	const handleSelect = (key: string, type: "mcp" | "skill") => {
+	const handleSelectionChange = (
+		keys: Set<string>,
+		type: "mcp" | "skill",
+	) => {
+		const key = keys.size === 1 ? [...keys][0] : null;
 		setSelectedResource(key);
-		setResourceType(type);
+		setResourceType(key ? type : "");
 		setPanelMode(null);
 	};
 
@@ -143,9 +147,11 @@ export default function ProjectDetailPage() {
 			<UnifiedResourceList
 				mcps={projectMcps}
 				skills={projectSkills}
-				selectedKey={selectedResource}
+				selectedKeys={
+					selectedResource ? new Set([selectedResource]) : new Set()
+				}
 				selectedType={resourceType as "mcp" | "skill" | null}
-				onSelect={handleSelect}
+				onSelectionChange={handleSelectionChange}
 				onCreateMcp={(type) => {
 					if (type === "manual") setPanelMode("create-mcp");
 					else if (type === "import") setPanelMode("import-mcp");
@@ -205,11 +211,7 @@ export default function ProjectDetailPage() {
 					<EditMcpPanel
 						key={selectedMcpGroup.mergeKey}
 						group={selectedMcpGroup}
-						onDone={(mergeKey) => {
-							setSelectedResource(mergeKey);
-							setResourceType("mcp");
-							setPanelMode(null);
-						}}
+						onDone={() => setPanelMode(null)}
 						projectPath={project.path}
 					/>
 				)}

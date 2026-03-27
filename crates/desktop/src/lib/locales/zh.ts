@@ -58,10 +58,20 @@ export default {
 
 	// Skills Page
 	searchSkills: "搜索技能...",
+	multiSelect: "多选模式",
+	selectItems: "选择",
+	doneSelecting: "完成",
 	addSkill: "添加技能",
 	refreshSkills: "刷新技能",
 	noSkillsMatch: "没有匹配的技能",
 	selectSkill: "选择一个技能查看详情",
+	deleteSelected: "删除所选",
+	itemsSelected: "已选择 {{count}} 项",
+	bulkDeleteConfirmTitle: "批量删除",
+	bulkDeleteSkillConfirm:
+		"确定要从所有已安装的 Agent 中删除这 {{count}} 个被选中的技能吗？",
+	bulkDeleteMcpConfirm:
+		"确定要从所有已安装的 Agent 中删除这 {{count}} 个被选中的 MCP 服务吗？",
 	starSkill: "收藏技能",
 	unstarSkill: "取消收藏",
 	starServer: "收藏服务",

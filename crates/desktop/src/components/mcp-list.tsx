@@ -68,18 +68,20 @@ interface McpGroup {
 
 interface McpListProps {
 	mcps: McpResponse[];
-	selectedKey: string | null;
+	selectedKeys: Set<string>;
 	searchQuery: string;
-	onSelect: (key: string) => void;
+	onSelectionChange: (keys: Set<string>) => void;
 	emptyMessage?: string;
+	selectionMode?: "none" | "single" | "multiple";
 }
 
 export function McpList({
 	mcps,
-	selectedKey,
+	selectedKeys,
 	searchQuery,
-	onSelect,
+	onSelectionChange,
 	emptyMessage,
+	selectionMode = "single",
 }: McpListProps) {
 	const { t } = useTranslation();
 
@@ -129,6 +131,11 @@ export function McpList({
 		});
 	}, [filteredGroups, isMcpStarred]);
 
+	const handleSelectionChange = (keys: "all" | Set<React.Key>) => {
+		if (keys === "all") return;
+		onSelectionChange(new Set(Array.from(keys).map(String)));
+	};
+
 	const getTransportIcon = (
 		transport: McpGroup["transport"],
 		starred: boolean,
@@ -154,36 +161,35 @@ export function McpList({
 	}
 
 	return (
-		<ListBox
-			aria-label="MCP Servers"
-			selectionMode="single"
-			selectedKeys={selectedKey ? new Set([selectedKey]) : new Set()}
-			onSelectionChange={(keys) => {
-				if (keys === "all") return;
-				const key = [...keys][0] as string;
-				if (key) onSelect(key);
-			}}
-			className="p-2"
-		>
-			{sortedGroups.map((group) => {
-				const isStarred = isMcpStarred(group.mergeKey);
-				return (
-					<ListBox.Item
-						key={group.mergeKey}
-						id={group.mergeKey}
-						textValue={group.items[0].name}
-						className="data-selected:bg-surface"
-					>
-						<div className="flex w-full items-center gap-2">
-							{getTransportIcon(group.transport, isStarred)}
-							<Label className="flex-1 truncate">
-								{group.items[0].name}
-							</Label>
-							<McpAgentIcons items={group.items} />
-						</div>
-					</ListBox.Item>
-				);
-			})}
-		</ListBox>
+		<div className="flex-1 overflow-y-auto">
+			<ListBox
+				aria-label="MCP Servers"
+				selectionMode={selectionMode}
+				selectionBehavior="toggle"
+				selectedKeys={selectedKeys}
+				onSelectionChange={handleSelectionChange}
+				className="p-2"
+			>
+				{sortedGroups.map((group) => {
+					const isStarred = isMcpStarred(group.mergeKey);
+					return (
+						<ListBox.Item
+							key={group.mergeKey}
+							id={group.mergeKey}
+							textValue={group.items[0].name}
+							className="data-selected:bg-surface"
+						>
+							<div className="flex w-full items-center gap-2">
+								{getTransportIcon(group.transport, isStarred)}
+								<Label className="flex-1 truncate">
+									{group.items[0].name}
+								</Label>
+								<McpAgentIcons items={group.items} />
+							</div>
+						</ListBox.Item>
+					);
+				})}
+			</ListBox>
+		</div>
 	);
 }

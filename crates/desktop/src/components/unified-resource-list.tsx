@@ -26,9 +26,9 @@ import { SkillList } from "./skill-list";
 interface UnifiedResourceListProps {
 	mcps: McpResponse[];
 	skills: SkillResponse[];
-	selectedKey: string | null;
+	selectedKeys: Set<string>;
 	selectedType: "mcp" | "skill" | null;
-	onSelect: (key: string, type: "mcp" | "skill") => void;
+	onSelectionChange: (keys: Set<string>, type: "mcp" | "skill") => void;
 	onCreateMcp: (type: "manual" | "import") => void;
 	onCreateSkill: (type: "local" | "import") => void;
 	onRefresh: () => void;
@@ -84,9 +84,9 @@ function ResourceListSkeleton() {
 export function UnifiedResourceList({
 	mcps,
 	skills,
-	selectedKey,
+	selectedKeys,
 	selectedType,
-	onSelect,
+	onSelectionChange,
 	onCreateMcp,
 	onCreateSkill,
 	onRefresh,
@@ -118,13 +118,18 @@ export function UnifiedResourceList({
 	const hasSkills = skills.length > 0;
 	const hasAny = hasMcps || hasSkills;
 
-	const handleSelectMcp = (key: string) => {
-		onSelect(key, "mcp");
+	const handleMcpSelectionChange = (keys: Set<string>) => {
+		onSelectionChange(keys, "mcp");
 	};
 
-	const handleSelectSkill = (key: string) => {
-		onSelect(key, "skill");
+	const handleSkillSelectionChange = (keys: Set<string>) => {
+		onSelectionChange(keys, "skill");
 	};
+
+	const mcpSelectedKeys =
+		selectedType === "mcp" ? selectedKeys : new Set<string>();
+	const skillSelectedKeys =
+		selectedType === "skill" ? selectedKeys : new Set<string>();
 
 	return (
 		<div className="flex w-80 shrink-0 flex-col border-r border-border">
@@ -157,45 +162,61 @@ export function UnifiedResourceList({
 							}}
 						>
 							<Dropdown.Section>
-								<Header>{t("mcpServers")}</Header>
+								<Header>
+									<div className="flex items-center gap-2 px-2 py-1.5">
+										<ServerIcon className="size-4 text-muted" />
+										<Label className="text-xs font-medium text-muted uppercase tracking-wider">
+											{t("mcpServers")}
+										</Label>
+									</div>
+								</Header>
 								<Dropdown.Item
 									id="mcp-manual"
 									textValue={t("manualCreation")}
 								>
-									<div className="flex items-center gap-2">
-										<ServerIcon className="size-4" />
-										<Label>{t("manualCreation")}</Label>
+									<div className="flex items-center gap-2 pl-6">
+										<PlusIcon className="size-4" />
+										<span>{t("manualCreation")}</span>
 									</div>
 								</Dropdown.Item>
 								<Dropdown.Item
 									id="mcp-import"
 									textValue={t("importFromJson")}
 								>
-									<div className="flex items-center gap-2">
+									<div className="flex items-center gap-2 pl-6">
 										<ArrowDownTrayIcon className="size-4" />
-										<Label>{t("importFromJson")}</Label>
+										<span>{t("importFromJson")}</span>
 									</div>
 								</Dropdown.Item>
 							</Dropdown.Section>
+
 							<Separator />
+
 							<Dropdown.Section>
-								<Header>{t("skills")}</Header>
+								<Header>
+									<div className="flex items-center gap-2 px-2 py-1.5">
+										<BookOpenIcon className="size-4 text-muted" />
+										<Label className="text-xs font-medium text-muted uppercase tracking-wider">
+											{t("skills")}
+										</Label>
+									</div>
+								</Header>
 								<Dropdown.Item
 									id="skill-local"
 									textValue={t("createCustomSkill")}
 								>
-									<div className="flex items-center gap-2">
+									<div className="flex items-center gap-2 pl-6">
 										<CommandLineIcon className="size-4" />
-										<Label>{t("createCustomSkill")}</Label>
+										<span>{t("createCustomSkill")}</span>
 									</div>
 								</Dropdown.Item>
 								<Dropdown.Item
 									id="skill-import"
 									textValue={t("importFromFile")}
 								>
-									<div className="flex items-center gap-2">
+									<div className="flex items-center gap-2 pl-6">
 										<ArrowDownTrayIcon className="size-4" />
-										<Label>{t("importFromFile")}</Label>
+										<span>{t("importFromFile")}</span>
 									</div>
 								</Dropdown.Item>
 							</Dropdown.Section>
@@ -230,13 +251,9 @@ export function UnifiedResourceList({
 								/>
 								<McpList
 									mcps={mcps}
-									selectedKey={
-										selectedType === "mcp"
-											? selectedKey
-											: null
-									}
+									selectedKeys={mcpSelectedKeys}
 									searchQuery={searchQuery}
-									onSelect={handleSelectMcp}
+									onSelectionChange={handleMcpSelectionChange}
 								/>
 							</>
 						)}
@@ -250,13 +267,11 @@ export function UnifiedResourceList({
 								/>
 								<SkillList
 									skills={skills}
-									selectedKey={
-										selectedType === "skill"
-											? selectedKey
-											: null
-									}
+									selectedKeys={skillSelectedKeys}
 									searchQuery={searchQuery}
-									onSelect={handleSelectSkill}
+									onSelectionChange={
+										handleSkillSelectionChange
+									}
 									groupBySource={true}
 									projectPath={projectPath}
 								/>

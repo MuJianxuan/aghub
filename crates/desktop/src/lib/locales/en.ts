@@ -59,10 +59,20 @@ export default {
 
 	// Skills Page
 	searchSkills: "Search skills...",
+	multiSelect: "Multi-select mode",
+	selectItems: "Select",
+	doneSelecting: "Done",
 	addSkill: "Add skill",
 	refreshSkills: "Refresh skills",
 	noSkillsMatch: "No skills match",
 	selectSkill: "Select a skill to view details",
+	deleteSelected: "Delete Selected",
+	itemsSelected: "{{count}} items selected",
+	bulkDeleteConfirmTitle: "Bulk Delete",
+	bulkDeleteSkillConfirm:
+		"Are you sure you want to delete the {{count}} selected skills from all installed agents?",
+	bulkDeleteMcpConfirm:
+		"Are you sure you want to delete the {{count}} selected MCP servers from all installed agents?",
 	starSkill: "Favorite",
 	unstarSkill: "Unfavorite",
 	starServer: "Favorite",

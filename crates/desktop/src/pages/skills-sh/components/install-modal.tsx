@@ -1,7 +1,7 @@
-import { Button, Checkbox, Label, ListBox, Modal, Select } from "@heroui/react";
-import type { Key } from "react-aria-components";
+import { Button, Checkbox, Label, Modal } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import { AgentSelector } from "../../../components/agent-selector";
+import { ProjectSelector } from "../../../components/project-selector";
 import { ResultStatusItem } from "../../../components/result-status-item";
 import { SkillInfoCard } from "../../../components/skill-info-card";
 import type { MarketSkill } from "../../../lib/api-types";
@@ -49,10 +49,6 @@ export function InstallModal({
 }: InstallModalProps) {
 	const { t } = useTranslation();
 
-	const handleProjectChange = (key: Key | null) => {
-		onSelectedProjectIdChange(key as string | null);
-	};
-
 	return (
 		<Modal.Backdrop isOpen={isOpen} onOpenChange={onClose}>
 			<Modal.Container>
@@ -86,50 +82,6 @@ export function InstallModal({
 									showSelectedIcon
 									variant="secondary"
 								/>
-
-								{installToProject && (
-									<Select
-										variant="secondary"
-										selectedKey={selectedProjectId}
-										onSelectionChange={handleProjectChange}
-										aria-label={t("selectProject")}
-										className="w-full"
-									>
-										<Select.Trigger>
-											<Select.Value />
-											<Select.Indicator />
-										</Select.Trigger>
-										<Select.Popover>
-											<ListBox>
-												{projects.length === 0 ? (
-													<ListBox.Item
-														id="empty"
-														textValue={t(
-															"noProjects",
-														)}
-														isDisabled
-													>
-														<span className="text-muted">
-															{t("noProjects")}
-														</span>
-													</ListBox.Item>
-												) : (
-													projects.map((project) => (
-														<ListBox.Item
-															key={project.id}
-															id={project.id}
-															textValue={
-																project.name
-															}
-														>
-															{project.name}
-														</ListBox.Item>
-													))
-												)}
-											</ListBox>
-										</Select.Popover>
-									</Select>
-								)}
 
 								<Checkbox
 									value="installAll"
@@ -172,6 +124,16 @@ export function InstallModal({
 										</span>
 									</Checkbox.Content>
 								</Checkbox>
+
+								{installToProject && (
+									<ProjectSelector
+										projects={projects}
+										selectedKey={selectedProjectId}
+										onSelectionChange={
+											onSelectedProjectIdChange
+										}
+									/>
+								)}
 							</div>
 						)}
 

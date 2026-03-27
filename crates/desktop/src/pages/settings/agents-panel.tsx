@@ -58,6 +58,12 @@ export default function AgentsPanel() {
 		filteredAgents = filteredAgents.filter((agent) => agent.isDisabled);
 	}
 
+	// Sort: enabled agents first, disabled agents last
+	filteredAgents.sort((a, b) => {
+		if (a.isDisabled === b.isDisabled) return 0;
+		return a.isDisabled ? 1 : -1;
+	});
+
 	return (
 		<div className="space-y-3">
 			{/* Search and Filter Bar */}

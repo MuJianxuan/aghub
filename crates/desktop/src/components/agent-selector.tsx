@@ -65,7 +65,10 @@ export function AgentSelector({
 							{showSelectedIcon && isSelected ? (
 								<div className="flex items-center gap-1.5">
 									{agent.display_name}
-									<PlusIcon className="size-3" />
+									<PlusIcon
+										className="size-3"
+										aria-hidden="true"
+									/>
 								</div>
 							) : (
 								agent.display_name

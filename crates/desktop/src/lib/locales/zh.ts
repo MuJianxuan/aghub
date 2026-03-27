@@ -3,6 +3,8 @@ export default {
 	settings: "设置",
 	skills: "技能",
 	mcpServers: "MCP 服务器",
+	marketplace: "市场",
+	mcp: "MCP",
 	agentManagement: "代理",
 	projects: "项目",
 	search: "搜索",
@@ -212,6 +214,12 @@ export default {
 	installingSkill: "正在安装技能",
 	selectAgentsForSkill: "选择要安装此技能的代理：",
 	installs: "次安装",
+
+	// Marketplace
+	searchMarketSkills: "在市场搜索技能...",
+	searchMarketSkillsPlaceholder: "输入技能名称或关键词...",
+	searchToFindSkills: "搜索以从市场查找技能",
+	mcpMarketplaceComingSoon: "MCP 市场即将上线...",
 
 	// Projects
 	addProject: "添加项目",

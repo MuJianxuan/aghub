@@ -3,6 +3,8 @@ export default {
 	settings: "Settings",
 	skills: "Skills",
 	mcpServers: "MCP Servers",
+	marketplace: "Marketplace",
+	mcp: "MCP",
 	agentManagement: "Agent",
 	projects: "Projects",
 	search: "Search",
@@ -200,6 +202,12 @@ export default {
 	copied: "Copied to clipboard",
 	editTooltip: "Edit server",
 	deleteTooltip: "Delete server",
+
+	// Marketplace
+	searchMarketSkills: "Search marketplace for skills...",
+	searchMarketSkillsPlaceholder: "Enter skill name or keyword...",
+	searchToFindSkills: "Search to find skills from the marketplace",
+	mcpMarketplaceComingSoon: "MCP Marketplace coming soon...",
 
 	// MCP Detail
 	connection: "Connection",

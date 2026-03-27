@@ -118,7 +118,10 @@ export function ImportSkillPanel({
 	return (
 		<div className="h-full max-w-3xl overflow-y-auto p-6">
 			{error && (
-				<div className="mb-4 rounded-lg border border-danger/30 bg-danger-soft p-3">
+				<div
+					role="alert"
+					className="mb-4 rounded-lg border border-danger/30 bg-danger-soft p-3"
+				>
 					<p className="text-sm text-danger">
 						{t("importError", { error })}
 					</p>
@@ -151,19 +154,21 @@ export function ImportSkillPanel({
 												variant="secondary"
 												onPress={handleSelectFile}
 											>
-												<DocumentIcon className="size-4" />
-												{t("file", {
-													defaultValue: "File",
-												})}
+												<DocumentIcon
+													className="size-4"
+													aria-hidden="true"
+												/>
+												{t("file")}
 											</Button>
 											<Button
 												variant="secondary"
 												onPress={handleSelectFolder}
 											>
-												<FolderOpenIcon className="size-4" />
-												{t("folder", {
-													defaultValue: "Folder",
-												})}
+												<FolderOpenIcon
+													className="size-4"
+													aria-hidden="true"
+												/>
+												{t("folder")}
 											</Button>
 										</div>
 									</div>
@@ -185,7 +190,6 @@ export function ImportSkillPanel({
 							</Fieldset.Group>
 						</Fieldset>
 
-						{/* Actions */}
 						<div className="flex justify-end gap-2 pt-2">
 							<Button variant="secondary" onPress={onDone}>
 								{t("cancel")}

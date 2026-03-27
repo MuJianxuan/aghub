@@ -1,3 +1,4 @@
+import { StarIcon as StarIconOutline } from "@heroicons/react/24/outline";
 import {
 	CheckCircleIcon,
 	ChevronDownIcon,
@@ -6,6 +7,7 @@ import {
 	ExclamationTriangleIcon,
 	PencilIcon,
 	PlusIcon,
+	StarIcon as StarIconSolid,
 	TrashIcon,
 } from "@heroicons/react/24/solid";
 import {
@@ -21,6 +23,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
+import { useFavorites } from "../hooks/use-favorites";
 import { useServer } from "../hooks/use-server";
 import { AgentIcon } from "../lib/agent-icons";
 import { createApi } from "../lib/api";
@@ -112,6 +115,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 			);
 		},
 	});
+
+	const { isMcpStarred, toggleMcpStar } = useFavorites();
+	const isStarred = isMcpStarred(group.mergeKey);
 
 	const handleCopyConfig = async () => {
 		const primary = group.items[0];
@@ -211,6 +217,36 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 								</Card.Description>
 							</div>
 							<div className="flex items-center gap-2">
+								<Tooltip delay={0}>
+									<Button
+										isIconOnly
+										variant="ghost"
+										size="md"
+										className={cn(
+											"text-muted min-w-[44px] min-h-[44px] hover:text-warning",
+											isStarred && "text-warning",
+										)}
+										aria-label={
+											isStarred
+												? t("unstarServer")
+												: t("starServer")
+										}
+										onPress={() =>
+											toggleMcpStar(group.mergeKey)
+										}
+									>
+										{isStarred ? (
+											<StarIconSolid className="size-5" />
+										) : (
+											<StarIconOutline className="size-5" />
+										)}
+									</Button>
+									<Tooltip.Content>
+										{isStarred
+											? t("unstarServer")
+											: t("starServer")}
+									</Tooltip.Content>
+								</Tooltip>
 								<Tooltip delay={0}>
 									<Button
 										isIconOnly

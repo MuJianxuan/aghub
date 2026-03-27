@@ -1,3 +1,4 @@
+import { StarIcon as StarIconOutline } from "@heroicons/react/24/outline";
 import {
 	ChevronDownIcon,
 	ChevronUpIcon,
@@ -7,6 +8,7 @@ import {
 	GlobeAltIcon,
 	HashtagIcon,
 	LinkIcon,
+	StarIcon as StarIconSolid,
 	TrashIcon,
 	XCircleIcon,
 } from "@heroicons/react/24/solid";
@@ -26,6 +28,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { siGithub } from "simple-icons";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
+import { useFavorites } from "../hooks/use-favorites";
 import { useServer } from "../hooks/use-server";
 import { createApi } from "../lib/api";
 import type {
@@ -34,7 +37,7 @@ import type {
 	SkillResponse,
 } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
-import { sortAgents } from "../lib/utils";
+import { cn, sortAgents } from "../lib/utils";
 
 interface LocationGroup {
 	sourcePath: string;
@@ -67,6 +70,9 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [showAllLocations, setShowAllLocations] = useState(false);
+
+	const { isSkillStarred, toggleSkillStar } = useFavorites();
+	const isStarred = isSkillStarred(group.items[0].name);
 
 	const skill = group.items[0];
 
@@ -213,6 +219,36 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
           sm:gap-2
         "
 								>
+									<Tooltip delay={0}>
+										<Button
+											isIconOnly
+											variant="ghost"
+											size="md"
+											className={cn(
+												"min-h-11 min-w-11 text-muted hover:text-warning",
+												isStarred && "text-warning",
+											)}
+											aria-label={
+												isStarred
+													? t("unstarSkill")
+													: t("starSkill")
+											}
+											onPress={() =>
+												toggleSkillStar(skill.name)
+											}
+										>
+											{isStarred ? (
+												<StarIconSolid className="size-5" />
+											) : (
+												<StarIconOutline className="size-5" />
+											)}
+										</Button>
+										<Tooltip.Content>
+											{isStarred
+												? t("unstarSkill")
+												: t("starSkill")}
+										</Tooltip.Content>
+									</Tooltip>
 									<Tooltip delay={0}>
 										<Button
 											isIconOnly

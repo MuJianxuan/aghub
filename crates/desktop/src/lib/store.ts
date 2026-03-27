@@ -1,7 +1,7 @@
 import { Store } from "@tauri-apps/plugin-store";
 import type { CodeEditorType } from "./api-types";
 
-const CURRENT_VERSION = 3;
+const CURRENT_VERSION = 4;
 
 export interface Project {
 	id: string;
@@ -40,6 +40,12 @@ async function migrate(store: Store): Promise<void> {
 	// Migration v2 -> v3: add integrationPreferences
 	if (version < 3) {
 		await store.set("integrationPreferences", {});
+	}
+
+	// Migration v3 -> v4: add starred items
+	if (version < 4) {
+		await store.set("starredSkills", []);
+		await store.set("starredMcps", []);
 	}
 
 	await store.set("version", CURRENT_VERSION);
@@ -117,5 +123,27 @@ export async function saveIntegrationPreferences(
 ): Promise<void> {
 	const store = await getStore();
 	await store.set("integrationPreferences", preferences);
+	await store.save();
+}
+
+export async function getStarredSkills(): Promise<string[]> {
+	const store = await getStore();
+	return (await store.get<string[]>("starredSkills")) ?? [];
+}
+
+export async function setStarredSkills(skills: string[]): Promise<void> {
+	const store = await getStore();
+	await store.set("starredSkills", skills);
+	await store.save();
+}
+
+export async function getStarredMcps(): Promise<string[]> {
+	const store = await getStore();
+	return (await store.get<string[]>("starredMcps")) ?? [];
+}
+
+export async function setStarredMcps(mcps: string[]): Promise<void> {
+	const store = await getStore();
+	await store.set("starredMcps", mcps);
 	await store.save();
 }

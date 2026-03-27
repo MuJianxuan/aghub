@@ -1,9 +1,14 @@
-import { CommandLineIcon, GlobeAltIcon } from "@heroicons/react/24/solid";
+import {
+	CommandLineIcon,
+	GlobeAltIcon,
+	StarIcon as StarIconSolid,
+} from "@heroicons/react/24/solid";
 import { Label, ListBox, Tooltip } from "@heroui/react";
 import Fuse from "fuse.js";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
+import { useFavorites } from "../hooks/use-favorites";
 import { AgentIcon } from "../lib/agent-icons";
 import type { McpResponse } from "../lib/api-types";
 import { getMcpMergeKey, sortAgents } from "../lib/utils";
@@ -111,14 +116,36 @@ export function McpList({
 		return fuse.search(searchQuery).map((result) => result.item);
 	}, [fuse, groupedMcps, searchQuery]);
 
-	const getTransportIcon = (transport: McpGroup["transport"]) => {
-		if (transport.type === "stdio") {
-			return <CommandLineIcon className="size-4 shrink-0" />;
-		}
-		return <GlobeAltIcon className="size-4 shrink-0" />;
+	const { isMcpStarred } = useFavorites();
+
+	const sortedGroups = useMemo(() => {
+		const groups = [...filteredGroups];
+		return groups.sort((a, b) => {
+			const aStarred = isMcpStarred(a.mergeKey);
+			const bStarred = isMcpStarred(b.mergeKey);
+			if (aStarred && !bStarred) return -1;
+			if (!aStarred && bStarred) return 1;
+			return 0;
+		});
+	}, [filteredGroups, isMcpStarred]);
+
+	const getTransportIcon = (
+		transport: McpGroup["transport"],
+		starred: boolean,
+	) => {
+		const Icon =
+			transport.type === "stdio" ? CommandLineIcon : GlobeAltIcon;
+		return (
+			<div className="relative inline-flex size-4 shrink-0 items-center justify-center">
+				<Icon className="size-4" />
+				{starred && (
+					<StarIconSolid className="absolute -bottom-1 -left-1 size-2.5 text-warning" />
+				)}
+			</div>
+		);
 	};
 
-	if (filteredGroups.length === 0) {
+	if (sortedGroups.length === 0) {
 		return (
 			<p className="px-3 py-6 text-center text-sm text-muted">
 				{emptyMessage ?? t("noServersMatch")}
@@ -138,22 +165,25 @@ export function McpList({
 			}}
 			className="p-2"
 		>
-			{filteredGroups.map((group) => (
-				<ListBox.Item
-					key={group.mergeKey}
-					id={group.mergeKey}
-					textValue={group.items[0].name}
-					className="data-selected:bg-surface"
-				>
-					<div className="flex w-full items-center gap-2">
-						{getTransportIcon(group.transport)}
-						<Label className="flex-1 truncate">
-							{group.items[0].name}
-						</Label>
-						<McpAgentIcons items={group.items} />
-					</div>
-				</ListBox.Item>
-			))}
+			{sortedGroups.map((group) => {
+				const isStarred = isMcpStarred(group.mergeKey);
+				return (
+					<ListBox.Item
+						key={group.mergeKey}
+						id={group.mergeKey}
+						textValue={group.items[0].name}
+						className="data-selected:bg-surface"
+					>
+						<div className="flex w-full items-center gap-2">
+							{getTransportIcon(group.transport, isStarred)}
+							<Label className="flex-1 truncate">
+								{group.items[0].name}
+							</Label>
+							<McpAgentIcons items={group.items} />
+						</div>
+					</ListBox.Item>
+				);
+			})}
 		</ListBox>
 	);
 }

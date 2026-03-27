@@ -62,6 +62,8 @@ export default {
 	refreshSkills: "刷新技能",
 	noSkillsMatch: "没有匹配的技能",
 	selectSkill: "选择一个技能查看详情",
+	starSkill: "收藏技能",
+	unstarSkill: "取消收藏",
 	description: "描述",
 	author: "作者",
 	version: "版本",

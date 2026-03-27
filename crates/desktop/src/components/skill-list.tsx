@@ -2,6 +2,7 @@ import {
 	BookOpenIcon,
 	ChevronDownIcon,
 	ChevronRightIcon,
+	StarIcon as StarIconSolid,
 } from "@heroicons/react/24/solid";
 import { Chip, Label, ListBox, Tooltip } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
+import { useFavorites } from "../hooks/use-favorites";
 import { useServer } from "../hooks/use-server";
 import { AgentIcon } from "../lib/agent-icons";
 import { createApi } from "../lib/api";
@@ -141,10 +143,21 @@ export function SkillList({
 		[groupedByName],
 	);
 
+	const { isSkillStarred } = useFavorites();
+
 	const filteredByName = useMemo(() => {
-		if (!searchQuery) return groupedByName;
-		return fuse.search(searchQuery).map((result) => result.item);
-	}, [fuse, groupedByName, searchQuery]);
+		let items;
+		if (!searchQuery) items = groupedByName;
+		else items = fuse.search(searchQuery).map((result) => result.item);
+
+		return [...items].sort((a, b) => {
+			const aStarred = isSkillStarred(a.name);
+			const bStarred = isSkillStarred(b.name);
+			if (aStarred && !bStarred) return -1;
+			if (!aStarred && bStarred) return 1;
+			return 0; // maintain search or original order
+		});
+	}, [fuse, groupedByName, searchQuery, isSkillStarred]);
 
 	const { sourceGroups, singleItemGroups, unknownGroups } = useMemo(() => {
 		const findSkillSource = (
@@ -217,18 +230,47 @@ export function SkillList({
 			}
 		}
 
-		const sortedSourceGroups = multiItemGroups.sort((a, b) =>
-			a.source.localeCompare(b.source),
-		);
-		const sortedSingleItems = singleItems.sort((a, b) =>
-			a.name.localeCompare(b.name),
-		);
+		const sortedSourceGroups = multiItemGroups
+			.map((sg) => ({
+				...sg,
+				skills: [...sg.skills].sort((a, b) => {
+					const aStarred = isSkillStarred(a.name);
+					const bStarred = isSkillStarred(b.name);
+					if (aStarred && !bStarred) return -1;
+					if (!aStarred && bStarred) return 1;
+					return a.name.localeCompare(b.name);
+				}),
+			}))
+			.sort((a, b) => a.source.localeCompare(b.source));
+
+		const sortedSingleItems = singleItems.sort((a, b) => {
+			const aStarred = isSkillStarred(a.name);
+			const bStarred = isSkillStarred(b.name);
+			if (aStarred && !bStarred) return -1;
+			if (!aStarred && bStarred) return 1;
+			return a.name.localeCompare(b.name);
+		});
+
+		const sortedUnknown = unknown.sort((a, b) => {
+			const aStarred = isSkillStarred(a.name);
+			const bStarred = isSkillStarred(b.name);
+			if (aStarred && !bStarred) return -1;
+			if (!aStarred && bStarred) return 1;
+			return a.name.localeCompare(b.name);
+		});
+
 		return {
 			sourceGroups: sortedSourceGroups,
 			singleItemGroups: sortedSingleItems,
-			unknownGroups: unknown,
+			unknownGroups: sortedUnknown,
 		};
-	}, [filteredByName, groupBySource, globalLock, projectLock]);
+	}, [
+		filteredByName,
+		groupBySource,
+		globalLock,
+		projectLock,
+		isSkillStarred,
+	]);
 
 	const [expandedSources, setExpandedSources] = useState<Set<string>>(() => {
 		if (sourceGroups.length <= 5) {
@@ -313,7 +355,14 @@ export function SkillList({
 										className="data-selected:bg-surface"
 									>
 										<div className="flex w-full items-center gap-2">
-											<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
+											<div className="relative inline-flex size-4 shrink-0 items-center justify-center">
+												<BookOpenIcon className="size-4 text-muted" />
+												{isSkillStarred(
+													skillGroup.name,
+												) && (
+													<StarIconSolid className="absolute -bottom-1 -left-1 size-2.5 text-warning" />
+												)}
+											</div>
 											<Label className="flex-1 truncate">
 												{skillGroup.name}
 											</Label>
@@ -351,7 +400,12 @@ export function SkillList({
 									className="data-selected:bg-surface"
 								>
 									<div className="flex w-full items-center gap-2">
-										<BookOpenIcon className="size-3.5 shrink-0 text-muted" />
+										<div className="relative inline-flex size-4 shrink-0 items-center justify-center">
+											<BookOpenIcon className="size-4 text-muted" />
+											{isSkillStarred(group.name) && (
+												<StarIconSolid className="absolute -bottom-1 -left-1 size-2.5 text-warning" />
+											)}
+										</div>
 										<Label className="flex-1 truncate">
 											{group.name}
 										</Label>
@@ -394,7 +448,12 @@ export function SkillList({
 					className="data-selected:bg-surface"
 				>
 					<div className="flex w-full items-center gap-2">
-						<BookOpenIcon className="size-4 shrink-0 text-muted" />
+						<div className="relative inline-flex size-4 shrink-0 items-center justify-center">
+							<BookOpenIcon className="size-4 text-muted" />
+							{isSkillStarred(group.name) && (
+								<StarIconSolid className="absolute -bottom-1 -left-1 size-2.5 text-warning" />
+							)}
+						</div>
 						<Label className="flex-1 truncate">{group.name}</Label>
 						<SkillAgentIcons items={group.items} />
 					</div>

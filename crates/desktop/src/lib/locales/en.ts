@@ -63,6 +63,8 @@ export default {
 	refreshSkills: "Refresh skills",
 	noSkillsMatch: "No skills match",
 	selectSkill: "Select a skill to view details",
+	starSkill: "Favorite",
+	unstarSkill: "Unfavorite",
 	description: "Description",
 	author: "Author",
 	version: "Version",

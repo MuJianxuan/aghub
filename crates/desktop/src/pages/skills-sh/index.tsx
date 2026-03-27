@@ -39,7 +39,7 @@ const tableComponents: TableComponents<MarketSkill> = {
 	TableBody: (props) => <tbody {...props} />,
 	TableRow: ({ style, ...props }) => (
 		<tr
-			className="border-b border-border transition-colors hover:bg-accent/5"
+			className="border-b border-border"
 			style={{ height: ROW_HEIGHT, ...style }}
 			{...props}
 		/>
@@ -357,7 +357,7 @@ export default function SkillsShPage() {
 										<td className="p-2 align-middle">
 											<Button
 												size="sm"
-												variant="secondary"
+												variant="tertiary"
 												onPress={() =>
 													handleInstallClick(skill)
 												}

@@ -76,45 +76,33 @@ function MetaRow({
 	);
 }
 
-function CodeBlock({ label, lines }: { label: string; lines: string[] }) {
+function CodeBlock({
+	label,
+	command,
+	args,
+}: {
+	label: string;
+	command: string;
+	args?: string[];
+}) {
+	const commandLine =
+		args && args.length > 0 ? `${command} ${args.join(" ")}` : command;
+
 	return (
 		<div className="grid gap-1.5">
 			<span className="text-[11px] font-medium tracking-wide text-muted uppercase">
 				{label}
 			</span>
 			<div className="overflow-x-auto rounded-lg border border-default-200 bg-surface-secondary px-3 py-2">
-				<pre className="font-mono text-xs leading-5 text-foreground whitespace-pre-wrap break-words">
-					{lines.join("\n")}
-				</pre>
-			</div>
-		</div>
-	);
-}
-
-function TokenList({ label, items }: { label: string; items: string[] }) {
-	return (
-		<div className="grid gap-1.5">
-			<span className="text-[11px] font-medium tracking-wide text-muted uppercase">
-				{label}
-			</span>
-			<div className="flex flex-wrap gap-2">
-				{items.map((item, index) => (
-					<Chip
-						key={`${label}-${item}-${index}`}
-						size="sm"
-						variant="soft"
-						className="max-w-full font-mono text-xs"
-					>
-						<span className="truncate">{item}</span>
-					</Chip>
-				))}
+				<code className="block font-mono text-xs leading-5 text-foreground whitespace-pre-wrap break-words">
+					{commandLine}
+				</code>
 			</div>
 		</div>
 	);
 }
 
 function KeyValueList({
-	label,
 	items,
 	collapsedCount = 2,
 	showAll,
@@ -122,7 +110,6 @@ function KeyValueList({
 	showMoreLabel,
 	showLessLabel,
 }: {
-	label: string;
 	items: Array<[string, string]>;
 	collapsedCount?: number;
 	showAll: boolean;
@@ -138,9 +125,6 @@ function KeyValueList({
 
 	return (
 		<div className="grid gap-1.5">
-			<span className="text-[11px] font-medium tracking-wide text-muted uppercase">
-				{label}
-			</span>
 			<div className="space-y-2">
 				{displayedItems.map(([key, value]) => (
 					<div
@@ -278,17 +262,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 		transport.type === "streamable_http"
 			? "Streamable HTTP"
 			: transport.type;
-	const transportSummary =
-		transport.type === "stdio"
-			? `${transport.type} via ${transport.command}`
-			: `${transportLabel} endpoint`;
-	const commandLines =
-		transport.type === "stdio"
-			? [
-					transport.command,
-					...(transport.args?.map((arg) => `  ${arg}`) ?? []),
-				]
-			: [];
 
 	return (
 		<>
@@ -303,9 +276,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									{primaryItem.name}
 								</h2>
 								<Card.Description className="mt-2 flex flex-wrap items-center gap-2">
-									<Chip size="sm" variant="soft">
-										{transportLabel}
-									</Chip>
 									{primarySource && (
 										<Chip
 											size="sm"
@@ -323,9 +293,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 												: t("global")}
 										</Chip>
 									)}
-									<span className="min-w-0 truncate font-mono text-xs text-muted">
-										{transportSummary}
-									</span>
 								</Card.Description>
 							</div>
 							<div className="flex items-center gap-2">
@@ -439,15 +406,21 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 							{/* Transport Details */}
 							<div className="space-y-4">
-								<h3 className="text-xs font-medium tracking-wider text-muted uppercase">
-									{t("transport")}
-								</h3>
+								<div className="flex items-baseline gap-2">
+									<h3 className="text-xs font-medium tracking-wider text-muted uppercase">
+										{t("transport")}
+									</h3>
+									<span className="font-mono text-xs text-muted">
+										({transportLabel})
+									</span>
+								</div>
 
-								<div className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)]">
+								<div className="grid gap-4">
 									{transport.type === "stdio" ? (
 										<CodeBlock
 											label={t("command")}
-											lines={commandLines}
+											command={transport.command}
+											args={transport.args}
 										/>
 									) : (
 										<MetaRow
@@ -456,11 +429,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 											mono
 										/>
 									)}
-									<div className="grid gap-4">
-										<MetaRow
-											label={t("type")}
-											value={transportLabel}
-										/>
+									<div className="grid gap-4 md:grid-cols-2">
 										{(primaryItem.timeout ||
 											transport.timeout) && (
 											<MetaRow
@@ -474,22 +443,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 										)}
 									</div>
 								</div>
-
-								{transport.type === "stdio" && (
-									<div className="grid gap-4 md:grid-cols-2">
-										{transport.args &&
-											transport.args.length > 0 && (
-												<TokenList
-													label={t("args")}
-													items={transport.args}
-												/>
-											)}
-										<MetaRow
-											label={t("connection")}
-											value={transportSummary}
-										/>
-									</div>
-								)}
 							</div>
 
 							{/* Headers (HTTP transports) */}
@@ -503,7 +456,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 											})}
 										</h3>
 										<KeyValueList
-											label={t("headers")}
 											items={headerEntries}
 											showAll={showAllHeaders}
 											onToggle={() =>
@@ -528,7 +480,6 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 										})}
 									</h3>
 									<KeyValueList
-										label={t("env")}
 										items={envEntries}
 										showAll={showAllEnvVars}
 										onToggle={() =>

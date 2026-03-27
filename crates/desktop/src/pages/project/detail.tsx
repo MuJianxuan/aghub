@@ -205,7 +205,11 @@ export default function ProjectDetailPage() {
 					<EditMcpPanel
 						key={selectedMcpGroup.mergeKey}
 						group={selectedMcpGroup}
-						onDone={() => setPanelMode(null)}
+						onDone={(mergeKey) => {
+							setSelectedResource(mergeKey);
+							setResourceType("mcp");
+							setPanelMode(null);
+						}}
 						projectPath={project.path}
 					/>
 				)}

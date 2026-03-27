@@ -88,6 +88,10 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 	const transportType = watch("transportType");
 	const envVars = watch("envVars");
 	const httpHeaders = watch("httpHeaders");
+	const urlPlaceholder =
+		transportType === "sse"
+			? "http://localhost:3000/sse"
+			: "http://localhost:3000/mcp";
 
 	const envErrors = useMemo(() => validateKeyPairs(t, envVars), [t, envVars]);
 	const headerErrors = useMemo(
@@ -420,7 +424,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 														)
 													}
 													onBlur={field.onBlur}
-													placeholder="http://localhost:3000/sse"
+													placeholder={urlPlaceholder}
 													variant="secondary"
 												/>
 												{fieldState.error && (

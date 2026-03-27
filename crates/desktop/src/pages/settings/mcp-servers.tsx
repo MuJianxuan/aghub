@@ -186,7 +186,7 @@ export default function MCPServersPage() {
 					<EditMcpPanel
 						key={selectedGroup.mergeKey}
 						group={selectedGroup}
-						onDone={() => handleEditDone(selectedGroup.mergeKey)}
+						onDone={handleEditDone}
 					/>
 				)}
 				{(effectivePanel.type === "empty" ||

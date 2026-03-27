@@ -28,6 +28,7 @@ import {
 } from "../lib/form-utils";
 import { objectToKeyPairs } from "../lib/key-pair-utils";
 import { buildTransportFromForm, capitalize } from "../lib/mcp-utils";
+import { getMcpMergeKey } from "../lib/utils";
 import type { EnvVar } from "./env-editor";
 import { EnvEditor } from "./env-editor";
 import type { HttpHeader } from "./http-header-editor";
@@ -39,7 +40,7 @@ interface EditMcpPanelProps {
 		transport: McpResponse["transport"];
 		items: McpResponse[];
 	};
-	onDone: () => void;
+	onDone: (mergeKey: string) => void;
 	projectPath?: string;
 }
 
@@ -106,6 +107,10 @@ export function EditMcpPanel({
 	const transportType = watch("transportType");
 	const envVars = watch("envVars");
 	const httpHeaders = watch("httpHeaders");
+	const urlPlaceholder =
+		transportType === "sse"
+			? "http://localhost:3000/sse"
+			: "http://localhost:3000/mcp";
 
 	const envErrors = useMemo(() => validateKeyPairs(t, envVars), [t, envVars]);
 	const headerErrors = useMemo(
@@ -145,10 +150,10 @@ export function EditMcpPanel({
 				}),
 			);
 		},
-		onSuccess: () => {
+		onSuccess: (_data, body) => {
 			queryClient.invalidateQueries({ queryKey: ["mcps"] });
 			queryClient.invalidateQueries({ queryKey: ["project-mcps"] });
-			onDone();
+			onDone(getMcpMergeKey(body.transport ?? primaryServer.transport));
 		},
 		onError: () => {
 			// handled in render
@@ -427,7 +432,7 @@ export function EditMcpPanel({
 												field.onChange(e.target.value)
 											}
 											onBlur={field.onBlur}
-											placeholder="http://localhost:3000/sse"
+											placeholder={urlPlaceholder}
 										/>
 										{fieldState.error && (
 											<FieldError>
@@ -513,7 +518,11 @@ export function EditMcpPanel({
 				</Disclosure>
 
 				<div className="flex justify-end gap-2 pt-2">
-					<Button type="button" variant="secondary" onPress={onDone}>
+					<Button
+						type="button"
+						variant="secondary"
+						onPress={() => onDone(group.mergeKey)}
+					>
 						{t("cancel")}
 					</Button>
 					<Button

@@ -15,7 +15,10 @@
 				"title": "aghub-desktop",
 				"width": 1280,
 				"height": 800,
-				"titleBarStyle": "Transparent"
+				"decorations": true,
+				"hiddenTitle": true,
+				"titleBarStyle": "Overlay",
+				"trafficLightPosition": { "x": 16, "y": 18 }
 			}
 		],
 		"security": {

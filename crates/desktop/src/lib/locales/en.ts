@@ -123,6 +123,7 @@ export default {
 		'This removes "{{name}}" from {{count}} agents ({{agents}}). This can\'t be undone.',
 	deleting: "Deleting...",
 	editMcpServer: "Edit MCP Server",
+	multipleAgents: "Multiple Agents",
 	changeWillApplyToAgents:
 		"This change will apply to {{count}} agents: {{agents}}",
 	name: "Name",

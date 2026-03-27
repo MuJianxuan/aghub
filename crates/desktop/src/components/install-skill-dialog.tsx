@@ -55,8 +55,6 @@ export function InstallSkillDialog({
 	);
 	const [results, setResults] = useState<InstallResult[]>(() => []);
 
-	const isInstalling = results.some((r) => r.status === "pending");
-
 	const agentNameMap = useMemo(
 		() => new Map(availableAgents.map((a) => [a.id, a.display_name])),
 		[availableAgents],
@@ -298,11 +296,6 @@ export function InstallSkillDialog({
 									</p>
 								) : (
 									<>
-										{isInstalling && (
-											<div className="flex items-center justify-center py-4">
-												<Spinner size="lg" />
-											</div>
-										)}
 										{results.map((result) => (
 											<ResultStatusItem
 												key={result.agentId}

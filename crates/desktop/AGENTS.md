@@ -40,7 +40,7 @@ crates/desktop/
 
 ### Before Any UI Task:
 
-1. Search docs in `./.heroui-docs/react/`
+1. Search docs in `../../.heroui-docs/react/`
 2. If docs missing, run: `heroui agents-md --react --output AGENTS.md`
 
 ## COMMANDS

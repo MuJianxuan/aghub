@@ -122,6 +122,7 @@ export default {
 		"将从 {{count}} 个代理中移除「{{name}}」（{{agents}}）。此操作无法撤销。",
 	deleting: "删除中...",
 	editMcpServer: "编辑 MCP 服务器",
+	multipleAgents: "多个代理",
 	changeWillApplyToAgents: "此更改将应用于 {{count}} 个代理：{{agents}}",
 	name: "名称",
 	serverName: "服务器名称",

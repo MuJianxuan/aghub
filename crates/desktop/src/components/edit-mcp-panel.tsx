@@ -1,4 +1,5 @@
 import {
+	Alert,
 	Button,
 	Description,
 	Disclosure,
@@ -175,14 +176,18 @@ export function EditMcpPanel({
 			</div>
 
 			{group.items.length > 1 && (
-				<div className="mb-4 rounded-lg border border-warning/30 bg-warning/10 p-3">
-					<p className="text-sm text-warning">
-						{t("changeWillApplyToAgents", {
-							count: group.items.length,
-							agents: agentNamesList,
-						})}
-					</p>
-				</div>
+				<Alert className="mb-4" status="warning">
+					<Alert.Indicator />
+					<Alert.Content>
+						<Alert.Title>{t("multipleAgents")}</Alert.Title>
+						<Alert.Description>
+							{t("changeWillApplyToAgents", {
+								count: group.items.length,
+								agents: agentNamesList,
+							})}
+						</Alert.Description>
+					</Alert.Content>
+				</Alert>
 			)}
 
 			{error && (

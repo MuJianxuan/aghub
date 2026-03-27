@@ -2,7 +2,7 @@ import { GlobeAltIcon } from "@heroicons/react/24/solid";
 import { siGithub } from "simple-icons";
 
 interface SkillInfoCardProps {
-	name: string;
+	name?: string;
 	source: string;
 	className?: string;
 }
@@ -20,7 +20,11 @@ export function SkillInfoCard({
 		<div
 			className={`flex flex-col gap-2 rounded-lg bg-surface-secondary px-3 py-2.5 ${className}`}
 		>
-			<span className="font-medium truncate text-foreground">{name}</span>
+			{name && (
+				<span className="font-medium truncate text-foreground">
+					{name}
+				</span>
+			)}
 			<div className="flex items-center gap-1.5">
 				{isGithub ? (
 					<svg

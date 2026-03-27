@@ -60,6 +60,13 @@ export default function SkillsSearchPage() {
 		installResults,
 		isInstalling,
 		skillAgents,
+		installAll,
+		setInstallAll,
+		installToProject,
+		setInstallToProject,
+		selectedProjectId,
+		setSelectedProjectId,
+		projects,
 		handleInstallClick,
 		handleInstall,
 		handleCloseInstallModal,
@@ -257,6 +264,13 @@ export default function SkillsSearchPage() {
 				installResults={installResults}
 				isInstalling={isInstalling}
 				skillAgents={skillAgents}
+				installAll={installAll}
+				onInstallAllChange={setInstallAll}
+				installToProject={installToProject}
+				onInstallToProjectChange={setInstallToProject}
+				selectedProjectId={selectedProjectId}
+				onSelectedProjectIdChange={setSelectedProjectId}
+				projects={projects}
 				onClose={handleCloseInstallModal}
 				onInstall={handleInstall}
 			/>

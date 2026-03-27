@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAgentAvailability } from "../../../hooks/use-agent-availability";
+import { useProjects } from "../../../hooks/use-projects";
 import { useServer } from "../../../hooks/use-server";
 import { createApi } from "../../../lib/api";
 import type { MarketSkill } from "../../../lib/api-types";
@@ -17,6 +18,7 @@ export function useSkillInstall() {
 	const api = createApi(baseUrl);
 	const queryClient = useQueryClient();
 	const { availableAgents } = useAgentAvailability();
+	const { data: projects = [] } = useProjects();
 
 	const [installModalOpen, setInstallModalOpen] = useState(false);
 	const [selectedSkill, setSelectedSkill] = useState<MarketSkill | null>(
@@ -27,6 +29,11 @@ export function useSkillInstall() {
 	);
 	const [installResults, setInstallResults] = useState<InstallResult[]>([]);
 	const [isInstalling, setIsInstalling] = useState(false);
+	const [installAll, setInstallAll] = useState(false);
+	const [installToProject, setInstallToProject] = useState(false);
+	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+		null,
+	);
 
 	const skillAgents = availableAgents.filter(
 		(a) => a.isUsable && a.capabilities.skills_mutable,
@@ -36,33 +43,49 @@ export function useSkillInstall() {
 		setSelectedSkill(skill);
 		setSelectedAgents(new Set());
 		setInstallResults([]);
+		setInstallAll(false);
+		setInstallToProject(false);
+		setSelectedProjectId(null);
 		setInstallModalOpen(true);
 	};
 
 	const handleInstall = async () => {
-		if (!selectedSkill || selectedAgents.size === 0) return;
+		if (!selectedSkill) return;
+		if (!installAll && selectedAgents.size === 0) return;
+		if (installToProject && !selectedProjectId) return;
 
 		setIsInstalling(true);
 
-		const pendingResults: InstallResult[] = Array.from(
-			selectedAgents,
-			(agentId) => {
-				const agent = availableAgents.find((a) => a.id === agentId);
-				return {
-					agentId,
-					displayName: agent?.display_name ?? agentId,
-					status: "pending" as const,
-				};
-			},
-		);
+		const pendingResults: InstallResult[] = installAll
+			? [
+					{
+						agentId: "all",
+						displayName: "All Agents",
+						status: "pending" as const,
+					},
+				]
+			: Array.from(selectedAgents, (agentId) => {
+					const agent = availableAgents.find((a) => a.id === agentId);
+					return {
+						agentId,
+						displayName: agent?.display_name ?? agentId,
+						status: "pending" as const,
+					};
+				});
 		setInstallResults(pendingResults);
+
+		const selectedProject = installToProject
+			? projects.find((p) => p.id === selectedProjectId)
+			: null;
 
 		try {
 			const response = await api.skills.install({
 				source: selectedSkill.source,
-				agents: Array.from(selectedAgents),
-				skills: [selectedSkill.name],
-				scope: "global",
+				agents: installAll ? [] : Array.from(selectedAgents),
+				skills: installAll ? [] : [selectedSkill.name],
+				scope: installToProject ? "project" : "global",
+				project_path: selectedProject?.path,
+				install_all: installAll,
 			});
 
 			const updatedResults = pendingResults.map((result) => ({
@@ -92,6 +115,9 @@ export function useSkillInstall() {
 		setSelectedSkill(null);
 		setSelectedAgents(new Set());
 		setInstallResults([]);
+		setInstallAll(false);
+		setInstallToProject(false);
+		setSelectedProjectId(null);
 	};
 
 	return {
@@ -102,6 +128,13 @@ export function useSkillInstall() {
 		installResults,
 		isInstalling,
 		skillAgents,
+		installAll,
+		setInstallAll,
+		installToProject,
+		setInstallToProject,
+		selectedProjectId,
+		setSelectedProjectId,
+		projects,
 		handleInstallClick,
 		handleInstall,
 		handleCloseInstallModal,

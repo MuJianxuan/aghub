@@ -78,6 +78,7 @@ export interface InstallSkillRequest {
 	skills: string[];
 	scope: "global" | "project";
 	project_path?: string;
+	install_all?: boolean;
 }
 
 export interface InstallSkillResponse {

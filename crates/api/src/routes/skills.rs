@@ -329,8 +329,11 @@ pub async fn install_skill(
 	let mut cmd = Command::new("npx");
 	cmd.arg("skills").arg("add").arg(&req.source);
 
-	for skill in &req.skills {
-		cmd.arg("-s").arg(skill);
+	// When install_all is true, omit -s flag to install all skills from source
+	if !req.install_all.unwrap_or(false) {
+		for skill in &req.skills {
+			cmd.arg("-s").arg(skill);
+		}
 	}
 
 	for agent_id in &req.agents {

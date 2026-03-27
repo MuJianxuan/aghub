@@ -132,6 +132,7 @@ pub struct InstallSkillRequest {
 	pub skills: Vec<String>,
 	pub scope: String,
 	pub project_path: Option<String>,
+	pub install_all: Option<bool>,
 }
 
 #[derive(Debug, Serialize)]

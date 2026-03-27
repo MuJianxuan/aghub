@@ -227,6 +227,15 @@ export default {
 	installingSkill: "Installing Skill",
 	selectAgentsForSkill: "Select which agents to install this skill to:",
 	installs: "installs",
+	installAllSkills: "Install All Skills",
+	installAllSkillsDescription:
+		"Install all skills from this source instead of the selected skill.",
+	installToProject: "Install to Project",
+	installToProjectDescription:
+		"Install skills to a specific project instead of global scope.",
+	selectProject: "Select Project",
+	noProjects: "No projects available",
+	noProjectsHelp: "Add a project first to install skills to it.",
 	copyTooltip: "Copy as JSON",
 	copied: "Copied to clipboard",
 	editTooltip: "Edit server",

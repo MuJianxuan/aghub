@@ -1,4 +1,4 @@
-import { Button, Modal, Spinner } from "@heroui/react";
+import { Button, Modal } from "@heroui/react";
 import { useTranslation } from "react-i18next";
 import { AgentSelector } from "../../../components/agent-selector";
 import { ResultStatusItem } from "../../../components/result-status-item";
@@ -69,11 +69,6 @@ export function InstallModal({
 
 						{installResults.length > 0 && (
 							<div className="space-y-3">
-								{isInstalling && (
-									<div className="flex items-center justify-center py-4">
-										<Spinner size="lg" />
-									</div>
-								)}
 								{installResults.map((result) => (
 									<ResultStatusItem
 										key={result.agentId}

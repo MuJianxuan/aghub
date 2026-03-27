@@ -2,7 +2,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { Button, Spinner } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TableComponents } from "react-virtuoso";
 import { TableVirtuoso } from "react-virtuoso";
@@ -74,11 +74,15 @@ export default function SkillsSearchPage() {
 		[i18n.language],
 	);
 
-	const [searchQuery, setSearchQuery] = useState("");
 	const [urlQuery, setUrlQuery] = useQueryState("q");
+	const [searchQuery, setSearchQuery] = useState(urlQuery ?? "");
 	const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
 
 	const submittedQuery = urlQuery ?? "";
+
+	useEffect(() => {
+		setSearchQuery(submittedQuery);
+	}, [submittedQuery]);
 
 	const { data, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage } =
 		useInfiniteQuery({

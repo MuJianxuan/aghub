@@ -61,7 +61,7 @@ export default {
 	searchSkills: "Search skills...",
 	multiSelect: "Multi-select mode",
 	selectItems: "Select",
-	doneSelecting: "Done",
+	doneSelecting: "Cancel",
 	addSkill: "Add skill",
 	refreshSkills: "Refresh skills",
 	noSkillsMatch: "No skills match",

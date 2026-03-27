@@ -60,7 +60,7 @@ export default {
 	searchSkills: "搜索技能...",
 	multiSelect: "多选模式",
 	selectItems: "选择",
-	doneSelecting: "完成",
+	doneSelecting: "取消",
 	addSkill: "添加技能",
 	refreshSkills: "刷新技能",
 	noSkillsMatch: "没有匹配的技能",

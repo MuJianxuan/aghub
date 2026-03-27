@@ -1,5 +1,5 @@
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { Button, Input } from "@heroui/react";
+import { Button, ErrorMessage, Input } from "@heroui/react";
 import { produce } from "immer";
 import { useTranslation } from "react-i18next";
 import type { KeyPair } from "../lib/key-pair-utils";
@@ -11,6 +11,8 @@ interface KeyPairEditorProps {
 	keyPlaceholder?: string;
 	valuePlaceholder?: string;
 	variant?: "primary" | "secondary";
+	errors?: Array<{ key?: string; value?: string }>;
+	errorMessage?: string;
 }
 
 export function KeyPairEditor({
@@ -19,6 +21,8 @@ export function KeyPairEditor({
 	keyPlaceholder,
 	valuePlaceholder,
 	variant,
+	errors = [],
+	errorMessage,
 }: KeyPairEditorProps) {
 	const { t } = useTranslation();
 
@@ -71,6 +75,8 @@ export function KeyPairEditor({
 	const displayPairs =
 		value.length === 0 ? [{ id: "empty", key: "", value: "" }] : value;
 
+	void errors;
+
 	return (
 		<div className="space-y-2">
 			{displayPairs.map((pair) => (
@@ -106,6 +112,7 @@ export function KeyPairEditor({
 						variant={variant}
 					/>
 					<Button
+						type="button"
 						variant="ghost"
 						size="sm"
 						isIconOnly
@@ -118,10 +125,16 @@ export function KeyPairEditor({
 					</Button>
 				</div>
 			))}
-			<Button variant="secondary" size="sm" onPress={handleAdd}>
+			<Button
+				type="button"
+				variant="secondary"
+				size="sm"
+				onPress={handleAdd}
+			>
 				<PlusIcon className="size-4" />
 				{t("keyPairEditor.addPair")}
 			</Button>
+			{errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
 		</div>
 	);
 }

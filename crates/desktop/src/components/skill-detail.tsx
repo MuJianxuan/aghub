@@ -580,8 +580,8 @@ function SkillTree({ root }: { root: SkillTreeNodeResponse }) {
 
 	return (
 		<div className="rounded-xl border border-default-200/60 bg-surface-secondary/60 p-2">
-			{items.map((node, index) => (
-				<TreeNodeRow key={`${node.path}-${index}`} node={node} />
+			{items.map((node) => (
+				<TreeNodeRow key={node.path} node={node} />
 			))}
 		</div>
 	);

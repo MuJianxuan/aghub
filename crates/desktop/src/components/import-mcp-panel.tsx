@@ -12,7 +12,7 @@ import {
 	TextField,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useReducer, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
@@ -43,6 +43,79 @@ interface ImportMcpFormValues {
 	jsonText: string;
 }
 
+interface ImportMcpUiState {
+	parseError: string;
+	parsedConfig: {
+		name: string;
+		config: McpServerConfig;
+		transportType: "stdio" | "sse" | "streamable_http";
+	} | null;
+	showConfirmDialog: boolean;
+	selectedAgents: Set<string>;
+	confirmError: string;
+}
+
+type ImportMcpUiAction =
+	| { type: "clear_parse_error" }
+	| { type: "reset_parse" }
+	| { type: "set_parse_error"; value: string }
+	| {
+			type: "open_confirm";
+			parsedConfig: NonNullable<ImportMcpUiState["parsedConfig"]>;
+	  }
+	| { type: "set_confirm_open"; value: boolean }
+	| { type: "set_selected_agents"; value: Set<string> }
+	| { type: "set_confirm_error"; value: string };
+
+function createImportUiState(defaultAgentIds: string[]): ImportMcpUiState {
+	return {
+		parseError: "",
+		parsedConfig: null,
+		showConfirmDialog: false,
+		selectedAgents: new Set(defaultAgentIds),
+		confirmError: "",
+	};
+}
+
+function importUiReducer(
+	state: ImportMcpUiState,
+	action: ImportMcpUiAction,
+): ImportMcpUiState {
+	switch (action.type) {
+		case "clear_parse_error":
+			return { ...state, parseError: "" };
+		case "reset_parse":
+			return {
+				...state,
+				parseError: "",
+				parsedConfig: null,
+			};
+		case "set_parse_error":
+			return {
+				...state,
+				parseError: action.value,
+				parsedConfig: null,
+			};
+		case "open_confirm":
+			return {
+				...state,
+				parsedConfig: action.parsedConfig,
+				confirmError: "",
+				showConfirmDialog: true,
+			};
+		case "set_confirm_open":
+			return { ...state, showConfirmDialog: action.value };
+		case "set_selected_agents":
+			return {
+				...state,
+				selectedAgents: action.value,
+				confirmError: action.value.size > 0 ? "" : state.confirmError,
+			};
+		case "set_confirm_error":
+			return { ...state, confirmError: action.value };
+	}
+}
+
 export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 	const { t } = useTranslation();
 	const { baseUrl } = useServer();
@@ -54,23 +127,17 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 		() => availableAgents.filter((a) => a.isUsable),
 		[availableAgents],
 	);
+	const defaultAgentIds = useMemo(
+		() => (usableAgents[0] ? [usableAgents[0].id] : []),
+		[usableAgents],
+	);
 
-	const [parseError, setParseError] = useState("");
 	const [error, setError] = useState<string | null>(null);
-
-	// Parsed configuration state
-	const [parsedConfig, setParsedConfig] = useState<{
-		name: string;
-		config: McpServerConfig;
-		transportType: "stdio" | "sse" | "streamable_http";
-	} | null>(null);
-
-	// Confirmation dialog state
-	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-	const [selectedAgents, setSelectedAgents] = useState<Set<string>>(() => {
-		return new Set(usableAgents[0] ? [usableAgents[0].id] : []);
-	});
-	const [confirmError, setConfirmError] = useState("");
+	const [uiState, dispatch] = useReducer(
+		importUiReducer,
+		defaultAgentIds,
+		createImportUiState,
+	);
 
 	const {
 		control,
@@ -108,21 +175,26 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 	});
 
 	const handleParseJson = ({ jsonText }: ImportMcpFormValues) => {
-		setParseError("");
+		dispatch({ type: "reset_parse" });
 		setError(null);
-		setParsedConfig(null);
 
 		try {
 			const parsed: McpConfigJson = JSON.parse(jsonText);
 
 			if (!parsed.mcpServers || typeof parsed.mcpServers !== "object") {
-				setParseError(t("parseError"));
+				dispatch({
+					type: "set_parse_error",
+					value: t("parseError"),
+				});
 				return;
 			}
 
 			const serverNames = Object.keys(parsed.mcpServers);
 			if (serverNames.length === 0) {
-				setParseError(t("parseError"));
+				dispatch({
+					type: "set_parse_error",
+					value: t("parseError"),
+				});
 				return;
 			}
 
@@ -136,28 +208,37 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 			} else if (config.url) {
 				transportType = "sse";
 			} else {
-				setParseError(t("parseError"));
+				dispatch({
+					type: "set_parse_error",
+					value: t("parseError"),
+				});
 				return;
 			}
 
-			setParsedConfig({ name: serverName, config, transportType });
-			setConfirmError("");
-			// Open confirmation dialog immediately after parsing
-			setShowConfirmDialog(true);
+			dispatch({
+				type: "open_confirm",
+				parsedConfig: { name: serverName, config, transportType },
+			});
 		} catch {
-			setParseError(t("invalidJson"));
+			dispatch({
+				type: "set_parse_error",
+				value: t("invalidJson"),
+			});
 		}
 	};
 
 	const handleConfirmImport = async () => {
-		if (!parsedConfig) return;
-		if (selectedAgents.size === 0) {
-			setConfirmError(t("validationAgentsRequired"));
+		if (!uiState.parsedConfig) return;
+		if (uiState.selectedAgents.size === 0) {
+			dispatch({
+				type: "set_confirm_error",
+				value: t("validationAgentsRequired"),
+			});
 			return;
 		}
-		setConfirmError("");
+		dispatch({ type: "set_confirm_error", value: "" });
 
-		const { name, config, transportType } = parsedConfig;
+		const { name, config, transportType } = uiState.parsedConfig;
 
 		// Build transport
 		let transport: TransportDto;
@@ -184,11 +265,11 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 
 		try {
 			await Promise.all(
-				Array.from(selectedAgents).map((agent) =>
+				Array.from(uiState.selectedAgents).map((agent) =>
 					createMutation.mutateAsync({ agent, body }),
 				),
 			);
-			setShowConfirmDialog(false);
+			dispatch({ type: "set_confirm_open", value: false });
 			reset();
 			onDone();
 		} catch {
@@ -241,7 +322,7 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 											validationBehavior="aria"
 											isInvalid={
 												Boolean(fieldState.error) ||
-												Boolean(parseError)
+												Boolean(uiState.parseError)
 											}
 										>
 											<Label>{t("jsonConfig")}</Label>
@@ -251,8 +332,10 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 													field.onChange(
 														e.target.value,
 													);
-													if (parseError) {
-														setParseError("");
+													if (uiState.parseError) {
+														dispatch({
+															type: "clear_parse_error",
+														});
 													}
 												}}
 												onBlur={field.onBlur}
@@ -271,9 +354,9 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 												</FieldError>
 											)}
 											{!fieldState.error &&
-												parseError && (
+												uiState.parseError && (
 													<FieldError>
-														{parseError}
+														{uiState.parseError}
 													</FieldError>
 												)}
 										</TextField>
@@ -300,8 +383,13 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 
 			{/* Confirmation Dialog */}
 			<Modal.Backdrop
-				isOpen={showConfirmDialog}
-				onOpenChange={setShowConfirmDialog}
+				isOpen={uiState.showConfirmDialog}
+				onOpenChange={(value) =>
+					dispatch({
+						type: "set_confirm_open",
+						value,
+					})
+				}
 			>
 				<Modal.Container>
 					<Modal.Dialog className="max-w-md">
@@ -310,14 +398,14 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 							<Modal.Heading>{t("confirmImport")}</Modal.Heading>
 						</Modal.Header>
 						<Modal.Body className="p-4">
-							{parsedConfig && (
+							{uiState.parsedConfig && (
 								<div className="space-y-4">
 									<div>
 										<p className="mb-1 text-xs tracking-wide text-muted uppercase">
 											{t("serverName")}
 										</p>
 										<p className="text-foreground">
-											{parsedConfig.name}
+											{uiState.parsedConfig.name}
 										</p>
 									</div>
 
@@ -326,40 +414,45 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 											{t("transportType")}
 										</p>
 										<p className="text-sm text-foreground">
-											{parsedConfig.transportType}
+											{uiState.parsedConfig.transportType}
 										</p>
 									</div>
 
 									<div>
 										<p className="mb-1 text-xs tracking-wide text-muted uppercase">
-											{parsedConfig.transportType ===
-											"stdio"
+											{uiState.parsedConfig
+												.transportType === "stdio"
 												? t("command")
 												: "URL"}
 										</p>
 										<p className="text-sm text-foreground">
-											{parsedConfig.transportType ===
-											"stdio"
-												? parsedConfig.config.command
-												: parsedConfig.config.url}
+											{uiState.parsedConfig
+												.transportType === "stdio"
+												? uiState.parsedConfig.config
+														.command
+												: uiState.parsedConfig.config
+														.url}
 										</p>
 									</div>
 
 									<div>
 										<AgentSelector
 											agents={usableAgents}
-											selectedKeys={selectedAgents}
+											selectedKeys={
+												uiState.selectedAgents
+											}
 											onSelectionChange={(keys) => {
-												setSelectedAgents(keys);
-												if (keys.size > 0) {
-													setConfirmError("");
-												}
+												dispatch({
+													type: "set_selected_agents",
+													value: keys,
+												});
 											}}
 											label={t("selectAgentsForMcp")}
 											emptyMessage={t("noTargetAgents")}
 											variant="secondary"
 											errorMessage={
-												confirmError || undefined
+												uiState.confirmError ||
+												undefined
 											}
 										/>
 									</div>
@@ -370,7 +463,12 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 							<Button
 								type="button"
 								variant="secondary"
-								onPress={() => setShowConfirmDialog(false)}
+								onPress={() =>
+									dispatch({
+										type: "set_confirm_open",
+										value: false,
+									})
+								}
 							>
 								{t("cancel")}
 							</Button>

@@ -15,6 +15,12 @@ interface KeyPairEditorProps {
 	errorMessage?: string;
 }
 
+const EMPTY_DISPLAY_PAIR: KeyPair = {
+	id: "empty",
+	key: "",
+	value: "",
+};
+
 export function KeyPairEditor({
 	value,
 	onChange,
@@ -72,8 +78,7 @@ export function KeyPairEditor({
 	};
 
 	// Show a default empty row when value is empty
-	const displayPairs =
-		value.length === 0 ? [{ id: "empty", key: "", value: "" }] : value;
+	const displayPairs = value.length === 0 ? [EMPTY_DISPLAY_PAIR] : value;
 
 	void errors;
 

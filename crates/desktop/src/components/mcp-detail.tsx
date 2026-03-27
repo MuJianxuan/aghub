@@ -20,7 +20,7 @@ import {
 	toast,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useFavorites } from "../hooks/use-favorites";
@@ -163,14 +163,52 @@ function KeyValueList({
 	);
 }
 
+interface McpDetailUiState {
+	deleteDialogOpen: boolean;
+	manageDialogOpen: boolean;
+	copyFeedback: boolean;
+	showAllHeaders: boolean;
+	showAllEnvVars: boolean;
+}
+
+type McpDetailUiAction =
+	| { type: "set_delete_dialog"; value: boolean }
+	| { type: "set_manage_dialog"; value: boolean }
+	| { type: "show_copy_feedback" }
+	| { type: "hide_copy_feedback" }
+	| { type: "toggle_headers" }
+	| { type: "toggle_env" };
+
+function mcpDetailUiReducer(
+	state: McpDetailUiState,
+	action: McpDetailUiAction,
+): McpDetailUiState {
+	switch (action.type) {
+		case "set_delete_dialog":
+			return { ...state, deleteDialogOpen: action.value };
+		case "set_manage_dialog":
+			return { ...state, manageDialogOpen: action.value };
+		case "show_copy_feedback":
+			return { ...state, copyFeedback: true };
+		case "hide_copy_feedback":
+			return { ...state, copyFeedback: false };
+		case "toggle_headers":
+			return { ...state, showAllHeaders: !state.showAllHeaders };
+		case "toggle_env":
+			return { ...state, showAllEnvVars: !state.showAllEnvVars };
+	}
+}
+
 export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	const { t } = useTranslation();
 	const { allAgents } = useAgentAvailability();
-	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-	const [manageDialogOpen, setManageDialogOpen] = useState(false);
-	const [copyFeedback, setCopyFeedback] = useState(false);
-	const [showAllHeaders, setShowAllHeaders] = useState(false);
-	const [showAllEnvVars, setShowAllEnvVars] = useState(false);
+	const [uiState, dispatch] = useReducer(mcpDetailUiReducer, {
+		deleteDialogOpen: false,
+		manageDialogOpen: false,
+		copyFeedback: false,
+		showAllHeaders: false,
+		showAllEnvVars: false,
+	});
 	const { baseUrl } = useServer();
 	const api = useMemo(() => createApi(baseUrl), [baseUrl]);
 	const queryClient = useQueryClient();
@@ -195,7 +233,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["mcps"] });
 			queryClient.invalidateQueries({ queryKey: ["project-mcps"] });
-			setDeleteDialogOpen(false);
+			dispatch({ type: "set_delete_dialog", value: false });
 			toast.success(t("deleteMcpSuccess"));
 		},
 		onError: (error) => {
@@ -220,20 +258,16 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 		try {
 			await navigator.clipboard.writeText(configJson);
-			setCopyFeedback(true);
+			dispatch({ type: "show_copy_feedback" });
+			setTimeout(() => {
+				dispatch({ type: "hide_copy_feedback" });
+			}, 2000);
 			toast.success(t("copyConfigSuccess"));
 		} catch (error) {
 			console.error("Failed to copy config:", error);
 			toast.danger(t("copyConfigError"));
 		}
 	};
-
-	useEffect(() => {
-		if (copyFeedback) {
-			const timer = setTimeout(setCopyFeedback, 2000, false);
-			return () => clearTimeout(timer);
-		}
-	}, [copyFeedback]);
 
 	const transport = group.transport;
 	const primarySource = group.items[0].source;
@@ -349,7 +383,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 										className="text-muted hover:text-danger min-w-[44px] min-h-[44px]"
 										aria-label={t("deleteTooltip")}
 										onPress={() =>
-											setDeleteDialogOpen(true)
+											dispatch({
+												type: "set_delete_dialog",
+												value: true,
+											})
 										}
 									>
 										<TrashIcon className="size-4" />
@@ -457,11 +494,11 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 										</h3>
 										<KeyValueList
 											items={headerEntries}
-											showAll={showAllHeaders}
+											showAll={uiState.showAllHeaders}
 											onToggle={() =>
-												setShowAllHeaders(
-													!showAllHeaders,
-												)
+												dispatch({
+													type: "toggle_headers",
+												})
 											}
 											showMoreLabel={(count) =>
 												t("showMore", { count })
@@ -481,9 +518,9 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									</h3>
 									<KeyValueList
 										items={envEntries}
-										showAll={showAllEnvVars}
+										showAll={uiState.showAllEnvVars}
 										onToggle={() =>
-											setShowAllEnvVars(!showAllEnvVars)
+											dispatch({ type: "toggle_env" })
 										}
 										showMoreLabel={(count) =>
 											t("showMore", { count })
@@ -499,18 +536,23 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 									variant="secondary"
 									onPress={handleCopyConfig}
 								>
-									{copyFeedback ? (
+									{uiState.copyFeedback ? (
 										<CheckCircleIcon className="size-4 text-success" />
 									) : (
 										<DocumentDuplicateIcon className="size-4" />
 									)}
-									{copyFeedback
+									{uiState.copyFeedback
 										? t("copied")
 										: t("copyConfig")}
 								</Button>
 								<Button
 									variant="primary"
-									onPress={() => setManageDialogOpen(true)}
+									onPress={() =>
+										dispatch({
+											type: "set_manage_dialog",
+											value: true,
+										})
+									}
 								>
 									<PlusIcon className="size-4" />
 									{t("addToAgent")}
@@ -523,8 +565,13 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 			{/* Delete Confirmation Dialog */}
 			<Modal.Backdrop
-				isOpen={deleteDialogOpen}
-				onOpenChange={setDeleteDialogOpen}
+				isOpen={uiState.deleteDialogOpen}
+				onOpenChange={(value) =>
+					dispatch({
+						type: "set_delete_dialog",
+						value,
+					})
+				}
 			>
 				<Modal.Container>
 					<Modal.Dialog>
@@ -557,7 +604,12 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 								slot="close"
 								variant="secondary"
 								size="md"
-								onPress={() => setDeleteDialogOpen(false)}
+								onPress={() =>
+									dispatch({
+										type: "set_delete_dialog",
+										value: false,
+									})
+								}
 								isDisabled={deleteMutation.isPending}
 								className="min-h-[44px]"
 							>
@@ -584,8 +636,13 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 			{/* Manage Agents Dialog */}
 			<ManageAgentsDialog
 				group={group}
-				isOpen={manageDialogOpen}
-				onClose={() => setManageDialogOpen(false)}
+				isOpen={uiState.manageDialogOpen}
+				onClose={() =>
+					dispatch({
+						type: "set_manage_dialog",
+						value: false,
+					})
+				}
 				projectPath={projectPath}
 			/>
 		</>

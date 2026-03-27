@@ -39,6 +39,9 @@ interface UnifiedResourceListProps {
 	projectPath?: string;
 }
 
+const RESOURCE_SKELETON_KEYS = ["resource-1", "resource-2", "resource-3"];
+const SECONDARY_SKELETON_KEYS = ["secondary-1", "secondary-2"];
+
 function ResourceListSkeleton() {
 	return (
 		<>
@@ -48,9 +51,9 @@ function ResourceListSkeleton() {
 				icon={<Skeleton className="size-3.5 rounded bg-default-200" />}
 			/>
 			<div className="p-2 space-y-1">
-				{[1, 2, 3].map((i) => (
+				{RESOURCE_SKELETON_KEYS.map((key) => (
 					<div
-						key={i}
+						key={key}
 						className="flex items-center gap-2 px-2 py-1.5 rounded-medium"
 					>
 						<Skeleton className="size-4 rounded bg-default-200" />
@@ -64,9 +67,9 @@ function ResourceListSkeleton() {
 				icon={<Skeleton className="size-3.5 rounded bg-default-200" />}
 			/>
 			<div className="p-2 space-y-1">
-				{[1, 2].map((i) => (
+				{SECONDARY_SKELETON_KEYS.map((key) => (
 					<div
-						key={i}
+						key={key}
 						className="flex items-center gap-2 px-2 py-1.5 rounded-medium"
 					>
 						<Skeleton className="size-4 rounded bg-default-200" />

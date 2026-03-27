@@ -2,7 +2,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 import { Button, Spinner } from "@heroui/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useQueryState } from "nuqs";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TableComponents } from "react-virtuoso";
 import { TableVirtuoso } from "react-virtuoso";
@@ -75,14 +75,9 @@ export default function SkillsSearchPage() {
 	);
 
 	const [urlQuery, setUrlQuery] = useQueryState("q");
-	const [searchQuery, setSearchQuery] = useState(urlQuery ?? "");
 	const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
 
 	const submittedQuery = urlQuery ?? "";
-
-	useEffect(() => {
-		setSearchQuery(submittedQuery);
-	}, [submittedQuery]);
 
 	const { data, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage } =
 		useInfiniteQuery({
@@ -144,13 +139,6 @@ export default function SkillsSearchPage() {
 		fetchNextPage,
 	]);
 
-	const handleSearch = () => {
-		if (searchQuery.trim().length >= 2) {
-			setUrlQuery(searchQuery.trim());
-			setVisibleCount(BATCH_SIZE);
-		}
-	};
-
 	if (submittedQuery.length < 2) {
 		setLocation("/skills-sh");
 		return null;
@@ -160,11 +148,14 @@ export default function SkillsSearchPage() {
 		<div className="h-full flex flex-col p-6 overflow-hidden">
 			<div className="shrink-0 pb-4">
 				<div className="flex items-center gap-6">
-					<SkillsHeader
+					<SearchHeader
+						key={submittedQuery}
 						size="compact"
-						searchQuery={searchQuery}
-						onSearchQueryChange={setSearchQuery}
-						onSearch={handleSearch}
+						initialQuery={submittedQuery}
+						onSearch={(query) => {
+							setUrlQuery(query);
+							setVisibleCount(BATCH_SIZE);
+						}}
 						showSearchButton={true}
 					/>
 				</div>
@@ -270,5 +261,34 @@ export default function SkillsSearchPage() {
 				onInstall={handleInstall}
 			/>
 		</div>
+	);
+}
+
+function SearchHeader({
+	size,
+	initialQuery,
+	onSearch,
+	showSearchButton,
+}: {
+	size: "large" | "compact";
+	initialQuery: string;
+	onSearch: (query: string) => void;
+	showSearchButton: boolean;
+}) {
+	const [searchQuery, setSearchQuery] = useState(initialQuery);
+
+	return (
+		<SkillsHeader
+			size={size}
+			searchQuery={searchQuery}
+			onSearchQueryChange={setSearchQuery}
+			onSearch={() => {
+				const query = searchQuery.trim();
+				if (query.length >= 2) {
+					onSearch(query);
+				}
+			}}
+			showSearchButton={showSearchButton}
+		/>
 	);
 }

@@ -400,14 +400,14 @@ export default function SkillsShPage() {
 				</>
 			) : (
 				<div className="flex flex-col items-center pt-[20vh]">
-					<div className="flex items-center gap-2 mb-4">
+					<div className="flex items-center gap-2.5 mb-5">
 						<Tooltip delay={0}>
 							<Tooltip.Trigger>
 								<span className="text-muted hover:text-foreground cursor-default">
 									<svg
-										height="18"
+										height="24"
 										viewBox="0 0 16 16"
-										width="18"
+										width="24"
 										className="text-current"
 									>
 										<path
@@ -425,9 +425,9 @@ export default function SkillsShPage() {
 						</Tooltip>
 						<span className="text-muted">
 							<svg
-								height="16"
+								height="20"
 								viewBox="0 0 16 16"
-								width="16"
+								width="20"
 								className="text-current"
 							>
 								<path
@@ -440,7 +440,7 @@ export default function SkillsShPage() {
 						</span>
 						<Tooltip delay={0}>
 							<Tooltip.Trigger>
-								<span className="font-medium tracking-tight text-lg cursor-default">
+								<span className="font-medium tracking-tight text-2xl cursor-default">
 									Skills
 								</span>
 							</Tooltip.Trigger>

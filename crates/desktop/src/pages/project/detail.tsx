@@ -7,6 +7,7 @@ import { useParams } from "wouter";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
 import { CreateSkillPanel } from "../../components/create-skill-panel";
 import { EditMcpPanel } from "../../components/edit-mcp-panel";
+import { ImportMcpPanel } from "../../components/import-mcp-panel";
 import { ImportSkillPanel } from "../../components/import-skill-panel";
 import { McpDetail } from "../../components/mcp-detail";
 import { SkillDetail } from "../../components/skill-detail";
@@ -27,7 +28,12 @@ export default function ProjectDetailPage() {
 	const api = createApi(baseUrl);
 
 	const [panelMode, setPanelMode] = useState<
-		"create-mcp" | "edit-mcp" | "create-skill" | "import-skill" | null
+		| "create-mcp"
+		| "import-mcp"
+		| "edit-mcp"
+		| "create-skill"
+		| "import-skill"
+		| null
 	>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedResource, setSelectedResource] = useQueryState("resource");
@@ -140,7 +146,10 @@ export default function ProjectDetailPage() {
 				selectedKey={selectedResource}
 				selectedType={resourceType as "mcp" | "skill" | null}
 				onSelect={handleSelect}
-				onCreateMcp={() => setPanelMode("create-mcp")}
+				onCreateMcp={(type) => {
+					if (type === "manual") setPanelMode("create-mcp");
+					else if (type === "import") setPanelMode("import-mcp");
+				}}
 				onCreateSkill={(type) => {
 					if (type === "local") setPanelMode("create-skill");
 					else if (type === "import") setPanelMode("import-skill");
@@ -170,6 +179,12 @@ export default function ProjectDetailPage() {
 				)}
 				{panelMode === "create-mcp" && (
 					<CreateMcpPanel
+						onDone={() => setPanelMode(null)}
+						projectPath={project.path}
+					/>
+				)}
+				{panelMode === "import-mcp" && (
+					<ImportMcpPanel
 						onDone={() => setPanelMode(null)}
 						projectPath={project.path}
 					/>

@@ -1,11 +1,19 @@
 import {
+	ArrowDownTrayIcon,
 	ArrowPathIcon,
 	BookOpenIcon,
 	CommandLineIcon,
 	PlusIcon,
 	ServerIcon,
 } from "@heroicons/react/24/solid";
-import { Button, Dropdown, Skeleton } from "@heroui/react";
+import {
+	Button,
+	Dropdown,
+	Header,
+	Label,
+	Separator,
+	Skeleton,
+} from "@heroui/react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { McpResponse, SkillResponse } from "../lib/api-types";
@@ -21,7 +29,7 @@ interface UnifiedResourceListProps {
 	selectedKey: string | null;
 	selectedType: "mcp" | "skill" | null;
 	onSelect: (key: string, type: "mcp" | "skill") => void;
-	onCreateMcp: () => void;
+	onCreateMcp: (type: "manual" | "import") => void;
 	onCreateSkill: (type: "local" | "import") => void;
 	onRefresh: () => void;
 	isRefreshing?: boolean;
@@ -136,37 +144,58 @@ export function UnifiedResourceList({
 					<Dropdown.Popover placement="bottom end">
 						<Dropdown.Menu
 							onAction={(key) => {
-								if (key === "mcp") onCreateMcp();
+								if (key === "mcp-manual") onCreateMcp("manual");
+								else if (key === "mcp-import")
+									onCreateMcp("import");
 								else if (key === "skill-local")
 									onCreateSkill("local");
 								else if (key === "skill-import")
 									onCreateSkill("import");
 							}}
 						>
-							<Dropdown.Item id="mcp" textValue={t("mcpServers")}>
-								<div className="flex items-center gap-2">
-									<ServerIcon className="size-4" />
-									<span>{t("mcpServers")}</span>
-								</div>
-							</Dropdown.Item>
-							<Dropdown.Item
-								id="skill-import"
-								textValue={t("importFromFile")}
-							>
-								<div className="flex items-center gap-2">
-									<CommandLineIcon className="size-4" />
-									<span>{t("importFromFile")}</span>
-								</div>
-							</Dropdown.Item>
-							<Dropdown.Item
-								id="skill-local"
-								textValue={t("createCustomSkill")}
-							>
-								<div className="flex items-center gap-2">
-									<CommandLineIcon className="size-4" />
-									<span>{t("createCustomSkill")}</span>
-								</div>
-							</Dropdown.Item>
+							<Dropdown.Section>
+								<Header>{t("mcpServers")}</Header>
+								<Dropdown.Item
+									id="mcp-manual"
+									textValue={t("manualCreation")}
+								>
+									<div className="flex items-center gap-2">
+										<ServerIcon className="size-4" />
+										<Label>{t("manualCreation")}</Label>
+									</div>
+								</Dropdown.Item>
+								<Dropdown.Item
+									id="mcp-import"
+									textValue={t("importFromJson")}
+								>
+									<div className="flex items-center gap-2">
+										<ArrowDownTrayIcon className="size-4" />
+										<Label>{t("importFromJson")}</Label>
+									</div>
+								</Dropdown.Item>
+							</Dropdown.Section>
+							<Separator />
+							<Dropdown.Section>
+								<Header>{t("skills")}</Header>
+								<Dropdown.Item
+									id="skill-local"
+									textValue={t("createCustomSkill")}
+								>
+									<div className="flex items-center gap-2">
+										<CommandLineIcon className="size-4" />
+										<Label>{t("createCustomSkill")}</Label>
+									</div>
+								</Dropdown.Item>
+								<Dropdown.Item
+									id="skill-import"
+									textValue={t("importFromFile")}
+								>
+									<div className="flex items-center gap-2">
+										<ArrowDownTrayIcon className="size-4" />
+										<Label>{t("importFromFile")}</Label>
+									</div>
+								</Dropdown.Item>
+							</Dropdown.Section>
 						</Dropdown.Menu>
 					</Dropdown.Popover>
 				</Dropdown>

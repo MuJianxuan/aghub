@@ -64,6 +64,8 @@ export default {
 	selectSkill: "选择一个技能查看详情",
 	starSkill: "收藏技能",
 	unstarSkill: "取消收藏",
+	starServer: "收藏服务",
+	unstarServer: "取消收藏",
 	description: "描述",
 	author: "作者",
 	version: "版本",

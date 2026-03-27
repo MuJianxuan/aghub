@@ -65,6 +65,8 @@ export default {
 	selectSkill: "Select a skill to view details",
 	starSkill: "Favorite",
 	unstarSkill: "Unfavorite",
+	starServer: "Favorite",
+	unstarServer: "Unfavorite",
 	description: "Description",
 	author: "Author",
 	version: "Version",

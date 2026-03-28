@@ -2,7 +2,8 @@ import { Spinner, Toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NuqsAdapter } from "nuqs/adapters/react";
 import { Suspense, useEffect, useState } from "react";
-import { Route, Router, Switch } from "wouter";
+import { useKeyBindings } from "rooks";
+import { Route, Router, Switch, useLocation } from "wouter";
 import { Redirect } from "./components/redirect";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { MainLayout } from "./layouts/main-layout";
@@ -45,6 +46,7 @@ function SkillsPageSkeleton() {
 
 function App() {
 	const [isStoreReady, setIsStoreReady] = useState(false);
+	const [, setLocation] = useLocation();
 
 	useEffect(() => {
 		initStore()
@@ -53,6 +55,15 @@ function App() {
 				console.error("Failed to initialize store:", err);
 			});
 	}, []);
+
+	useKeyBindings({
+		",": (event) => {
+			if (event.metaKey && !event.ctrlKey && !event.altKey) {
+				event.preventDefault();
+				setLocation("/settings");
+			}
+		},
+	});
 
 	if (!isStoreReady) {
 		return (

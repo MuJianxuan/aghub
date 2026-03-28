@@ -65,3 +65,21 @@ pub fn check_availability() -> Json<Vec<AgentAvailabilityDto>> {
 
 	Json(dtos)
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn test_list_agents_includes_pi_without_mcp_capabilities() {
+		let agents = list_agents().into_inner();
+		let pi = agents
+			.into_iter()
+			.find(|agent| agent.id == "pi")
+			.expect("pi agent should be listed");
+
+		assert!(!pi.capabilities.mcp_stdio);
+		assert!(!pi.capabilities.mcp_remote);
+		assert!(pi.capabilities.skills);
+	}
+}

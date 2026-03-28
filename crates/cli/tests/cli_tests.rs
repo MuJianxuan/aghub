@@ -97,3 +97,32 @@ fn test_agent_all_non_get_command_fails() {
 		stderr
 	);
 }
+
+#[test]
+fn test_pi_add_mcp_fails_for_unsupported_agent() {
+	let out = agentctl()
+		.args([
+			"--agent",
+			"pi",
+			"add",
+			"mcps",
+			"--name",
+			"pi-mcp",
+			"--command",
+			"echo hello",
+		])
+		.output()
+		.unwrap();
+
+	assert!(
+		!out.status.success(),
+		"pi MCP add should fail for unsupported agent"
+	);
+
+	let stderr = String::from_utf8_lossy(&out.stderr);
+	assert!(
+		stderr.contains("Cannot add MCP server for pi agent"),
+		"stderr must mention the unsupported MCP operation, got: {}",
+		stderr
+	);
+}

@@ -18,6 +18,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useServer } from "../hooks/use-server";
+import { supportsMcp } from "../lib/agent-capabilities";
 import { createApi } from "../lib/api";
 import type { TransportDto } from "../lib/api-types";
 import {
@@ -58,7 +59,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 	const { availableAgents } = useAgentAvailability();
 
 	const usableAgents = useMemo(
-		() => availableAgents.filter((a) => a.isUsable),
+		() => availableAgents.filter((a) => a.isUsable && supportsMcp(a)),
 		[availableAgents],
 	);
 
@@ -485,12 +486,7 @@ export function CreateMcpPanel({ onDone, projectPath }: CreateMcpPanelProps) {
 												field.onChange([...keys])
 											}
 											label={t("agents")}
-											emptyMessage={t(
-												"noAgentsAvailable",
-											)}
-											emptyHelpText={t(
-												"noAgentsAvailableHelp",
-											)}
+											emptyMessage={t("noTargetAgents")}
 											variant="secondary"
 											errorMessage={
 												fieldState.error?.message

@@ -158,3 +158,42 @@ pub fn list_all_agents_mcps(scope: ScopeParams) -> ApiResult<Vec<McpResponse>> {
 		.collect();
 	Ok(Json(items))
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use aghub_core::models::AgentType;
+	use rocket::serde::json::Json;
+
+	use crate::{
+		dto::mcp::{CreateMcpRequest, TransportDto},
+		extractors::AgentParam,
+	};
+
+	#[test]
+	fn test_create_mcp_rejects_pi_agent() {
+		let result = create_mcp(
+			AgentParam(AgentType::Pi),
+			ScopeParams {
+				scope: Some("global".to_string()),
+				project_root: None,
+			},
+			Json(CreateMcpRequest {
+				name: "pi-mcp".to_string(),
+				transport: TransportDto::Stdio {
+					command: "echo".to_string(),
+					args: vec!["hello".to_string()],
+					env: None,
+					timeout: None,
+				},
+				timeout: None,
+			}),
+		);
+
+		let err = result.expect_err("pi should reject MCP creation");
+		assert_eq!(err.status, Status::UnprocessableEntity);
+		assert_eq!(err.body.code, "UNSUPPORTED_OPERATION");
+		assert!(err.body.error.contains("Cannot add MCP server"));
+		assert!(err.body.error.contains("pi"));
+	}
+}

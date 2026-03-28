@@ -17,6 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useServer } from "../hooks/use-server";
+import { supportsMcp } from "../lib/agent-capabilities";
 import { createApi } from "../lib/api";
 import type { TransportDto } from "../lib/api-types";
 import { AgentSelector } from "./agent-selector";
@@ -124,7 +125,7 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 	const { availableAgents } = useAgentAvailability();
 
 	const usableAgents = useMemo(
-		() => availableAgents.filter((a) => a.isUsable),
+		() => availableAgents.filter((a) => a.isUsable && supportsMcp(a)),
 		[availableAgents],
 	);
 	const defaultAgentIds = useMemo(

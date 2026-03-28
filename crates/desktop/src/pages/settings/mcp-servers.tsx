@@ -17,7 +17,9 @@ import type { McpGroup } from "../../components/mcp-detail";
 import { McpDetail } from "../../components/mcp-detail";
 import { McpList } from "../../components/mcp-list";
 import { MultiSelectFloatingBar } from "../../components/multi-select-floating-bar";
+import { useAgentAvailability } from "../../hooks/use-agent-availability";
 import { useMcps } from "../../hooks/use-mcps";
+import { supportsMcp } from "../../lib/agent-capabilities";
 import { cn, getMcpMergeKey } from "../../lib/utils";
 
 type RightPanel =
@@ -30,6 +32,7 @@ type RightPanel =
 export default function MCPServersPage() {
 	const { t } = useTranslation();
 	const { data: mcps, refetch, isFetching } = useMcps();
+	const { availableAgents } = useAgentAvailability();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [panel, setPanel] = useState<RightPanel>({ type: "empty" });
 	const [selectedKey, setSelectedKey] = useQueryState("server");
@@ -38,6 +41,14 @@ export default function MCPServersPage() {
 	);
 	const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
 	const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+
+	const hasMcpCapableAgents = useMemo(
+		() =>
+			availableAgents.some(
+				(agent) => agent.isUsable && supportsMcp(agent),
+			),
+		[availableAgents],
+	);
 
 	const groupedMcps = useMemo(() => {
 		const map = new Map<string, McpGroup>();
@@ -189,6 +200,7 @@ export default function MCPServersPage() {
 							size="sm"
 							className="shrink-0"
 							aria-label={t("addMcpServer")}
+							isDisabled={!hasMcpCapableAgents}
 						>
 							<PlusIcon className="size-4" />
 						</Button>
@@ -279,7 +291,14 @@ export default function MCPServersPage() {
 						}
 					/>
 				)}
-				{showDetail && !activeGroup && (
+				{showDetail && !activeGroup && !hasMcpCapableAgents && (
+					<div className="flex h-full flex-col items-center justify-center gap-3">
+						<p className="text-sm text-muted">
+							{t("noTargetAgents")}
+						</p>
+					</div>
+				)}
+				{showDetail && !activeGroup && hasMcpCapableAgents && (
 					<div className="flex h-full flex-col items-center justify-center gap-4">
 						<div className="text-center">
 							<p className="mb-2 text-sm text-muted">

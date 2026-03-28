@@ -644,6 +644,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 					})
 				}
 				projectPath={projectPath}
+				requiredCapabilities={["mcp"]}
 			/>
 		</>
 	);

@@ -15,6 +15,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { AvailableAgent } from "../contexts/agent-availability";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useServer } from "../hooks/use-server";
 import { AgentIcon } from "../lib/agent-icons";
@@ -22,6 +23,8 @@ import { createApi } from "../lib/api";
 import type { McpResponse } from "../lib/api-types";
 import { ConfigSource } from "../lib/api-types";
 import { cn } from "../lib/utils";
+
+type AgentCapabilityRequirement = keyof AvailableAgent["capabilities"] | "mcp";
 
 interface ManageAgentsDialogProps {
 	group: {
@@ -32,6 +35,7 @@ interface ManageAgentsDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
 	projectPath?: string;
+	requiredCapabilities?: AgentCapabilityRequirement[];
 }
 
 type AgentStatus = "idle" | "pending" | "success" | "error";
@@ -46,6 +50,7 @@ export function ManageAgentsDialog({
 	isOpen,
 	onClose,
 	projectPath,
+	requiredCapabilities = [],
 }: ManageAgentsDialogProps) {
 	const { t } = useTranslation();
 	const { baseUrl } = useServer();
@@ -54,9 +59,26 @@ export function ManageAgentsDialog({
 	const { availableAgents } = useAgentAvailability();
 
 	// Safely handle undefined/null data
+	const supportsRequirements = useCallback(
+		(agent: AvailableAgent) =>
+			requiredCapabilities.every((capability) => {
+				if (capability === "mcp") {
+					return (
+						agent.capabilities.mcp_stdio ||
+						agent.capabilities.mcp_remote
+					);
+				}
+				return Boolean(agent.capabilities[capability]);
+			}),
+		[requiredCapabilities],
+	);
+
 	const usableAgents = useMemo(
-		() => (availableAgents ?? []).filter((a) => a?.isUsable),
-		[availableAgents],
+		() =>
+			(availableAgents ?? []).filter(
+				(a) => a?.isUsable && supportsRequirements(a),
+			),
+		[availableAgents, supportsRequirements],
 	);
 
 	// Validate group data

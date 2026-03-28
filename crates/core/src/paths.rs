@@ -104,6 +104,7 @@ mod tests {
 		let roocode = crate::registry::get(super::super::AgentType::RooCode);
 		let gemini = crate::registry::get(super::super::AgentType::Gemini);
 		let codex = crate::registry::get(super::super::AgentType::Codex);
+		let kimi = crate::registry::get(super::super::AgentType::Kimi);
 		let antigravity =
 			crate::registry::get(super::super::AgentType::Antigravity);
 		let openclaw = crate::registry::get(super::super::AgentType::Openclaw);
@@ -120,6 +121,7 @@ mod tests {
 			(gemini.project_path)(dir),
 			dir.join(".gemini/settings.json")
 		);
+		assert_eq!((kimi.project_path)(dir), dir.join(".kimi/mcp.json"));
 		assert_eq!((codex.project_path)(dir), dir.join(".codex/config.toml"));
 		assert_eq!(
 			(antigravity.project_path)(dir),

@@ -20,6 +20,7 @@ pub static ALL_AGENTS: &[&AgentDescriptor] = &[
 	&agents::zed::DESCRIPTOR,
 	&agents::jetbrains_ai::DESCRIPTOR,
 	&agents::roocode::DESCRIPTOR,
+	&agents::kimi::DESCRIPTOR,
 	&agents::mistral::DESCRIPTOR,
 	&agents::pi::DESCRIPTOR,
 	&agents::augmentcode::DESCRIPTOR,

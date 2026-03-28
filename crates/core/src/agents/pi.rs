@@ -4,15 +4,15 @@ use std::path::{Path, PathBuf};
 fn global_path() -> PathBuf {
 	dirs::home_dir()
 		.unwrap_or_else(|| std::path::PathBuf::from(""))
-		.join(".pi/mcp.json")
+		.join(".pi/agent/config.json")
 }
 fn project_path(root: &Path) -> PathBuf {
-	root.join(".pi/mcp.json")
+	root.join(".pi/agent/config.json")
 }
 fn global_skills_path() -> PathBuf {
 	dirs::home_dir()
 		.unwrap_or_else(|| std::path::PathBuf::from(""))
-		.join(".pi/skills")
+		.join(".pi/agent/skills")
 }
 fn project_skills_path(root: &Path) -> PathBuf {
 	root.join(".pi/skills")
@@ -20,14 +20,14 @@ fn project_skills_path(root: &Path) -> PathBuf {
 
 pub const DESCRIPTOR: AgentDescriptor = AgentDescriptor {
 	id: "pi",
-	display_name: "Pi",
-	parse_config: mcp_strategy::parse_json_map_mcp_servers,
-	serialize_config: mcp_strategy::serialize_json_map_mcp_servers,
+	display_name: "Pi Coding Agent",
+	parse_config: mcp_strategy::parse_none,
+	serialize_config: mcp_strategy::serialize_none,
 	global_path,
 	project_path,
 	capabilities: Capabilities {
-		mcp_stdio: true,
-		mcp_remote: true,
+		mcp_stdio: false,
+		mcp_remote: false,
 		mcp_enable_disable: false,
 		skills: true,
 		universal_skills: false,

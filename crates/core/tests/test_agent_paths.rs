@@ -2,7 +2,7 @@
 //!
 //! Ported from xdg-config-paths.test.ts and openclaw-paths.test.ts.
 
-use aghub_core::agents::{amp, cursor, openclaw, opencode};
+use aghub_core::agents::{amp, cursor, kimi, openclaw, opencode, pi};
 use std::path::{Path, PathBuf};
 
 // ─── XDG config path tests (xdg-config-paths.test.ts) ───────────────────────
@@ -93,6 +93,49 @@ fn test_cursor_global_skills_path() {
 		"Cursor global skills path should end with 'skills', got: {}",
 		path.display()
 	);
+}
+
+#[test]
+fn test_kimi_global_mcp_path() {
+	let path = (kimi::DESCRIPTOR.global_path)();
+	assert!(
+		path.to_string_lossy().contains(".kimi/mcp.json"),
+		"Kimi global MCP path should be ~/.kimi/mcp.json, got: {}",
+		path.display()
+	);
+}
+
+#[test]
+fn test_kimi_uses_universal_skills() {
+	let descriptor = aghub_core::registry::iter_all()
+		.find(|d| d.id == "kimi")
+		.unwrap();
+	assert!(
+		descriptor.capabilities.universal_skills,
+		"Kimi should use the universal .agents/skills directories"
+	);
+}
+
+#[test]
+fn test_pi_global_skills_path_uses_agent_dir() {
+	let path_fn = pi::DESCRIPTOR
+		.global_skills_path
+		.expect("Pi should have a global_skills_path");
+	let path = path_fn();
+	assert!(
+		path.to_string_lossy().contains(".pi/agent/skills"),
+		"Pi global skills should be under ~/.pi/agent/skills, got: {}",
+		path.display()
+	);
+}
+
+#[test]
+fn test_pi_has_no_mcp_capabilities() {
+	let descriptor = aghub_core::registry::iter_all()
+		.find(|d| d.id == "pi")
+		.unwrap();
+	assert!(!descriptor.capabilities.mcp_stdio);
+	assert!(!descriptor.capabilities.mcp_remote);
 }
 
 // ─── OpenClaw fallback path tests (openclaw-paths.test.ts) ──────────────────

@@ -188,6 +188,10 @@ impl AgentAdapter for &'static AgentDescriptor {
 		cmd
 	}
 
+	fn supports_mcp_operations(&self) -> bool {
+		self.capabilities.mcp_stdio || self.capabilities.mcp_remote
+	}
+
 	fn supports_mcp_enable_disable(&self) -> bool {
 		self.capabilities.mcp_enable_disable
 	}

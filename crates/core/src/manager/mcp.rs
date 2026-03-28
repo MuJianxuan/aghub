@@ -6,6 +6,13 @@ use crate::{
 
 impl ConfigManager {
 	pub fn add_mcp(&mut self, mcp: McpServer) -> Result<()> {
+		if !self.adapter.supports_mcp_operations() {
+			return Err(ConfigError::unsupported_operation(
+				"add",
+				"MCP server",
+				self.adapter.name(),
+			));
+		}
 		let config = self.config_mut()?;
 		if config.mcps.iter().any(|m| m.name == mcp.name) {
 			return Err(ConfigError::resource_exists("MCP server", &mcp.name));
@@ -19,6 +26,13 @@ impl ConfigManager {
 	}
 
 	pub fn update_mcp(&mut self, name: &str, mcp: McpServer) -> Result<()> {
+		if !self.adapter.supports_mcp_operations() {
+			return Err(ConfigError::unsupported_operation(
+				"update",
+				"MCP server",
+				self.adapter.name(),
+			));
+		}
 		let config = self.config_mut()?;
 		let index =
 			config.mcps.iter().position(|m| m.name == name).ok_or_else(
@@ -29,6 +43,13 @@ impl ConfigManager {
 	}
 
 	pub fn remove_mcp(&mut self, name: &str) -> Result<()> {
+		if !self.adapter.supports_mcp_operations() {
+			return Err(ConfigError::unsupported_operation(
+				"remove",
+				"MCP server",
+				self.adapter.name(),
+			));
+		}
 		let config = self.config_mut()?;
 		let index =
 			config.mcps.iter().position(|m| m.name == name).ok_or_else(

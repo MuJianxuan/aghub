@@ -43,6 +43,9 @@ pub trait AgentAdapter: Send + Sync {
 		config: &AgentConfig,
 		original_content: Option<&str>,
 	) -> Result<String>;
+	fn supports_mcp_operations(&self) -> bool {
+		true
+	}
 	fn validate_command(&self, config_path: &Path) -> Command;
 	fn supports_mcp_enable_disable(&self) -> bool {
 		true

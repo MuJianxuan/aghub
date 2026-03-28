@@ -10,6 +10,7 @@ pub mod factory;
 pub mod gemini;
 pub mod jetbrains_ai;
 pub mod kilocode;
+pub mod kimi;
 pub mod kiro;
 pub mod mistral;
 pub mod openclaw;

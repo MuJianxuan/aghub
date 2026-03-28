@@ -189,6 +189,17 @@ impl ConfigManager {
 	}
 
 	pub fn save(&self, config: &AgentConfig) -> Result<()> {
+		if !self.adapter.supports_mcp_operations() {
+			if config.mcps.is_empty() {
+				return Ok(());
+			}
+			return Err(ConfigError::unsupported_operation(
+				"persist",
+				"MCP servers",
+				self.adapter.name(),
+			));
+		}
+
 		if let Some(parent) = self.config_path.parent() {
 			std::fs::create_dir_all(parent)?;
 		}

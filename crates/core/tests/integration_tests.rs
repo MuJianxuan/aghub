@@ -675,13 +675,28 @@ test_mcp_workflow! {
 	test_gemini_mcp_workflow => AgentType::Gemini, "gemini-mcp",
 	test_kilocode_mcp_workflow => AgentType::KiloCode, "kilocode-mcp",
 	test_factory_mcp_workflow => AgentType::Factory, "factory-mcp",
+	test_kimi_mcp_workflow => AgentType::Kimi, "kimi-mcp",
 	test_mistral_mcp_workflow => AgentType::Mistral, "mistral-mcp",
 	test_amp_mcp_workflow => AgentType::Amp, "amp-mcp",
-	test_pi_mcp_workflow => AgentType::Pi, "pi-mcp",
 	test_augmentcode_mcp_workflow => AgentType::AugmentCode, "augmentcode-mcp",
 	test_warp_mcp_workflow => AgentType::Warp, "warp-mcp",
 	test_trae_mcp_workflow => AgentType::Trae, "trae-mcp",
 	test_jetbrains_ai_mcp_workflow => AgentType::JetBrainsAi, "jetbrains-ai-mcp",
+}
+
+#[test]
+fn test_pi_rejects_mcp_workflow() {
+	let test = TestConfig::new(AgentType::Pi).unwrap();
+	let mut manager = test.create_manager();
+	manager.load().unwrap();
+
+	let err = manager
+		.add_mcp(create_test_mcp_stdio("pi-mcp"))
+		.unwrap_err();
+	assert!(matches!(
+		err,
+		aghub_core::errors::ConfigError::UnsupportedOperation(_)
+	));
 }
 
 // ==================== Special Case: Agent-Specific Key Tests ====================

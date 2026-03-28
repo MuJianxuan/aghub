@@ -52,7 +52,11 @@ fn get_skill_root(path: std::path::PathBuf) -> std::path::PathBuf {
 fn detect_available_editor() -> Option<CodeEditorType> {
 	CodeEditorType::all()
 		.iter()
-		.find(|editor| which(editor.cli_command()).is_ok())
+		.find(|editor| {
+			let app_path = std::path::Path::new("/Applications")
+				.join(editor.macos_app_name());
+			app_path.exists() || which(editor.cli_command()).is_ok()
+		})
 		.cloned()
 }
 

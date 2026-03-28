@@ -88,7 +88,7 @@ export interface InstallSkillResponse {
 	exit_code: number;
 }
 
-export type CodeEditorType = "vscode" | "antigravity" | "cursor" | "zed";
+export type CodeEditorType = string;
 
 export interface ToolInfo {
 	id: string;

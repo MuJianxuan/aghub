@@ -1,5 +1,10 @@
-import { ArrowPathIcon, PlusIcon } from "@heroicons/react/24/solid";
-import { Button, Dropdown } from "@heroui/react";
+import {
+	ArrowPathIcon,
+	CheckCircleIcon,
+	PlusIcon,
+	RectangleStackIcon,
+} from "@heroicons/react/24/solid";
+import { Button, Dropdown, Tooltip } from "@heroui/react";
 import { useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -66,7 +71,7 @@ export default function SkillsPage() {
 	const handleSelectionChange = (keys: Set<string>, clickedKey?: string) => {
 		setSelectedKeys(keys);
 
-		if (clickedKey) {
+		if (clickedKey && !isMultiSelectMode) {
 			setSelectedName(clickedKey);
 		}
 
@@ -94,29 +99,61 @@ export default function SkillsPage() {
 	return (
 		<div className="flex h-full">
 			{/* Skills List Panel */}
-			<div className="flex w-80 shrink-0 flex-col border-r border-border">
+			<div className="relative flex w-80 shrink-0 flex-col border-r border-border">
 				<ListSearchHeader
 					searchValue={searchQuery}
 					onSearchChange={setSearchQuery}
 					placeholder={t("searchSkills")}
 					ariaLabel={t("searchSkills")}
 				>
-					<Button
-						variant={isMultiSelectMode ? "primary" : "ghost"}
-						size="sm"
-						className="shrink-0 font-medium"
-						aria-label={t("multiSelect")}
-						onPress={() => {
-							setIsMultiSelectMode((prev) => !prev);
-							if (isMultiSelectMode) {
-								handleSelectionChange(new Set());
-							}
-						}}
-					>
-						{isMultiSelectMode
-							? t("doneSelecting")
-							: t("selectItems")}
-					</Button>
+					<Tooltip delay={0}>
+						<Tooltip.Trigger>
+							<div
+								role="button"
+								tabIndex={0}
+								className={cn(
+									"flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-default-100 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40",
+									isMultiSelectMode &&
+										"bg-primary/10 text-primary",
+								)}
+								aria-label={
+									isMultiSelectMode
+										? t("doneSelecting")
+										: t("multiSelect")
+								}
+								onClick={() => {
+									setIsMultiSelectMode((prev) => !prev);
+									if (isMultiSelectMode) {
+										handleSelectionChange(new Set());
+									}
+								}}
+								onKeyDown={(event) => {
+									if (
+										event.key !== "Enter" &&
+										event.key !== " "
+									) {
+										return;
+									}
+									event.preventDefault();
+									setIsMultiSelectMode((prev) => !prev);
+									if (isMultiSelectMode) {
+										handleSelectionChange(new Set());
+									}
+								}}
+							>
+								{isMultiSelectMode ? (
+									<CheckCircleIcon className="size-4" />
+								) : (
+									<RectangleStackIcon className="size-4" />
+								)}
+							</div>
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							{isMultiSelectMode
+								? t("doneSelecting")
+								: t("multiSelect")}
+						</Tooltip.Content>
+					</Tooltip>
 					<Dropdown>
 						<Button
 							isIconOnly
@@ -179,6 +216,14 @@ export default function SkillsPage() {
 					isMultiSelectMode={isMultiSelectMode}
 					groupBySource={true}
 				/>
+
+				{isMultiSelectMode && selectedKeys.size > 0 && (
+					<MultiSelectFloatingBar
+						selectedCount={selectedKeys.size}
+						totalCount={groupedSkills.length}
+						onDelete={() => setIsBulkDeleteDialogOpen(true)}
+					/>
+				)}
 			</div>
 
 			<div className="flex-1 overflow-hidden relative">
@@ -196,14 +241,6 @@ export default function SkillsPage() {
 							</p>
 						</div>
 					</div>
-				)}
-
-				{isMultiSelectMode && selectedKeys.size > 0 && (
-					<MultiSelectFloatingBar
-						selectedCount={selectedKeys.size}
-						totalCount={groupedSkills.length}
-						onDelete={() => setIsBulkDeleteDialogOpen(true)}
-					/>
 				)}
 
 				<BulkDeleteDialog

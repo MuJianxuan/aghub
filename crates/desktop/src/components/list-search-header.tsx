@@ -30,7 +30,7 @@ export function ListSearchHeader({
 					<SearchField.ClearButton />
 				</SearchField.Group>
 			</SearchField>
-			{children}
+			<div className="flex shrink-0 items-center gap-1">{children}</div>
 		</div>
 	);
 }

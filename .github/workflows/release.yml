@@ -35,7 +35,6 @@ jobs:
 
     build-tauri:
         name: Build Desktop (${{ matrix.target }})
-        needs: changelog
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
@@ -117,7 +116,6 @@ jobs:
 
     build-cli:
         name: Build CLI (${{ matrix.target }})
-        needs: changelog
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false

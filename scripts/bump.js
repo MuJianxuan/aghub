@@ -25,10 +25,13 @@ function updateVersion(newVersion) {
 	fs.writeFileSync(TAURI_CONF_PATH, JSON.stringify(conf, null, "\t") + "\n");
 }
 
-function createTag(version) {
+function commitAndTag(version) {
 	const tagName = `v${version}`;
+	const commitMessage = `chore: release ${tagName}`;
+	execSync(`git add ${TAURI_CONF_PATH}`, { stdio: "inherit" });
+	execSync(`git commit -m "${commitMessage}"`, { stdio: "inherit" });
 	execSync(`git tag ${tagName}`, { stdio: "inherit" });
-	console.log(`\n✓ Created tag: ${tagName}`);
+	console.log(`\n✓ Created commit and tag: ${tagName}`);
 	console.log(`  Push with: git push origin ${tagName}`);
 }
 
@@ -71,7 +74,7 @@ async function main() {
 	updateVersion(newVersion);
 	console.log(`✓ Updated tauri.conf.json`);
 
-	createTag(newVersion);
+	commitAndTag(newVersion);
 }
 
 main().catch(console.error);

@@ -1,0 +1,149 @@
+import { Button, Card } from "@heroui/react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getName, getVersion } from "@tauri-apps/api/app";
+import { check } from "@tauri-apps/plugin-updater";
+import { useTranslation } from "react-i18next";
+
+export default function ApplicationPanel() {
+	const { t } = useTranslation();
+
+	const { data: appInfo } = useQuery({
+		queryKey: ["app-info"],
+		queryFn: async () => {
+			const name = await getName();
+			const version = await getVersion();
+			return { name, version };
+		},
+	});
+
+	const checkMutation = useMutation({
+		mutationFn: async () => {
+			const update = await check();
+			if (update) {
+				return {
+					available: true,
+					version: update.version,
+					currentVersion: update.currentVersion,
+				};
+			}
+			return { available: false };
+		},
+	});
+
+	const downloadMutation = useMutation({
+		mutationFn: async () => {
+			const update = await check();
+			if (!update) throw new Error("No update available");
+
+			await update.downloadAndInstall(() => {
+				// Progress events handled internally
+			});
+		},
+	});
+
+	const handleCheckUpdates = () => {
+		checkMutation.mutate();
+	};
+
+	const handleDownloadAndInstall = () => {
+		downloadMutation.mutate();
+	};
+
+	const updateCheckResult = checkMutation.data;
+	const isChecking = checkMutation.isPending;
+	const isDownloading = downloadMutation.isPending;
+	const hasError = checkMutation.isError || downloadMutation.isError;
+	const errorMessage =
+		checkMutation.error?.message || downloadMutation.error?.message;
+
+	return (
+		<Card className="p-0">
+			<Card.Content className="space-y-4 p-4">
+				<div className="flex items-center justify-between">
+					<div className="space-y-0.5">
+						<span className="text-sm font-medium text-(--foreground)">
+							{t("appName")}
+						</span>
+						<span className="block text-xs text-muted">
+							{appInfo?.name ?? "aghub"}
+						</span>
+					</div>
+				</div>
+
+				<div className="flex items-center justify-between">
+					<div className="space-y-0.5">
+						<span className="text-sm font-medium text-(--foreground)">
+							{t("version")}
+						</span>
+						<span className="block text-xs text-muted">
+							{appInfo?.version ?? "0.1.0"}
+						</span>
+					</div>
+				</div>
+
+				<div className="flex items-center justify-between">
+					<div className="space-y-0.5">
+						<span className="text-sm font-medium text-(--foreground)">
+							{t("updates")}
+						</span>
+						<span className="block text-xs text-muted">
+							{hasError && `${t("updateError")}: ${errorMessage}`}
+							{isChecking && t("checkingForUpdates")}
+							{isDownloading && t("downloadingUpdate")}
+							{!isChecking &&
+								!isDownloading &&
+								!hasError &&
+								updateCheckResult?.available &&
+								t("updateAvailable", {
+									version: updateCheckResult.version,
+								})}
+							{!isChecking &&
+								!isDownloading &&
+								!hasError &&
+								updateCheckResult &&
+								!updateCheckResult.available &&
+								t("noUpdatesAvailable")}
+							{!isChecking &&
+								!isDownloading &&
+								!hasError &&
+								!updateCheckResult &&
+								t("clickToCheckUpdates")}
+						</span>
+					</div>
+					<div className="flex gap-2">
+						{!updateCheckResult && (
+							<Button
+								variant="secondary"
+								size="sm"
+								onPress={handleCheckUpdates}
+								isDisabled={isChecking || isDownloading}
+							>
+								{t("checkForUpdates")}
+							</Button>
+						)}
+						{updateCheckResult && !updateCheckResult.available && (
+							<Button
+								variant="secondary"
+								size="sm"
+								onPress={handleCheckUpdates}
+								isDisabled={isChecking || isDownloading}
+							>
+								{t("checkAgain")}
+							</Button>
+						)}
+						{updateCheckResult?.available && (
+							<Button
+								variant="primary"
+								size="sm"
+								onPress={handleDownloadAndInstall}
+								isDisabled={isDownloading}
+							>
+								{t("downloadAndInstall")}
+							</Button>
+						)}
+					</div>
+				</div>
+			</Card.Content>
+		</Card>
+	);
+}

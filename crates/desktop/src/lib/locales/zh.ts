@@ -41,6 +41,21 @@ export default {
 	codeEditors: "代码编辑器",
 	codeEditorsDescription: "选择用于打开文件的首选代码编辑器",
 
+	// Application
+	application: "关于",
+	appName: "应用名称",
+	updates: "更新",
+	checkForUpdates: "检查更新",
+	checkAgain: "重新检查",
+	noUpdatesAvailable: "暂无更新",
+	updateAvailable: "有新版本 {{version}} 可用",
+	checkingForUpdates: "正在检查更新...",
+	downloadingUpdate: "正在下载更新...",
+	installingUpdate: "正在安装更新...",
+	updateError: "更新错误",
+	clickToCheckUpdates: "点击检查更新",
+	downloadAndInstall: "下载并安装",
+
 	// Agent Management
 	agentManagementDescription:
 		"管理哪些代理可用于创建技能和 MCP 服务器。禁用你不使用的代理。",

@@ -42,6 +42,21 @@ export default {
 	codeEditorsDescription:
 		"Choose your preferred code editor for opening files",
 
+	// Application
+	application: "About",
+	appName: "App Name",
+	updates: "Updates",
+	checkForUpdates: "Check for Updates",
+	checkAgain: "Check Again",
+	noUpdatesAvailable: "No updates available",
+	updateAvailable: "Version {{version}} available",
+	checkingForUpdates: "Checking for updates...",
+	downloadingUpdate: "Downloading update...",
+	installingUpdate: "Installing update...",
+	updateError: "Update error",
+	clickToCheckUpdates: "Click to check for updates",
+	downloadAndInstall: "Download and Install",
+
 	// Agent Management
 	agentManagementDescription:
 		"Manage which agents are available for creating skills and MCP servers. Disable agents you don't use.",

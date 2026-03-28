@@ -72,6 +72,8 @@ export default {
 		"确定要从所有已安装的 Agent 中删除这 {{count}} 个被选中的技能吗？",
 	bulkDeleteMcpConfirm:
 		"确定要从所有已安装的 Agent 中删除这 {{count}} 个被选中的 MCP 服务吗？",
+	bulkDeleteMixedConfirm:
+		"确定要从当前项目中删除这 {{count}} 个被选中的资源吗？",
 	starSkill: "收藏技能",
 	unstarSkill: "取消收藏",
 	starServer: "收藏服务",

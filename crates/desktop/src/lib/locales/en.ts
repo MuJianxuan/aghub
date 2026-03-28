@@ -73,6 +73,8 @@ export default {
 		"Are you sure you want to delete the {{count}} selected skills from all installed agents?",
 	bulkDeleteMcpConfirm:
 		"Are you sure you want to delete the {{count}} selected MCP servers from all installed agents?",
+	bulkDeleteMixedConfirm:
+		"Are you sure you want to delete the {{count}} selected resources from this project?",
 	starSkill: "Favorite",
 	unstarSkill: "Unfavorite",
 	starServer: "Favorite",

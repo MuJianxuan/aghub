@@ -4,6 +4,7 @@ import { useQueryState } from "nuqs";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "wouter";
+import { BulkDeleteDialog } from "../../components/bulk-delete-dialog";
 import { CreateMcpPanel } from "../../components/create-mcp-panel";
 import { CreateSkillPanel } from "../../components/create-skill-panel";
 import { EditMcpPanel } from "../../components/edit-mcp-panel";
@@ -40,6 +41,14 @@ export default function ProjectDetailPage() {
 	const [resourceType, setResourceType] = useQueryState("type", {
 		defaultValue: "",
 	});
+	const [selectedMcpKeys, setSelectedMcpKeys] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [selectedSkillKeys, setSelectedSkillKeys] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+	const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
 
 	// Fetch MCPs and Skills for this project
 	const {
@@ -120,11 +129,54 @@ export default function ProjectDetailPage() {
 		keys: Set<string>,
 		type: "mcp" | "skill",
 	) => {
+		const nextMcpKeys = type === "mcp" ? keys : selectedMcpKeys;
+		const nextSkillKeys = type === "skill" ? keys : selectedSkillKeys;
+
+		setSelectedMcpKeys(nextMcpKeys);
+		setSelectedSkillKeys(nextSkillKeys);
+
+		if (isMultiSelectMode) {
+			if (nextMcpKeys.size + nextSkillKeys.size === 0) {
+				setIsMultiSelectMode(false);
+			}
+			setPanelMode(null);
+			return;
+		}
+
 		const key = keys.size === 1 ? [...keys][0] : null;
 		setSelectedResource(key);
 		setResourceType(key ? type : "");
 		setPanelMode(null);
 	};
+
+	const handleMultiSelectModeChange = (value: boolean) => {
+		setIsMultiSelectMode(value);
+		if (!value) {
+			setSelectedMcpKeys(new Set());
+			setSelectedSkillKeys(new Set());
+		} else {
+			setPanelMode(null);
+		}
+	};
+
+	const selectedGroups = useMemo(() => {
+		const mcpGroups = groupedMcps
+			.filter((group) => selectedMcpKeys.has(group.mergeKey))
+			.map((group) => ({
+				key: group.mergeKey,
+				items: group.items,
+				resourceType: "mcp" as const,
+			}));
+		const skillGroups = groupedSkills
+			.filter((group) => selectedSkillKeys.has(group.name))
+			.map((group) => ({
+				key: group.name,
+				items: group.items,
+				resourceType: "skill" as const,
+			}));
+
+		return [...mcpGroups, ...skillGroups];
+	}, [groupedMcps, groupedSkills, selectedMcpKeys, selectedSkillKeys]);
 
 	const handleRefresh = () => {
 		refetchMcps();
@@ -147,10 +199,20 @@ export default function ProjectDetailPage() {
 			<UnifiedResourceList
 				mcps={projectMcps}
 				skills={projectSkills}
-				selectedKeys={
-					selectedResource ? new Set([selectedResource]) : new Set()
+				selectedMcpKeys={
+					isMultiSelectMode
+						? selectedMcpKeys
+						: resourceType === "mcp" && selectedResource
+							? new Set([selectedResource])
+							: new Set()
 				}
-				selectedType={resourceType as "mcp" | "skill" | null}
+				selectedSkillKeys={
+					isMultiSelectMode
+						? selectedSkillKeys
+						: resourceType === "skill" && selectedResource
+							? new Set([selectedResource])
+							: new Set()
+				}
 				onSelectionChange={handleSelectionChange}
 				onCreateMcp={(type) => {
 					if (type === "manual") setPanelMode("create-mcp");
@@ -166,6 +228,9 @@ export default function ProjectDetailPage() {
 				searchQuery={searchQuery}
 				onSearchChange={setSearchQuery}
 				projectPath={project.path}
+				isMultiSelectMode={isMultiSelectMode}
+				onMultiSelectModeChange={handleMultiSelectModeChange}
+				onDeleteSelected={() => setIsBulkDeleteDialogOpen(true)}
 			/>
 
 			{/* Detail Panel */}
@@ -235,6 +300,21 @@ export default function ProjectDetailPage() {
 						</div>
 					</div>
 				)}
+
+				<BulkDeleteDialog
+					isOpen={isBulkDeleteDialogOpen}
+					onClose={() => setIsBulkDeleteDialogOpen(false)}
+					groups={selectedGroups}
+					onSuccess={() => {
+						setSelectedMcpKeys(new Set());
+						setSelectedSkillKeys(new Set());
+						setSelectedResource(null);
+						setResourceType("");
+						setIsMultiSelectMode(false);
+					}}
+					resourceType="mixed"
+					projectPath={project.path}
+				/>
 			</div>
 		</div>
 	);

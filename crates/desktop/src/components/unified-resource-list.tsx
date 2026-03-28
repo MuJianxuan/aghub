@@ -2,8 +2,10 @@ import {
 	ArrowDownTrayIcon,
 	ArrowPathIcon,
 	BookOpenIcon,
+	CheckCircleIcon,
 	CommandLineIcon,
 	PlusIcon,
+	RectangleStackIcon,
 	ServerIcon,
 } from "@heroicons/react/24/solid";
 import {
@@ -13,6 +15,7 @@ import {
 	Label,
 	Separator,
 	Skeleton,
+	Tooltip,
 } from "@heroui/react";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -20,14 +23,15 @@ import type { McpResponse, SkillResponse } from "../lib/api-types";
 import { cn, getMcpMergeKey } from "../lib/utils";
 import { ListSearchHeader } from "./list-search-header";
 import { McpList } from "./mcp-list";
+import { MultiSelectFloatingBar } from "./multi-select-floating-bar";
 import { ResourceSectionHeader } from "./resource-section-header";
 import { SkillList } from "./skill-list";
 
 interface UnifiedResourceListProps {
 	mcps: McpResponse[];
 	skills: SkillResponse[];
-	selectedKeys: Set<string>;
-	selectedType: "mcp" | "skill" | null;
+	selectedMcpKeys: Set<string>;
+	selectedSkillKeys: Set<string>;
 	onSelectionChange: (keys: Set<string>, type: "mcp" | "skill") => void;
 	onCreateMcp: (type: "manual" | "import") => void;
 	onCreateSkill: (type: "local" | "import") => void;
@@ -37,6 +41,9 @@ interface UnifiedResourceListProps {
 	searchQuery: string;
 	onSearchChange: (query: string) => void;
 	projectPath?: string;
+	isMultiSelectMode?: boolean;
+	onMultiSelectModeChange?: (value: boolean) => void;
+	onDeleteSelected?: () => void;
 }
 
 const RESOURCE_SKELETON_KEYS = ["resource-1", "resource-2", "resource-3"];
@@ -84,8 +91,8 @@ function ResourceListSkeleton() {
 export function UnifiedResourceList({
 	mcps,
 	skills,
-	selectedKeys,
-	selectedType,
+	selectedMcpKeys,
+	selectedSkillKeys,
 	onSelectionChange,
 	onCreateMcp,
 	onCreateSkill,
@@ -95,6 +102,9 @@ export function UnifiedResourceList({
 	searchQuery,
 	onSearchChange,
 	projectPath,
+	isMultiSelectMode = false,
+	onMultiSelectModeChange,
+	onDeleteSelected,
 }: UnifiedResourceListProps) {
 	const { t } = useTranslation();
 
@@ -117,6 +127,8 @@ export function UnifiedResourceList({
 	const hasMcps = mcps.length > 0;
 	const hasSkills = skills.length > 0;
 	const hasAny = hasMcps || hasSkills;
+	const totalCount = mergedMcpCount + mergedSkillCount;
+	const selectedCount = selectedMcpKeys.size + selectedSkillKeys.size;
 
 	const handleMcpSelectionChange = (keys: Set<string>) => {
 		onSelectionChange(keys, "mcp");
@@ -126,19 +138,58 @@ export function UnifiedResourceList({
 		onSelectionChange(keys, "skill");
 	};
 
-	const mcpSelectedKeys =
-		selectedType === "mcp" ? selectedKeys : new Set<string>();
-	const skillSelectedKeys =
-		selectedType === "skill" ? selectedKeys : new Set<string>();
-
 	return (
-		<div className="flex w-80 shrink-0 flex-col border-r border-border">
+		<div className="relative flex w-80 shrink-0 flex-col border-r border-border">
 			<ListSearchHeader
 				searchValue={searchQuery}
 				onSearchChange={onSearchChange}
 				placeholder={t("searchResources")}
 				ariaLabel={t("searchResources")}
 			>
+				{onMultiSelectModeChange && (
+					<Tooltip delay={0}>
+						<Tooltip.Trigger>
+							<div
+								role="button"
+								tabIndex={0}
+								className={cn(
+									"flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-default-100 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40",
+									isMultiSelectMode &&
+										"bg-primary/10 text-primary",
+								)}
+								aria-label={
+									isMultiSelectMode
+										? t("doneSelecting")
+										: t("multiSelect")
+								}
+								onClick={() => {
+									onMultiSelectModeChange(!isMultiSelectMode);
+								}}
+								onKeyDown={(event) => {
+									if (
+										event.key !== "Enter" &&
+										event.key !== " "
+									) {
+										return;
+									}
+									event.preventDefault();
+									onMultiSelectModeChange(!isMultiSelectMode);
+								}}
+							>
+								{isMultiSelectMode ? (
+									<CheckCircleIcon className="size-4" />
+								) : (
+									<RectangleStackIcon className="size-4" />
+								)}
+							</div>
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							{isMultiSelectMode
+								? t("doneSelecting")
+								: t("multiSelect")}
+						</Tooltip.Content>
+					</Tooltip>
+				)}
 				<Dropdown>
 					<Button
 						isIconOnly
@@ -251,9 +302,11 @@ export function UnifiedResourceList({
 								/>
 								<McpList
 									mcps={mcps}
-									selectedKeys={mcpSelectedKeys}
+									selectedKeys={selectedMcpKeys}
 									searchQuery={searchQuery}
 									onSelectionChange={handleMcpSelectionChange}
+									selectionMode="multiple"
+									isMultiSelectMode={isMultiSelectMode}
 								/>
 							</>
 						)}
@@ -267,13 +320,15 @@ export function UnifiedResourceList({
 								/>
 								<SkillList
 									skills={skills}
-									selectedKeys={skillSelectedKeys}
+									selectedKeys={selectedSkillKeys}
 									searchQuery={searchQuery}
 									onSelectionChange={
 										handleSkillSelectionChange
 									}
 									groupBySource={true}
 									projectPath={projectPath}
+									selectionMode="multiple"
+									isMultiSelectMode={isMultiSelectMode}
 								/>
 							</>
 						)}
@@ -295,6 +350,14 @@ export function UnifiedResourceList({
 					</>
 				)}
 			</div>
+
+			{isMultiSelectMode && selectedCount > 0 && onDeleteSelected && (
+				<MultiSelectFloatingBar
+					selectedCount={selectedCount}
+					totalCount={totalCount}
+					onDelete={onDeleteSelected}
+				/>
+			)}
 		</div>
 	);
 }

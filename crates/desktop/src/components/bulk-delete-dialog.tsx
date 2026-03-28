@@ -13,12 +13,19 @@ interface BulkDeleteItem {
 	source?: ConfigSource;
 }
 
+interface BulkDeleteGroup {
+	key: string;
+	items: BulkDeleteItem[];
+	resourceType?: "mcp" | "skill";
+}
+
 interface BulkDeleteDialogProps {
-	groups: { key: string; items: BulkDeleteItem[] }[];
+	groups: BulkDeleteGroup[];
 	isOpen: boolean;
 	onClose: () => void;
 	onSuccess: () => void;
-	resourceType: "mcp" | "skill";
+	resourceType: "mcp" | "skill" | "mixed";
+	projectPath?: string;
 }
 
 export function BulkDeleteDialog({
@@ -27,6 +34,7 @@ export function BulkDeleteDialog({
 	onClose,
 	onSuccess,
 	resourceType,
+	projectPath,
 }: BulkDeleteDialogProps) {
 	const { t } = useTranslation();
 	const { baseUrl } = useServer();
@@ -42,6 +50,7 @@ export function BulkDeleteDialog({
 				scope: string;
 			}> = [];
 			for (const group of groups) {
+				const groupResourceType = group.resourceType ?? resourceType;
 				for (const item of group.items) {
 					if (!item.agent) continue;
 					const scope =
@@ -49,9 +58,16 @@ export function BulkDeleteDialog({
 							? "project"
 							: "global";
 					const typedScope = scope as "global" | "project";
-					if (resourceType === "mcp") {
+					const projectRoot =
+						typedScope === "project" ? projectPath : undefined;
+					if (groupResourceType === "mcp") {
 						promises.push(
-							api.mcps.delete(item.name, item.agent, typedScope),
+							api.mcps.delete(
+								item.name,
+								item.agent,
+								typedScope,
+								projectRoot,
+							),
 						);
 					} else {
 						promises.push(
@@ -59,6 +75,7 @@ export function BulkDeleteDialog({
 								item.agent,
 								group.key,
 								typedScope,
+								projectRoot,
 							),
 						);
 					}
@@ -89,12 +106,13 @@ export function BulkDeleteDialog({
 			return { deleted: promises.length };
 		},
 		onSuccess: () => {
-			if (resourceType === "mcp") {
+			if (resourceType === "mcp" || resourceType === "mixed") {
 				queryClient.invalidateQueries({ queryKey: ["mcps"] });
 				queryClient.invalidateQueries({
 					queryKey: ["project-mcps"],
 				});
-			} else {
+			}
+			if (resourceType === "skill" || resourceType === "mixed") {
 				queryClient.invalidateQueries({ queryKey: ["skills"] });
 				queryClient.invalidateQueries({
 					queryKey: ["project-skills"],
@@ -113,7 +131,9 @@ export function BulkDeleteDialog({
 	const confirmKey =
 		resourceType === "mcp"
 			? "bulkDeleteMcpConfirm"
-			: "bulkDeleteSkillConfirm";
+			: resourceType === "skill"
+				? "bulkDeleteSkillConfirm"
+				: "bulkDeleteMixedConfirm";
 
 	return (
 		<Modal.Backdrop isOpen={isOpen} onOpenChange={onClose}>

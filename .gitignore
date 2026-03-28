@@ -22,3 +22,9 @@ target
 # heroui-agents-md
 .heroui-docs/
 /.sisyphus/drafts
+
+# Node.js
+node_modules/
+dist/
+build/
+*.log

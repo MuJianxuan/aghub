@@ -8,6 +8,7 @@ pub struct AppState {
 	pub port: std::sync::Mutex<Option<u16>>,
 }
 
+#[cfg(target_os = "macos")]
 fn is_zh_locale() -> bool {
 	#[cfg(target_os = "macos")]
 	{
@@ -26,20 +27,29 @@ fn is_zh_locale() -> bool {
 fn build_menu(
 	app: &tauri::App,
 ) -> Result<tauri::menu::Menu<tauri::Wry>, tauri::Error> {
-	use tauri::menu::{Menu, MenuItem, MenuItemKind};
+	use tauri::menu::Menu;
 
 	let menu = Menu::default(app.handle())?;
 
 	#[cfg(target_os = "macos")]
-	if let Some(MenuItemKind::Submenu(app_submenu)) = menu.items()?.first() {
-		let _ = app_submenu.remove_at(0);
+	{
+		use tauri::menu::{MenuItem, MenuItemKind};
+		if let Some(MenuItemKind::Submenu(app_submenu)) = menu.items()?.first()
+		{
+			let _ = app_submenu.remove_at(0);
 
-		let zh = is_zh_locale();
-		let about_text = if zh { "关于 aghub" } else { "About aghub" };
-		let custom_about =
-			MenuItem::with_id(app, "about", about_text, true, None::<&str>)?;
+			let zh = is_zh_locale();
+			let about_text = if zh { "关于 aghub" } else { "About aghub" };
+			let custom_about = MenuItem::with_id(
+				app,
+				"about",
+				about_text,
+				true,
+				None::<&str>,
+			)?;
 
-		let _ = app_submenu.insert(&custom_about, 0);
+			let _ = app_submenu.insert(&custom_about, 0);
+		}
 	}
 
 	Ok(menu)

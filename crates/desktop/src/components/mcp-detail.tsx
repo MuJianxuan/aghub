@@ -93,7 +93,7 @@ function CodeBlock({
 			<span className="text-[11px] font-medium tracking-wide text-muted uppercase">
 				{label}
 			</span>
-			<div className="overflow-x-auto rounded-lg border border-default-200 bg-surface-secondary px-3 py-2">
+			<div className="overflow-x-auto rounded-lg border border-separator bg-surface-secondary px-3 py-2">
 				<code className="block font-mono text-xs leading-5 text-foreground whitespace-pre-wrap break-words">
 					{commandLine}
 				</code>
@@ -129,7 +129,7 @@ function KeyValueList({
 				{displayedItems.map(([key, value]) => (
 					<div
 						key={key}
-						className="grid gap-1 rounded-lg border border-default-200 bg-surface-secondary px-3 py-2"
+						className="grid gap-1 rounded-lg border border-separator bg-surface-secondary px-3 py-2"
 					>
 						<span className="font-mono text-[11px] text-muted">
 							{key}
@@ -531,7 +531,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 							)}
 
 							{/* Action Buttons */}
-							<Card.Footer className="pt-4 border-t border-default-200 flex flex-wrap gap-3">
+							<Card.Footer className="pt-4 border-t border-separator flex flex-wrap gap-3">
 								<Button
 									variant="secondary"
 									onPress={handleCopyConfig}

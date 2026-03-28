@@ -55,32 +55,36 @@ function ResourceListSkeleton() {
 			<ResourceSectionHeader
 				title=""
 				count={0}
-				icon={<Skeleton className="size-3.5 rounded bg-default-200" />}
+				icon={
+					<Skeleton className="size-3.5 rounded bg-surface-secondary" />
+				}
 			/>
 			<div className="p-2 space-y-1">
 				{RESOURCE_SKELETON_KEYS.map((key) => (
 					<div
 						key={key}
-						className="flex items-center gap-2 px-2 py-1.5 rounded-medium"
+						className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
 					>
-						<Skeleton className="size-4 rounded bg-default-200" />
-						<Skeleton className="h-3 flex-1 rounded bg-default-200" />
+						<Skeleton className="size-4 rounded bg-surface-secondary" />
+						<Skeleton className="h-3 flex-1 rounded bg-surface-secondary" />
 					</div>
 				))}
 			</div>
 			<ResourceSectionHeader
 				title=""
 				count={0}
-				icon={<Skeleton className="size-3.5 rounded bg-default-200" />}
+				icon={
+					<Skeleton className="size-3.5 rounded bg-surface-secondary" />
+				}
 			/>
 			<div className="p-2 space-y-1">
 				{SECONDARY_SKELETON_KEYS.map((key) => (
 					<div
 						key={key}
-						className="flex items-center gap-2 px-2 py-1.5 rounded-medium"
+						className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
 					>
-						<Skeleton className="size-4 rounded bg-default-200" />
-						<Skeleton className="h-3 flex-1 rounded bg-default-200" />
+						<Skeleton className="size-4 rounded bg-surface-secondary" />
+						<Skeleton className="h-3 flex-1 rounded bg-surface-secondary" />
 					</div>
 				))}
 			</div>
@@ -153,9 +157,9 @@ export function UnifiedResourceList({
 								role="button"
 								tabIndex={0}
 								className={cn(
-									"flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-default-100 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40",
+									"flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-default hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40",
 									isMultiSelectMode &&
-										"bg-primary/10 text-primary",
+										"bg-accent/10 text-accent",
 								)}
 								aria-label={
 									isMultiSelectMode

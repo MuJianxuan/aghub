@@ -237,7 +237,7 @@ export default function SkillsSearchPage() {
 								<th className="h-12 px-2 text-left align-middle font-medium w-[35%]">
 									{t("source")}
 								</th>
-								<th className="h-12 px-2 px-4 align-middle w-[15%]" />
+								<th className="h-12 px-4 align-middle w-[15%]" />
 							</tr>
 						</thead>
 						<tfoot>

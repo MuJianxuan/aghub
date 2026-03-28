@@ -579,7 +579,7 @@ function SkillTree({ root }: { root: SkillTreeNodeResponse }) {
 	const items = flattenTree(root);
 
 	return (
-		<div className="rounded-xl border border-default-200/60 bg-surface-secondary/60 p-2">
+		<div className="rounded-xl border border-separator/60 bg-surface-secondary/60 p-2">
 			{items.map((node) => (
 				<TreeNodeRow key={node.path} node={node} />
 			))}
@@ -619,7 +619,7 @@ function TreeNodeRow({
 			title={node.path}
 		>
 			{node.kind === "directory" ? (
-				<FolderIcon className="size-4 shrink-0 text-primary" />
+				<FolderIcon className="size-4 shrink-0 text-accent" />
 			) : (
 				<DocumentIcon className="size-4 shrink-0 text-muted" />
 			)}

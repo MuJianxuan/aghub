@@ -151,9 +151,9 @@ export default function MCPServersPage() {
 								role="button"
 								tabIndex={0}
 								className={cn(
-									"flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-default-100 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40",
+									"flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted transition-colors hover:bg-default hover:text-foreground focus:outline-none focus:ring-2 focus:ring-accent/40",
 									isMultiSelectMode &&
-										"bg-primary/10 text-primary",
+										"bg-accent/10 text-accent",
 								)}
 								aria-label={
 									isMultiSelectMode

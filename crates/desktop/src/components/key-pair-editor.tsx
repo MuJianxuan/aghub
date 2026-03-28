@@ -1,7 +1,7 @@
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { Button, ErrorMessage, Input } from "@heroui/react";
 import { produce } from "immer";
-import { useRef } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import type { KeyPair } from "../lib/key-pair-utils";
 import { generateId } from "../lib/key-pair-utils";
@@ -28,7 +28,7 @@ export function KeyPairEditor({
 	errorMessage,
 }: KeyPairEditorProps) {
 	const { t } = useTranslation();
-	const emptyPairIdRef = useRef(generateId());
+	const emptyPairId = useMemo(() => generateId(), []);
 
 	// Add new empty pair
 	const handleAdd = () => {
@@ -60,7 +60,7 @@ export function KeyPairEditor({
 		// If value array is empty, add a new pair
 		if (value.length === 0) {
 			const newPair = {
-				id: emptyPairIdRef.current,
+				id: emptyPairId,
 				key: "",
 				value: "",
 			};
@@ -80,16 +80,12 @@ export function KeyPairEditor({
 	};
 
 	// Show a default empty row when value is empty
-	const displayPairs =
-		value.length === 0
-			? [
-					{
-						id: emptyPairIdRef.current,
-						key: "",
-						value: "",
-					},
-				]
-			: value;
+	const displayPairs = useMemo(() => {
+		if (value.length === 0) {
+			return [{ id: emptyPairId, key: "", value: "" }];
+		}
+		return value;
+	}, [value, emptyPairId]);
 
 	void errors;
 

@@ -52,7 +52,7 @@ function McpAgentIcons({ items }: { items: McpResponse[] }) {
 				</Tooltip>
 			))}
 			{agents.length > 3 && (
-				<div className="relative z-0 flex size-5 items-center justify-center rounded-full bg-default-100 text-[10px] font-medium text-default-600 ring-1 ring-surface">
+				<div className="relative z-0 flex size-5 items-center justify-center rounded-full bg-default text-[10px] font-medium text-muted ring-1 ring-surface">
 					+{agents.length - 3}
 				</div>
 			)}

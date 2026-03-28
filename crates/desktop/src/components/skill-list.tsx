@@ -60,7 +60,7 @@ function SkillAgentIcons({ items }: { items: SkillResponse[] }) {
 				</Tooltip>
 			))}
 			{agents.length > 3 && (
-				<div className="relative z-0 flex size-5 items-center justify-center rounded-lg bg-default-100 text-[10px] font-medium text-default-600 ring-1 ring-surface">
+				<div className="relative z-0 flex size-5 items-center justify-center rounded-lg bg-default text-[10px] font-medium text-muted ring-1 ring-surface">
 					+{agents.length - 3}
 				</div>
 			)}
@@ -394,7 +394,7 @@ export function SkillList({
 		return (
 			<div className="flex-1 overflow-y-auto">
 				{sourceGroups.map((sg) => (
-					<div key={sg.source} className="border-y border-divider">
+					<div key={sg.source} className="border-y border-separator">
 						<button
 							type="button"
 							onClick={() => toggleSource(sg.source)}

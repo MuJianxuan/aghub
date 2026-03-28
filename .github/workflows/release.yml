@@ -117,6 +117,8 @@ jobs:
     build-cli:
         name: Build CLI (${{ matrix.target }})
         runs-on: ${{ matrix.os }}
+        permissions:
+            contents: write
         strategy:
             fail-fast: false
             matrix:
@@ -175,6 +177,4 @@ jobs:
               with:
                   tag_name: ${{ github.event.inputs.version || github.ref_name }}
                   draft: ${{ github.event_name == 'workflow_dispatch' }}
-                  files: |
-                      agentctl-${{ matrix.target }}.tar.gz
-                      agentctl-${{ matrix.target }}.zip
+                  files: agentctl-*

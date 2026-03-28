@@ -7,7 +7,6 @@ pub enum CodeEditorType {
 	AntiGravity,
 	Cursor,
 	Zed,
-	Vim,
 }
 
 impl CodeEditorType {
@@ -17,7 +16,6 @@ impl CodeEditorType {
 			CodeEditorType::AntiGravity => "AntiGravity",
 			CodeEditorType::Cursor => "Cursor",
 			CodeEditorType::Zed => "Zed",
-			CodeEditorType::Vim => "Vim",
 		}
 	}
 
@@ -27,7 +25,6 @@ impl CodeEditorType {
 			CodeEditorType::AntiGravity => "antigravity",
 			CodeEditorType::Cursor => "cursor",
 			CodeEditorType::Zed => "zed",
-			CodeEditorType::Vim => "vim",
 		}
 	}
 
@@ -37,7 +34,6 @@ impl CodeEditorType {
 			CodeEditorType::AntiGravity,
 			CodeEditorType::Cursor,
 			CodeEditorType::Zed,
-			CodeEditorType::Vim,
 		]
 	}
 }

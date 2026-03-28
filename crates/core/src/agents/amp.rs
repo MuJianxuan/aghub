@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 fn global_path() -> PathBuf {
 	dirs::home_dir()
 		.unwrap_or_else(|| std::path::PathBuf::from(""))
-		.join(".amp/mcp.json")
+		.join(".config/amp/settings.json")
 }
 fn project_path(root: &Path) -> PathBuf {
 	root.join(".amp/mcp.json")
@@ -28,8 +28,8 @@ fn project_skills_path(root: &Path) -> PathBuf {
 pub const DESCRIPTOR: AgentDescriptor = AgentDescriptor {
 	id: "amp",
 	display_name: "Amp",
-	parse_config: mcp_strategy::parse_json_map_mcp_servers,
-	serialize_config: mcp_strategy::serialize_json_map_mcp_servers,
+	parse_config: mcp_strategy::parse_json_map_nested_amp_mcp_servers,
+	serialize_config: mcp_strategy::serialize_json_map_nested_amp_mcp_servers,
 	global_path,
 	project_path,
 	capabilities: Capabilities {

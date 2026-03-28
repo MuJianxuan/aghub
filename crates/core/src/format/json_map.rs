@@ -22,15 +22,47 @@ pub(crate) struct MapMcpServer {
 	pub headers: Option<HashMap<String, String>>,
 }
 
+fn get_nested<'a>(
+	root: &'a serde_json::Value,
+	path: &str,
+) -> Option<&'a serde_json::Value> {
+	path.split('.').try_fold(root, |curr, key| curr.get(key))
+}
+
+fn set_nested(
+	root: &mut serde_json::Value,
+	path: &str,
+	value: serde_json::Value,
+) {
+	let keys: Vec<&str> = path.split('.').collect();
+	if keys.is_empty() {
+		return;
+	}
+	let mut curr = root;
+	for key in &keys[..keys.len() - 1] {
+		if let serde_json::Value::Object(ref mut obj) = curr {
+			curr = obj.entry(*key).or_insert_with(|| {
+				serde_json::Value::Object(serde_json::Map::new())
+			});
+		}
+	}
+	if let serde_json::Value::Object(ref mut obj) = curr {
+		obj.insert(keys[keys.len() - 1].to_string(), value);
+	}
+}
+
 pub fn parse(content: &str, server_key: &str) -> Result<AgentConfig> {
 	let root: serde_json::Value = serde_json::from_str(content)?;
 	let mut config = AgentConfig::new();
 
-	let servers_map = root
-		.get(server_key)
-		.and_then(|v| v.as_object())
-		.cloned()
-		.unwrap_or_default();
+	let servers_map = if server_key.contains('.') {
+		get_nested(&root, server_key)
+	} else {
+		root.get(server_key)
+	}
+	.and_then(|v| v.as_object())
+	.cloned()
+	.unwrap_or_default();
 
 	for (name, mcp_val) in servers_map {
 		let mcp: MapMcpServer =
@@ -163,7 +195,13 @@ pub fn serialize(
 		);
 	}
 
-	if let serde_json::Value::Object(ref mut obj) = root {
+	if server_key.contains('.') {
+		set_nested(
+			&mut root,
+			server_key,
+			serde_json::Value::Object(servers_map),
+		);
+	} else if let serde_json::Value::Object(ref mut obj) = root {
 		obj.insert(
 			server_key.to_string(),
 			serde_json::Value::Object(servers_map),

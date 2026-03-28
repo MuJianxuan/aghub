@@ -87,6 +87,19 @@ pub mod mcp_strategy {
 		json_map::serialize(config, original, "context_servers")
 	}
 
+	// JsonMap with nested "amp.mcpServers" key (Amp)
+	pub fn parse_json_map_nested_amp_mcp_servers(
+		content: &str,
+	) -> Result<AgentConfig> {
+		json_map::parse(content, "amp.mcpServers")
+	}
+	pub fn serialize_json_map_nested_amp_mcp_servers(
+		config: &AgentConfig,
+		original: Option<&str>,
+	) -> Result<String> {
+		json_map::serialize(config, original, "amp.mcpServers")
+	}
+
 	// JsonOpenCode format
 	pub const PARSE_JSON_OPCODE: ParseFn = json_opencode::parse;
 	pub const SERIALIZE_JSON_OPCODE: SerializeFn = json_opencode::serialize;

@@ -404,7 +404,14 @@ export default {
 
 	// Skill Detail
 	searchOnSkillsSh: "Search on skills.sh",
+	delete: "Delete",
 	deleteSkill: "Delete Skill",
+	deleteSkillForAgentTitle: "Delete Skill from {{agent}}",
+	deleteSkillForAgentWarning:
+		'This will delete "{{name}}" only for {{agent}}. Other agent installations will remain unchanged.',
+	deleteSharedLocationWarning:
+		"This location is shared by multiple agents. Choose which agent to remove.",
+	selectAgentToDelete: "Agent to delete",
 	deleteSkillWarning:
 		"This will delete {{count}} skill installation(s). This action cannot be undone.",
 	deleteAll: "Delete All",

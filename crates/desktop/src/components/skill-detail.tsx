@@ -16,6 +16,7 @@ import {
 } from "@heroicons/react/24/solid";
 import {
 	Accordion,
+	AlertDialog,
 	Button,
 	Card,
 	Chip,
@@ -26,7 +27,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import * as pathe from "pathe";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { siGithub } from "simple-icons";
 import { useLocation } from "wouter";
@@ -45,8 +46,13 @@ import { ConfigSource } from "../lib/api-types";
 import { cn, sortAgents } from "../lib/utils";
 
 interface LocationGroup {
+	key: string;
 	sourcePath: string;
-	agents: string[];
+	installations: Array<{
+		id: string;
+		agent: string;
+		source: ConfigSource;
+	}>;
 	canonicalPath?: string;
 }
 
@@ -90,6 +96,8 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const api = useMemo(() => createApi(baseUrl), [baseUrl]);
 
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+	const [locationToDelete, setLocationToDelete] =
+		useState<LocationGroup | null>(null);
 	const [showAllLocations, setShowAllLocations] = useState(false);
 
 	const { isSkillStarred, toggleSkillStar } = useFavorites();
@@ -196,28 +204,62 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 
 	// Group locations across all items
 	const allLocationGroups = useMemo(() => {
+		const sortedAgents = sortAgents(
+			group.items.flatMap((item) => (item.agent ? [item.agent] : [])),
+			allAgents,
+		);
+		const agentOrder = new Map(
+			sortedAgents.map((agent, index) => [agent, index]),
+		);
+
 		const map = new Map<
 			string,
-			{ agents: string[]; canonicalPath?: string }
+			{
+				installations: LocationGroup["installations"];
+				canonicalPath?: string;
+			}
 		>();
+
 		for (const item of group.items) {
-			const path = item.source_path ?? "";
-			if (path === "") continue;
-			if (!map.has(path)) {
-				map.set(path, {
-					agents: [],
-					canonicalPath: item.canonical_path,
-				});
+			if (!item.source_path || !item.agent || !item.source) {
+				continue;
 			}
-			if (item.agent) {
-				map.get(path)?.agents.push(item.agent);
+
+			const existing = map.get(item.source_path);
+			const installation = {
+				id: `${item.agent}:${item.source}`,
+				agent: item.agent,
+				source: item.source,
+			};
+
+			if (existing) {
+				existing.installations.push(installation);
+				continue;
 			}
+
+			map.set(item.source_path, {
+				installations: [installation],
+				canonicalPath: item.canonical_path,
+			});
 		}
-		return Array.from(map.entries()).map(([sourcePath, data]) => ({
-			sourcePath,
-			agents: sortAgents(data.agents, allAgents),
-			canonicalPath: data.canonicalPath,
-		}));
+
+		return Array.from(map.entries())
+			.map(([sourcePath, data]) => ({
+				key: sourcePath,
+				sourcePath,
+				installations: data.installations.sort((a, b) => {
+					const agentDelta =
+						(agentOrder.get(a.agent) ?? Number.MAX_SAFE_INTEGER) -
+						(agentOrder.get(b.agent) ?? Number.MAX_SAFE_INTEGER);
+					if (agentDelta !== 0) {
+						return agentDelta;
+					}
+
+					return a.source.localeCompare(b.source);
+				}),
+				canonicalPath: data.canonicalPath,
+			}))
+			.sort((a, b) => a.sourcePath.localeCompare(b.sourcePath));
 	}, [group.items, allAgents]);
 
 	// Metadata pieces for subtitle
@@ -398,8 +440,11 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 									<div className="space-y-1.5">
 										{displayedLocations.map((loc) => (
 											<LocationRow
-												key={loc.sourcePath}
+												key={loc.key}
 												group={loc}
+												onDelete={() =>
+													setLocationToDelete(loc)
+												}
 												onOpenFolder={() =>
 													openFolderMutation.mutate(
 														loc.sourcePath,
@@ -602,6 +647,13 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 				onClose={() => setDeleteDialogOpen(false)}
 				projectPath={projectPath}
 			/>
+			<DeleteSkillLocationDialog
+				item={locationToDelete}
+				isOpen={locationToDelete !== null}
+				onClose={() => setLocationToDelete(null)}
+				projectPath={projectPath}
+				skillName={skill.name}
+			/>
 		</>
 	);
 }
@@ -661,10 +713,12 @@ function TreeNodeRow({
 
 function LocationRow({
 	group,
+	onDelete,
 	onOpenFolder,
 	onEditFolder,
 }: {
 	group: LocationGroup;
+	onDelete: () => void;
 	onOpenFolder: () => void;
 	onEditFolder: () => void;
 }) {
@@ -710,10 +764,29 @@ function LocationRow({
 					)}
 				</div>
 				<p className="mt-0.5 text-[11px] text-muted">
-					{group.agents.map(formatAgentName).join(", ")}
+					{Array.from(
+						new Set(
+							group.installations.map((installation) =>
+								formatAgentName(installation.agent),
+							),
+						),
+					).join(", ")}
 				</p>
 			</div>
 			<div className="flex shrink-0 items-center gap-1">
+				<Tooltip delay={0}>
+					<Button
+						isIconOnly
+						variant="ghost"
+						size="sm"
+						className="size-8 text-muted hover:text-danger"
+						aria-label={t("delete")}
+						onPress={onDelete}
+					>
+						<TrashIcon className="size-4" />
+					</Button>
+					<Tooltip.Content>{t("delete")}</Tooltip.Content>
+				</Tooltip>
 				<Tooltip delay={0}>
 					<Button
 						isIconOnly
@@ -742,6 +815,207 @@ function LocationRow({
 				</Tooltip>
 			</div>
 		</div>
+	);
+}
+
+interface DeleteSkillLocationDialogProps {
+	item: LocationGroup | null;
+	isOpen: boolean;
+	onClose: () => void;
+	projectPath?: string;
+	skillName: string;
+}
+
+function DeleteSkillLocationDialog({
+	item,
+	isOpen,
+	onClose,
+	projectPath,
+	skillName,
+}: DeleteSkillLocationDialogProps) {
+	const { t } = useTranslation();
+	const { baseUrl } = useServer();
+	const api = useMemo(() => createApi(baseUrl), [baseUrl]);
+	const queryClient = useQueryClient();
+	const [selectedInstallationId, setSelectedInstallationId] = useState<
+		string | null
+	>(null);
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+
+		setSelectedInstallationId(item?.installations[0]?.id ?? null);
+	}, [isOpen, item]);
+
+	const selectedInstallation = useMemo(() => {
+		if (!item) {
+			return null;
+		}
+
+		return (
+			item.installations.find(
+				(installation) => installation.id === selectedInstallationId,
+			) ??
+			item.installations[0] ??
+			null
+		);
+	}, [item, selectedInstallationId]);
+
+	const deleteMutation = useMutation({
+		mutationFn: async () => {
+			if (!selectedInstallation) {
+				return;
+			}
+
+			const scope =
+				selectedInstallation.source === ConfigSource.Project
+					? ("project" as const)
+					: ("global" as const);
+			const projectRoot = scope === "project" ? projectPath : undefined;
+
+			await api.skills.delete(
+				selectedInstallation.agent,
+				skillName,
+				scope,
+				projectRoot,
+			);
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["skills"] });
+			queryClient.invalidateQueries({
+				queryKey: ["project-skills"],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["skill-locks"],
+			});
+			onClose();
+		},
+		onError: (error) => {
+			console.error("Skill location delete mutation error:", error);
+		},
+	});
+
+	const folderPath = item ? pathe.dirname(item.sourcePath) : "";
+	const scopeLabel =
+		selectedInstallation?.source === ConfigSource.Project
+			? t("project")
+			: t("global");
+	const agentName = selectedInstallation
+		? formatAgentName(selectedInstallation.agent)
+		: "";
+
+	return (
+		<AlertDialog.Backdrop isOpen={isOpen} onOpenChange={onClose}>
+			<AlertDialog.Container>
+				<AlertDialog.Dialog className="sm:max-w-[420px]">
+					<AlertDialog.CloseTrigger />
+					<AlertDialog.Header>
+						<AlertDialog.Icon status="danger" />
+						<AlertDialog.Heading>
+							{t("deleteSkillForAgentTitle", {
+								agent: agentName,
+							})}
+						</AlertDialog.Heading>
+					</AlertDialog.Header>
+					<AlertDialog.Body>
+						{(item?.installations.length ?? 0) > 1 && (
+							<div className="mb-4 space-y-2">
+								<p className="text-sm text-muted">
+									{t("deleteSharedLocationWarning")}
+								</p>
+								<div>
+									<p
+										className="
+											mb-2 text-xs font-medium tracking-wide text-muted
+											uppercase
+										"
+									>
+										{t("selectAgentToDelete")}
+									</p>
+									<div className="flex flex-wrap gap-2">
+										{item?.installations.map(
+											(installation) => (
+												<Button
+													key={installation.id}
+													size="sm"
+													variant={
+														installation.id ===
+														selectedInstallation?.id
+															? "secondary"
+															: "ghost"
+													}
+													onPress={() =>
+														setSelectedInstallationId(
+															installation.id,
+														)
+													}
+												>
+													{formatAgentName(
+														installation.agent,
+													)}
+													<span className="text-xs text-muted">
+														{" · "}
+														{installation.source ===
+														ConfigSource.Project
+															? t("project")
+															: t("global")}
+													</span>
+												</Button>
+											),
+										)}
+									</div>
+								</div>
+							</div>
+						)}
+						<p className="text-sm text-muted">
+							{t("deleteSkillForAgentWarning", {
+								name: skillName,
+								agent: agentName,
+							})}
+						</p>
+						{item && (
+							<div className="mt-4 rounded-lg bg-surface-secondary px-3 py-2">
+								<p className="text-[11px] text-muted">
+									{scopeLabel}
+								</p>
+								<p className="mt-1 font-mono text-xs text-foreground">
+									{folderPath}
+								</p>
+							</div>
+						)}
+					</AlertDialog.Body>
+					<AlertDialog.Footer>
+						<Button
+							slot="close"
+							variant="tertiary"
+							onPress={onClose}
+							isDisabled={deleteMutation.isPending}
+						>
+							{t("cancel")}
+						</Button>
+						<Button
+							variant="danger"
+							onPress={() => deleteMutation.mutate()}
+							isDisabled={
+								deleteMutation.isPending ||
+								selectedInstallation === null
+							}
+						>
+							{deleteMutation.isPending ? (
+								<>
+									<Spinner size="sm" className="mr-2" />
+									{t("deleting")}
+								</>
+							) : (
+								t("delete")
+							)}
+						</Button>
+					</AlertDialog.Footer>
+				</AlertDialog.Dialog>
+			</AlertDialog.Container>
+		</AlertDialog.Backdrop>
 	);
 }
 

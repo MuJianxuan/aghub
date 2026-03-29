@@ -395,7 +395,14 @@ export default {
 
 	// Skill Detail
 	searchOnSkillsSh: "在 skills.sh 中搜尋",
+	delete: "刪除",
 	deleteSkill: "刪除技能",
+	deleteSkillForAgentTitle: "從 {{agent}} 刪除技能",
+	deleteSkillForAgentWarning:
+		"這只會刪除 {{agent}} 上的「{{name}}」，其他 Agent 的安裝不會受影響。",
+	deleteSharedLocationWarning:
+		"這個位置被多個 Agent 共用。請選擇要刪除的那個 Agent。",
+	selectAgentToDelete: "要刪除的 Agent",
 	deleteSkillWarning: "這將刪除 {{count}} 個技能安裝。此操作無法復原。",
 	deleteAll: "全部刪除",
 	locations: "位置",

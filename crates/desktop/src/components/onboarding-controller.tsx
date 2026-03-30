@@ -1,13 +1,13 @@
 import {
+	ArrowsPointingOutIcon,
 	BookOpenIcon,
 	FolderIcon,
 	ServerIcon,
 } from "@heroicons/react/24/solid";
-import { Button, Modal } from "@heroui/react";
+import { Button, Modal, Spinner } from "@heroui/react";
 import { type Driver, type DriveStep, driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import {
-	type ReactNode,
 	startTransition,
 	useEffect,
 	useEffectEvent,
@@ -464,7 +464,7 @@ export function OnboardingController() {
 			}}
 		>
 			<Modal.Container>
-				<Modal.Dialog className="w-[calc(100vw-3rem)] max-w-2xl">
+				<Modal.Dialog className="w-[calc(100vw-3rem)] max-w-4xl">
 					<Modal.CloseTrigger />
 					<Modal.Header>
 						<div className="space-y-1">
@@ -479,9 +479,9 @@ export function OnboardingController() {
 
 					<Modal.Body className="space-y-5 px-6 pb-2 pt-0">
 						{/* Two-column layout */}
-						<div className="grid gap-5 sm:grid-cols-2">
+						<div className="grid gap-5 sm:grid-cols-[2fr_3fr]">
 							{/* Left: Feature list */}
-							<div className="flex flex-col gap-1.5">
+							<div className="flex flex-col justify-center gap-1.5">
 								{WIZARD_STEPS.map((step, index) => (
 									<button
 										key={step.id}
@@ -528,7 +528,6 @@ export function OnboardingController() {
 							{/* Right: Illustration */}
 							<WizardIllustration
 								stepId={WIZARD_STEPS[currentStep].id}
-								icon={WIZARD_STEPS[currentStep].icon}
 							/>
 						</div>
 					</Modal.Body>
@@ -572,31 +571,61 @@ export function OnboardingController() {
 	);
 }
 
-function WizardIllustration({
-	stepId,
-	icon,
-}: {
-	stepId: string;
-	icon: ReactNode;
-}) {
+const WIZARD_VIDEOS: Record<string, string> = {
+	mcp: "https://cdn.jsdelivr.net/gh/AkaraChen/aghub-docs@main/public/mcp.mp4",
+	skills: "https://cdn.jsdelivr.net/gh/AkaraChen/aghub-docs@main/public/skills.mp4",
+	projects:
+		"https://cdn.jsdelivr.net/gh/AkaraChen/aghub-docs@main/public/project.mp4",
+};
+
+function WizardIllustration({ stepId }: { stepId: string }) {
+	const videoSrc = WIZARD_VIDEOS[stepId];
+	const [isLoading, setIsLoading] = useState(true);
+	const containerRef = useRef<HTMLDivElement>(null);
+
+	const handleFullscreen = () => {
+		const el = containerRef.current;
+		if (!el) return;
+		if (document.fullscreenElement) {
+			void document.exitFullscreen();
+		} else {
+			void el.requestFullscreen();
+		}
+	};
+
 	return (
-		<div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-surface-secondary/60 p-8">
-			<div className="flex size-16 items-center justify-center rounded-2xl bg-surface text-foreground shadow-sm shadow-foreground/5">
-				{icon}
-			</div>
-			<div className="flex gap-2">
-				{[0, 1, 2].map((i) => (
-					<div
-						key={i}
-						className={cn(
-							"rounded-lg bg-surface transition-all",
-							stepId === "mcp" && "h-8 w-14",
-							stepId === "skills" && "h-10 w-12",
-							stepId === "projects" && "h-6 w-16",
-						)}
-					/>
-				))}
-			</div>
+		<div
+			ref={containerRef}
+			className="group relative flex min-h-80 items-center justify-center overflow-hidden rounded-2xl border border-border bg-surface-secondary/60"
+		>
+			{isLoading && (
+				<div className="absolute inset-0 flex items-center justify-center">
+					<Spinner size="lg" />
+				</div>
+			)}
+			{videoSrc && (
+				<video
+					key={stepId}
+					className={cn(
+						"size-full object-cover transition-opacity",
+						isLoading ? "opacity-0" : "opacity-100",
+					)}
+					src={videoSrc}
+					autoPlay
+					loop
+					muted
+					playsInline
+					onCanPlay={() => setIsLoading(false)}
+					onLoadStart={() => setIsLoading(true)}
+				/>
+			)}
+			<button
+				type="button"
+				className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-lg bg-foreground/70 text-background opacity-0 backdrop-blur-sm transition-opacity hover:bg-foreground/90 group-hover:opacity-100"
+				onClick={handleFullscreen}
+			>
+				<ArrowsPointingOutIcon className="size-4" />
+			</button>
 		</div>
 	);
 }

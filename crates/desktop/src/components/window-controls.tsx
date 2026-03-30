@@ -40,7 +40,6 @@ function RestoreIcon({ className }: { className?: string }) {
 
 export function WindowControls() {
 	const isMac = navigator.userAgent.toLowerCase().includes("mac");
-	if (isMac) return null;
 
 	const [isMaximized, setIsMaximized] = useState(false);
 	const [isTauri, setIsTauri] = useState(true);
@@ -55,7 +54,7 @@ export function WindowControls() {
 				unlisten = await appWindow.onResized(async () => {
 					setIsMaximized(await appWindow.isMaximized());
 				});
-			} catch (e) {
+			} catch {
 				// Not running inside Tauri
 				setIsTauri(false);
 			}
@@ -67,7 +66,7 @@ export function WindowControls() {
 		};
 	}, []);
 
-	if (!isTauri) return null;
+	if (isMac || !isTauri) return null;
 
 	return (
 		<div className="flex h-full items-stretch">
@@ -77,7 +76,7 @@ export function WindowControls() {
 				onClick={async () => {
 					try {
 						await getCurrentWindow().minimize();
-					} catch (e) {}
+					} catch {}
 				}}
 				tabIndex={-1}
 			>
@@ -94,7 +93,7 @@ export function WindowControls() {
 						} else {
 							await appWindow.maximize();
 						}
-					} catch (e) {}
+					} catch {}
 				}}
 				tabIndex={-1}
 			>
@@ -110,7 +109,7 @@ export function WindowControls() {
 				onClick={async () => {
 					try {
 						await getCurrentWindow().close();
-					} catch (e) {}
+					} catch {}
 				}}
 				tabIndex={-1}
 			>

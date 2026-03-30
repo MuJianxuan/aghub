@@ -196,7 +196,7 @@ export function EditMcpPanel({
 	};
 
 	return (
-		<div className="h-full max-w-3xl overflow-y-auto p-6">
+		<div className="h-full w-full overflow-y-auto p-4 sm:p-6">
 			<div className="mb-6 flex items-center justify-between gap-3">
 				<h2 className="text-xl font-semibold text-foreground">
 					{t("editMcpServer")}

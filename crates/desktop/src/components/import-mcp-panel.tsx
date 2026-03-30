@@ -279,7 +279,7 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 	};
 
 	return (
-		<div className="h-full max-w-3xl overflow-y-auto p-6">
+		<div className="h-full w-full overflow-y-auto p-4 sm:p-6">
 			{error && (
 				<Alert className="mb-4" status="danger">
 					<Alert.Indicator />

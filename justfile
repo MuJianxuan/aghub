@@ -1,6 +1,8 @@
 # aghub - Code Agent Management Tool
 # https://github.com/akarachen/aghub
 
+set windows-shell := ["cmd.exe", "/c"]
+
 # Default recipe - build the CLI
 default: build
 

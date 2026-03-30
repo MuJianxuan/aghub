@@ -383,7 +383,12 @@ pub async fn install_skill(
 ) -> ApiResult<InstallSkillResponse> {
 	let req = body.into_inner();
 
-	let mut cmd = Command::new("npx");
+	#[cfg(target_os = "windows")]
+	let npx_cmd = "npx.cmd";
+	#[cfg(not(target_os = "windows"))]
+	let npx_cmd = "npx";
+
+	let mut cmd = Command::new(npx_cmd);
 	cmd.arg("skills").arg("add").arg(&req.source);
 
 	// When install_all is true, omit -s flag to install all skills from source

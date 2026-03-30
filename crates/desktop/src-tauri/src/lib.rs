@@ -8,6 +8,7 @@ pub struct AppState {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+	let _ = fix_path_env::fix();
 	tauri::Builder::default()
 		.manage(AppState {
 			port: std::sync::Mutex::new(None),

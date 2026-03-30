@@ -162,7 +162,10 @@ export function TransferDialog({
 
 	const installedInDestination = useMemo(() => {
 		if (!destinationKey) return new Set<string>();
-		return installedAgentsByDestination.get(destinationKey) ?? new Set();
+		return (
+			installedAgentsByDestination.get(destinationKey) ??
+			new Set<string>()
+		);
 	}, [destinationKey, installedAgentsByDestination]);
 
 	const diffLabels = useMemo((): Record<string, AgentDiffLabel> => {
@@ -424,6 +427,9 @@ export function TransferDialog({
 													agentStates={agentStates}
 													diffLabels={diffLabels}
 													disabled={isApplying}
+													disabledAgents={
+														installedInDestination
+													}
 													emptyMessage={t(
 														"noTargetAgents",
 													)}

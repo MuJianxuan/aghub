@@ -20,12 +20,12 @@
 
 ### Download
 
-| Platform              | Download                                                                                           |
-| --------------------- | -------------------------------------------------------------------------------------------------- |
-| Windows               | [setup.exe](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_x64-setup.exe) |
-| macOS (Intel)         | [dmg](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_x64.dmg)             |
-| macOS (Apple Silicon) | [dmg](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_aarch64.dmg)         |
-| Linux                 | [AppImage](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_amd64.AppImage) |
+| Platform               | Download                                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------------------------- |
+| Windows (experimental) | [setup.exe](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_x64-setup.exe) |
+| macOS (Intel)          | [dmg](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_x64.dmg)             |
+| macOS (Apple Silicon)  | [dmg](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_aarch64.dmg)         |
+| Linux                  | [AppImage](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_amd64.AppImage) |
 
 Or visit [Releases](https://github.com/akarachen/aghub/releases) for all available downloads.
 

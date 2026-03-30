@@ -22,7 +22,7 @@
 
 | 平台                  | 下载                                                                                               |
 | --------------------- | -------------------------------------------------------------------------------------------------- |
-| Windows               | [setup.exe](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_x64-setup.exe) |
+| Windows (实验性)      | [setup.exe](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_x64-setup.exe) |
 | macOS (Intel)         | [dmg](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_x64.dmg)             |
 | macOS (Apple Silicon) | [dmg](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_aarch64.dmg)         |
 | Linux                 | [AppImage](https://github.com/akarachen/aghub/releases/latest/download/aghub_1.0.0_amd64.AppImage) |

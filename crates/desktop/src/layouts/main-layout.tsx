@@ -4,7 +4,7 @@ import { WindowControls } from "../components/window-controls";
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
 	const isMac = navigator.userAgent.toLowerCase().includes("mac");
-	
+
 	return (
 		<Surface
 			variant="secondary"
@@ -14,9 +14,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
 				data-tauri-drag-region
 				className="flex h-8 shrink-0 items-center justify-between border-b border-border pl-3"
 			>
-				<div 
-					className="pointer-events-none flex select-none items-center"
-				>
+				<div className="pointer-events-none flex select-none items-center">
 					{!isMac && (
 						<span className="text-xs font-medium tracking-wide text-foreground/50">
 							aghub

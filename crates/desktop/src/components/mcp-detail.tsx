@@ -308,7 +308,7 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="w-full max-w-2xl space-y-4 p-4 sm:p-6">
+				<div className="w-full space-y-4 p-4 sm:p-6">
 					{/* Unified Detail Card */}
 					<Card>
 						{/* Header: Name + Actions */}

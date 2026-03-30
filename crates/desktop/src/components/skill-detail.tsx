@@ -200,7 +200,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	return (
 		<>
 			<div className="h-full overflow-y-auto">
-				<div className="w-full max-w-2xl space-y-4 p-4 sm:p-6">
+				<div className="w-full space-y-4 p-4 sm:p-6">
 					<Card>
 						<Card.Header className="flex flex-row items-start justify-between gap-3">
 							<div className="min-w-0 flex-1">

@@ -38,15 +38,16 @@ export default function ApplicationPanel() {
 			const update = await check();
 			if (!update) throw new Error("No update available");
 
-			await update.downloadAndInstall(() => {});
+			await update.downloadAndInstall();
 		},
 		onSuccess: () => {
 			toast.success(t("updateInstalledSuccess"), {
 				timeout: 0,
 				actionProps: {
-					children: t("restartToUpdate"),
 					onPress: () => relaunch(),
+					variant: "tertiary",
 				},
+				description: t("restartToUpdate"),
 			});
 		},
 		onError: (error) => {

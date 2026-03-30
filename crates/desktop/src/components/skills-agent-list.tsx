@@ -65,6 +65,8 @@ function DiffLabelDisplay({ diffLabel }: { diffLabel: AgentDiffLabel }) {
 	return null;
 }
 
+const EMPTY_SET = new Set<string>();
+
 export function SkillsAgentList({
 	agents,
 	selectedKeys,
@@ -73,14 +75,16 @@ export function SkillsAgentList({
 	agentStates = {},
 	diffLabels = {},
 	disabled = false,
-	disabledAgents = new Set(),
+	disabledAgents = EMPTY_SET,
 	label,
 	emptyMessage,
 }: SkillsAgentListProps) {
+	const { t } = useTranslation();
+
 	if (agents.length === 0) {
 		return (
 			<p className="text-sm text-muted">
-				{emptyMessage || "No agents available"}
+				{emptyMessage || t("noAgentsAvailable")}
 			</p>
 		);
 	}
@@ -134,7 +138,7 @@ export function SkillsAgentList({
 												aria-hidden="true"
 											/>
 											<span className="sr-only">
-												Processing
+												{t("processing")}
 											</span>
 										</span>
 									)}
@@ -148,7 +152,7 @@ export function SkillsAgentList({
 												aria-hidden="true"
 											/>
 											<span className="sr-only">
-												Success
+												{t("success")}
 											</span>
 										</span>
 									)}
@@ -162,7 +166,7 @@ export function SkillsAgentList({
 												aria-hidden="true"
 											/>
 											<span className="sr-only">
-												Failed
+												{t("failed")}
 											</span>
 										</span>
 									)}
@@ -183,7 +187,7 @@ export function SkillsAgentList({
 									)}
 									{!state && isDisabled && !diffLabel && (
 										<Description className="text-xs text-muted">
-											Already installed
+											{t("alreadyAdded")}
 										</Description>
 									)}
 								</div>

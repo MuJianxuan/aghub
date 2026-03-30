@@ -1,7 +1,7 @@
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import { Button, Label, ListBox, Modal, Select, toast } from "@heroui/react";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useProjects } from "../hooks/use-projects";
@@ -67,7 +67,7 @@ export function TransferDialog({
 		{},
 	);
 	const [isApplying, setIsApplying] = useState(false);
-	const prevIsOpenRef = useRef(false);
+	const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
 	const usableAgents = useMemo(
 		() =>
@@ -191,16 +191,15 @@ export function TransferDialog({
 
 	const isLoadingDestinations = destinationQueries.some((q) => q.isFetching);
 
-	useEffect(() => {
-		if (isOpen && !prevIsOpenRef.current) {
-			queueMicrotask(() => {
-				setSelectedScopeKey(null);
-				setSelectedAgents([]);
-				setAgentStates({});
-			});
+	if (isOpen !== prevIsOpen) {
+		setPrevIsOpen(isOpen);
+		if (isOpen) {
+			setSelectedScopeKey(null);
+			setSelectedAgents([]);
+			setAgentStates({});
+			setIsApplying(false);
 		}
-		prevIsOpenRef.current = isOpen;
-	}, [isOpen]);
+	}
 
 	const handleAgentSelectionChange = useCallback((values: string[]) => {
 		setSelectedAgents(values);

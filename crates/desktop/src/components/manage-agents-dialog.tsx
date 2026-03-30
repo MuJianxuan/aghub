@@ -1,6 +1,6 @@
 import { Button, Modal, toast } from "@heroui/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { AvailableAgent } from "../contexts/agent-availability";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
@@ -69,20 +69,21 @@ export function ManageAgentsDialog({
 		[availableAgents, supportsRequirements],
 	);
 
-	const prevIsOpenRef = useRef(false);
+	const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 	const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
 	const [agentStates, setAgentStates] = useState<Record<string, AgentState>>(
 		{},
 	);
 	const [isApplying, setIsApplying] = useState(false);
 
-	if (isOpen && !prevIsOpenRef.current) {
-		queueMicrotask(() => {
+	if (isOpen !== prevIsOpen) {
+		setPrevIsOpen(isOpen);
+		if (isOpen) {
 			setSelectedAgents(Array.from(installedAgentIds));
 			setAgentStates({});
-		});
+			setIsApplying(false);
+		}
 	}
-	prevIsOpenRef.current = isOpen;
 
 	const selectedSet = useMemo(
 		() => new Set(selectedAgents),

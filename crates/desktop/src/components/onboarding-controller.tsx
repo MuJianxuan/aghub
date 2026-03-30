@@ -106,7 +106,7 @@ export function OnboardingController() {
 		return waitForElement(selector);
 	};
 
-	const startProjectWorkflowTour = async (projectId?: string) => {
+	async function startProjectWorkflowTour(projectId?: string) {
 		const targetProjectId = projectId ?? projects[0]?.id;
 		if (!targetProjectId) {
 			void startProjectSetupGuide();
@@ -214,9 +214,9 @@ export function OnboardingController() {
 
 		activeDriverRef.current = driverObj;
 		driverObj.drive();
-	};
+	}
 
-	const startProjectSetupGuide = async () => {
+	async function startProjectSetupGuide() {
 		if (projects.length > 0) {
 			await startProjectWorkflowTour(projects[0]?.id);
 			return;
@@ -271,7 +271,7 @@ export function OnboardingController() {
 
 		activeDriverRef.current = driverObj;
 		driverObj.drive();
-	};
+	}
 
 	const startProductTour = async () => {
 		setOverlayMode(null);
@@ -549,9 +549,7 @@ export function OnboardingController() {
 							<Button
 								variant="primary"
 								className="flex-1"
-								onPress={() =>
-									setCurrentStep((s) => s + 1)
-								}
+								onPress={() => setCurrentStep((s) => s + 1)}
 							>
 								{t("onboardingNext")}
 							</Button>

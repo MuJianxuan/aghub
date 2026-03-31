@@ -18,6 +18,19 @@
 
 ## 安装
 
+### macOS (Homebrew)
+
+```bash
+# 添加官方 Tap
+brew tap fldicoahkiin/tap
+
+# 安装桌面端应用
+brew install --cask aghub
+
+# 或仅安装命令行工具 (CLI)
+brew install aghub-cli
+```
+
 ### 下载
 
 | 平台                  | 下载                                                                                               |

@@ -18,6 +18,19 @@
 
 ## Installation
 
+### macOS (Homebrew)
+
+```bash
+# Add the tap
+brew tap fldicoahkiin/tap
+
+# Install Desktop App
+brew install --cask aghub
+
+# Or install CLI Tool only
+brew install aghub-cli
+```
+
 ### Download
 
 | Platform               | Download                                                                                           |

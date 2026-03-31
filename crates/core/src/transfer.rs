@@ -217,6 +217,7 @@ fn skill_target_dir(target: &InstallTarget) -> Result<PathBuf> {
 
 /// Find where a skill actually exists in each agent's skills directories.
 /// Returns (skill_path, agent) pairs for locations where the skill exists.
+/// TODO: Only find one, maybe we should remove all?
 fn find_skill_locations_in_agents(
 	skill_name: &str,
 	agents: &[AgentType],

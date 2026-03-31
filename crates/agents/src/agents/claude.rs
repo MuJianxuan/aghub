@@ -10,10 +10,32 @@ fn project_path(root: &Path) -> PathBuf {
 	root.join(".mcp.json")
 }
 fn global_skills_paths() -> Vec<PathBuf> {
-	vec![dirs::home_dir()
-		.unwrap_or_else(|| std::path::PathBuf::from(""))
-		.join(".claude/skills")]
+	let home = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from(""));
+	let mut paths = vec![home.join(".claude/skills")];
+
+	let marketplaces = home.join(".claude/plugins/marketplaces");
+	if marketplaces.is_dir() {
+		collect_skills_dirs(&marketplaces, &mut paths);
+	}
+
+	paths
 }
+
+fn collect_skills_dirs(dir: &Path, paths: &mut Vec<PathBuf>) {
+	if let Ok(entries) = std::fs::read_dir(dir) {
+		for entry in entries.filter_map(|e| e.ok()) {
+			let path = entry.path();
+			if path.is_dir() {
+				if path.file_name() == Some(std::ffi::OsStr::new("skills")) {
+					paths.push(path);
+				} else {
+					collect_skills_dirs(&path, paths);
+				}
+			}
+		}
+	}
+}
+
 fn project_skills_paths(root: &Path) -> Vec<PathBuf> {
 	vec![root.join(".claude/skills")]
 }

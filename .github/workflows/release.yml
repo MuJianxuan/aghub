@@ -20,8 +20,6 @@ jobs:
     changelog:
         name: Generate Changelog
         runs-on: ubuntu-latest
-        outputs:
-            release_body: ${{ steps.git-cliff.outputs.content }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -36,6 +34,13 @@ jobs:
               env:
                   OUTPUT: CHANGES.md
                   GITHUB_REPO: ${{ github.repository }}
+            
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v2
+              with:
+                  tag_name: ${{ github.event.inputs.version || github.ref_name }}
+                  name: "aghub ${{ github.event.inputs.version || github.ref_name }}"
+                  body_path: CHANGES.md
 
     build-tauri:
         needs: changelog
@@ -118,7 +123,6 @@ jobs:
               with:
                   tagName: ${{ github.event.inputs.version || github.ref_name }}
                   releaseName: "aghub ${{ github.event.inputs.version || github.ref_name }}"
-                  releaseBody: ${{ needs.changelog.outputs.release_body || 'Manual build' }}
                   releaseDraft: false
                   prerelease: ${{ github.event_name == 'workflow_dispatch' && inputs.prerelease || false }}
                   args: --target ${{ matrix.target }}

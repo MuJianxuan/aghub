@@ -25,7 +25,7 @@ import {
 } from "@heroui/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useServer } from "../hooks/use-server";
@@ -89,7 +89,9 @@ export function ImportGithubSkillPanel({
 	const [isPrivateRepo, setIsPrivateRepo] = useState(false);
 	const [isAddTokenOpen, setIsAddTokenOpen] = useState(false);
 	const [scannedSkills, setScannedSkills] = useState<GitScanSkillEntry[]>([]);
-	const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
+	const [selectedPaths, setSelectedPaths] = useState<Set<string>>(
+		() => new Set(),
+	);
 	const [sessionId, setSessionId] = useState<string>("");
 	const [installResults, setInstallResults] = useState<
 		GitInstallResultEntry[]
@@ -108,7 +110,6 @@ export function ImportGithubSkillPanel({
 	const {
 		control,
 		handleSubmit,
-		watch,
 		reset,
 		setValue,
 		formState: { isSubmitting },
@@ -122,7 +123,7 @@ export function ImportGithubSkillPanel({
 		},
 	});
 
-	const urlValue = watch("url");
+	const urlValue = useWatch({ control, name: "url" });
 
 	const scanMutation = useMutation({
 		mutationFn: (values: InputFormValues) =>
@@ -308,8 +309,8 @@ export function ImportGithubSkillPanel({
 						className={cn(
 							"grid transition-[grid-template-rows] duration-300 ease-out",
 							card1Open
-								? "grid-rows-expand"
-								: "grid-rows-collapse",
+								? "grid-rows-[1fr]"
+								: "grid-rows-[0fr]",
 						)}
 					>
 						<div className="overflow-hidden px-0.5">
@@ -572,7 +573,6 @@ export function ImportGithubSkillPanel({
 						</div>
 						<div className="ml-3 flex shrink-0 items-center gap-3">
 							{card2Active && (
-								// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 								<div
 									className="flex gap-1"
 									onClick={(e) => e.stopPropagation()}
@@ -608,8 +608,8 @@ export function ImportGithubSkillPanel({
 						className={cn(
 							"grid transition-[grid-template-rows] duration-300 ease-out",
 							card2Open
-								? "grid-rows-expand"
-								: "grid-rows-collapse",
+								? "grid-rows-[1fr]"
+								: "grid-rows-[0fr]",
 						)}
 					>
 						<div className="overflow-hidden px-0.5">
@@ -690,7 +690,6 @@ export function ImportGithubSkillPanel({
 														</p>
 													)}
 												</div>
-												{/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
 												<div
 													onClick={(e) =>
 														e.stopPropagation()
@@ -823,8 +822,8 @@ export function ImportGithubSkillPanel({
 						className={cn(
 							"grid transition-[grid-template-rows] duration-300 ease-out",
 							card3Open
-								? "grid-rows-expand"
-								: "grid-rows-collapse",
+								? "grid-rows-[1fr]"
+								: "grid-rows-[0fr]",
 						)}
 					>
 						<div className="overflow-hidden px-0.5">

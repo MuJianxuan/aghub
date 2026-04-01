@@ -20,7 +20,6 @@ jobs:
     changelog:
         name: Generate Changelog
         runs-on: ubuntu-latest
-        if: github.event_name == 'push'
         outputs:
             release_body: ${{ steps.git-cliff.outputs.content }}
         steps:
@@ -39,6 +38,7 @@ jobs:
                   GITHUB_REPO: ${{ github.repository }}
 
     build-tauri:
+        needs: changelog
         name: Build Desktop (${{ matrix.target }})
         runs-on: ${{ matrix.os }}
         permissions:
@@ -128,23 +128,17 @@ jobs:
             - name: Prepare Generic Artifact
               shell: bash
               run: |
-                  if [ -d "crates/desktop/src-tauri/target/${{ matrix.target }}/release/bundle" ]; then
-                      BUNDLE_DIR="crates/desktop/src-tauri/target/${{ matrix.target }}/release/bundle"
-                  else
-                      BUNDLE_DIR="crates/desktop/src-tauri/target/release/bundle"
-                  fi
-
                   if [ "${{ matrix.target }}" = "x86_64-pc-windows-msvc" ]; then
-                      cp $BUNDLE_DIR/nsis/*setup.exe aghub-windows-setup.exe
+                      find crates/desktop/src-tauri/target -type f -name "*setup.exe" -exec cp {} aghub-windows-setup.exe \;
                       echo "GENERIC_ASSET=aghub-windows-setup.exe" >> $GITHUB_ENV
                   elif [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
-                      cp $BUNDLE_DIR/appimage/*.AppImage aghub-linux.AppImage
+                      find crates/desktop/src-tauri/target -type f -name "*.AppImage" -exec cp {} aghub-linux.AppImage \;
                       echo "GENERIC_ASSET=aghub-linux.AppImage" >> $GITHUB_ENV
                   elif [ "${{ matrix.target }}" = "x86_64-apple-darwin" ]; then
-                      cp $BUNDLE_DIR/dmg/*.dmg aghub_mac_intel.dmg
+                      find crates/desktop/src-tauri/target -type f -name "*.dmg" -exec cp {} aghub_mac_intel.dmg \;
                       echo "GENERIC_ASSET=aghub_mac_intel.dmg" >> $GITHUB_ENV
                   elif [ "${{ matrix.target }}" = "aarch64-apple-darwin" ]; then
-                      cp $BUNDLE_DIR/dmg/*.dmg aghub_mac_arm.dmg
+                      find crates/desktop/src-tauri/target -type f -name "*.dmg" -exec cp {} aghub_mac_arm.dmg \;
                       echo "GENERIC_ASSET=aghub_mac_arm.dmg" >> $GITHUB_ENV
                   fi
 

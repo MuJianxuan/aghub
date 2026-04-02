@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 fn mcp_global_path() -> PathBuf {
 	dirs::home_dir()
 		.unwrap_or_else(|| std::path::PathBuf::from(""))
-		.join(".openclaw/openclaw.json")
+		.join(".openclaw/workspace/config/mcporter.json")
 }
 fn mcp_project_path(root: &Path) -> PathBuf {
 	root.join(".openclaw/openclaw.json")
@@ -59,7 +59,24 @@ pub fn get_openclaw_skills_dirs(
 
 fn global_skills_paths() -> Vec<PathBuf> {
 	let home = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from(""));
-	get_openclaw_skills_dirs(&home, |p| p.exists())
+	let mut paths = get_openclaw_skills_dirs(&home, |p| p.exists());
+
+	// Dynamic discovery: which openclaw → canonicalize → parent/skills
+	// This allows finding skills from npm global installation or other symlinked locations
+	if let Ok(cli_path) = which::which("openclaw") {
+		if let Ok(real_path) = cli_path.canonicalize() {
+			// real_path might be: /opt/homebrew/lib/node_modules/openclaw/openclaw.mjs
+			// skills dir should be: /opt/homebrew/lib/node_modules/openclaw/skills/
+			if let Some(parent) = real_path.parent() {
+				let npm_skills_dir = parent.join("skills");
+				if npm_skills_dir.exists() {
+					paths.push(npm_skills_dir);
+				}
+			}
+		}
+	}
+
+	paths
 }
 fn project_skills_paths(root: &Path) -> Vec<PathBuf> {
 	vec![root.join("skills")]

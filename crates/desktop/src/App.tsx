@@ -1,15 +1,22 @@
-import { Spinner, Toast } from "@heroui/react";
+import { Spinner, Toast, toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { listen } from "@tauri-apps/api/event";
+import {
+	getCurrent as getCurrentDeepLinks,
+	onOpenUrl,
+} from "@tauri-apps/plugin-deep-link";
 import { NuqsAdapter } from "nuqs/adapters/react";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useKeyBindings } from "rooks";
 import { Route, Router, Switch, useLocation } from "wouter";
+import { DeepLinkImportModal } from "./components/deep-link-import-modal";
 import { OnboardingController } from "./components/onboarding-controller";
 import { Redirect } from "./components/redirect";
 import { ErrorBoundary } from "./components/ui/error-boundary";
 import { MainLayout } from "./layouts/main-layout";
+import type { DeepLinkImportIntent } from "./lib/deep-link";
+import { parseDeepLink } from "./lib/deep-link";
 import { setupAppMenu } from "./lib/menu";
 import { initStore } from "./lib/store";
 import ProjectDetailPage from "./pages/project/detail";
@@ -50,8 +57,17 @@ function SkillsPageSkeleton() {
 
 function App() {
 	const [isStoreReady, setIsStoreReady] = useState(false);
+	const [pendingIntents, setPendingIntents] = useState<
+		DeepLinkImportIntent[]
+	>([]);
 	const [, setLocation] = useLocation();
 	const { t, i18n } = useTranslation();
+
+	const currentIntent = pendingIntents[0] ?? null;
+
+	const processNextIntent = useCallback(() => {
+		setPendingIntents((prev) => prev.slice(1));
+	}, []);
 
 	useEffect(() => {
 		setupAppMenu(t);
@@ -73,6 +89,52 @@ function App() {
 			unlisten.then((fn) => fn());
 		};
 	}, [setLocation]);
+
+	useEffect(() => {
+		let isMounted = true;
+		let unlistenDeepLink: (() => void) | null = null;
+
+		const handleUrls = (urls: string[] | null) => {
+			if (!isMounted || !urls || urls.length === 0) {
+				return;
+			}
+
+			const newIntents = urls
+				.map(parseDeepLink)
+				.filter((result) => {
+					if (!result.ok) {
+						toast.danger(t(result.error));
+					}
+					return result.ok;
+				})
+				.map((result) => result.intent);
+
+			if (newIntents.length > 0) {
+				setPendingIntents((prev) => prev.concat(newIntents));
+			}
+		};
+
+		void getCurrentDeepLinks()
+			.then(handleUrls)
+			.catch((error) => {
+				console.error("Failed to read current deep link:", error);
+			});
+
+		void onOpenUrl((urls) => {
+			handleUrls(urls);
+		})
+			.then((dispose) => {
+				unlistenDeepLink = dispose;
+			})
+			.catch((error) => {
+				console.error("Failed to subscribe to deep links:", error);
+			});
+
+		return () => {
+			isMounted = false;
+			unlistenDeepLink?.();
+		};
+	}, [t]);
 
 	useKeyBindings({
 		",": (event) => {
@@ -175,6 +237,10 @@ function App() {
 										<Redirect to="/mcp" />
 									</Route>
 								</Switch>
+								<DeepLinkImportModal
+									intent={currentIntent}
+									onComplete={processNextIntent}
+								/>
 							</Router>
 						</NuqsAdapter>
 					</AgentAvailabilityProvider>

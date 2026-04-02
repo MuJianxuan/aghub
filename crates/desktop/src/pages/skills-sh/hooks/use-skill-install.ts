@@ -3,22 +3,28 @@ import { useState } from "react";
 import type { MarketSkill } from "../../../generated/dto";
 import { useAgentAvailability } from "../../../hooks/use-agent-availability";
 import { useApi } from "../../../hooks/use-api";
-import { useProjects } from "../../../hooks/use-projects";
+import { useInstallTarget } from "../../../hooks/use-install-target";
 import { supportsSkillMutation } from "../../../lib/agent-capabilities";
+import {
+	buildPendingResults,
+	type InstallResult,
+} from "../../../lib/install-utils";
 import { installSkillMutationOptions } from "../../../requests/skills";
-
-export interface InstallResult {
-	agentId: string;
-	displayName: string;
-	status: "pending" | "success" | "error";
-	error?: string;
-}
 
 export function useSkillInstall() {
 	const api = useApi();
 	const queryClient = useQueryClient();
 	const { availableAgents } = useAgentAvailability();
-	const { data: projects = [] } = useProjects();
+	const {
+		projects,
+		installToProject,
+		setInstallToProject,
+		selectedProjectId,
+		selectedProject,
+		canInstallToProject,
+		setSelectedProjectId,
+		resetInstallTarget,
+	} = useInstallTarget();
 	const installMutation = useMutation(
 		installSkillMutationOptions({
 			api,
@@ -36,10 +42,6 @@ export function useSkillInstall() {
 	const [installResults, setInstallResults] = useState<InstallResult[]>([]);
 	const [isInstalling, setIsInstalling] = useState(false);
 	const [installAll, setInstallAll] = useState(false);
-	const [installToProject, setInstallToProject] = useState(false);
-	const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-		null,
-	);
 
 	const skillAgents = availableAgents.filter(
 		(a) =>
@@ -52,8 +54,7 @@ export function useSkillInstall() {
 		setSelectedAgents(new Set());
 		setInstallResults([]);
 		setInstallAll(false);
-		setInstallToProject(false);
-		setSelectedProjectId(null);
+		resetInstallTarget();
 		setInstallModalOpen(true);
 	};
 
@@ -64,22 +65,11 @@ export function useSkillInstall() {
 
 		setIsInstalling(true);
 
-		const pendingResults: InstallResult[] = Array.from(
+		const pendingResults = buildPendingResults(
 			selectedAgents,
-			(agentId) => {
-				const agent = availableAgents.find((a) => a.id === agentId);
-				return {
-					agentId,
-					displayName: agent?.display_name ?? agentId,
-					status: "pending" as const,
-				};
-			},
+			availableAgents,
 		);
 		setInstallResults(pendingResults);
-
-		const selectedProject = installToProject
-			? projects.find((p) => p.id === selectedProjectId)
-			: null;
 
 		try {
 			const response = await installMutation.mutateAsync({
@@ -118,8 +108,7 @@ export function useSkillInstall() {
 		setSelectedAgents(new Set());
 		setInstallResults([]);
 		setInstallAll(false);
-		setInstallToProject(false);
-		setSelectedProjectId(null);
+		resetInstallTarget();
 	};
 
 	return {
@@ -134,6 +123,7 @@ export function useSkillInstall() {
 		setInstallAll,
 		installToProject,
 		setInstallToProject,
+		canInstallToProject,
 		selectedProjectId,
 		setSelectedProjectId,
 		projects,

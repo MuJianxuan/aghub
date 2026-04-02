@@ -13,12 +13,14 @@ Aghub manages AGENTS.md, MCP configs, and skills for 25+ AI assistants through a
 ```
 .
 ├── crates/
-│   ├── core/         # Core library: adapters, models, registry (44 files)
+│   ├── agents/       # Agent descriptors, models, formats (24 agents)
+│   ├── core/         # Orchestration: adapter dispatch, manager, registry, transfer
 │   ├── cli/          # CLI binary: aghub-cli
 │   ├── api/          # REST API: Rocket HTTP server
-│   ├── skill/        # Skill packaging: .skill/.zip format
-│   ├── skills-sh/    # skills.sh registry client
-│   └── desktop/      # Tauri + React + HeroUI v3
+│   ├── skill/        # Skill packaging: .skill/.zip format + lock files
+│   ├── skills-sh/    # skills.sh registry HTTP client
+│   ├── git/          # Git clone with credential injection
+│   └── desktop/      # Tauri v2 + React 19 + HeroUI v3
 ├── .agents/skills/   # Local skill definitions
 ├── justfile          # Build commands
 └── AGENTS.md         # This file
@@ -26,16 +28,17 @@ Aghub manages AGENTS.md, MCP configs, and skills for 25+ AI assistants through a
 
 ## WHERE TO LOOK
 
-| Task              | Location                          | Notes                         |
-| ----------------- | --------------------------------- | ----------------------------- |
-| Add agent support | `crates/core/src/agents/`         | Create `<name>.rs` descriptor |
-| Agent registry    | `crates/core/src/registry/mod.rs` | `ALL_AGENTS` array            |
-| Config management | `crates/core/src/manager/mod.rs`  | `ConfigManager` struct        |
-| Data models       | `crates/core/src/models.rs`       | `AgentConfig`, `AgentType`    |
-| Adapter trait     | `crates/core/src/adapters/mod.rs` | `AgentAdapter` trait          |
-| CLI commands      | `crates/cli/src/commands/`        | Clap-based subcommands        |
-| API routes        | `crates/api/src/routes/`          | Rocket route handlers         |
-| Desktop UI        | `crates/desktop/src/`             | React + HeroUI v3             |
+| Task               | Location                          | Notes                         |
+| ------------------ | --------------------------------- | ----------------------------- |
+| Add agent support  | `crates/agents/src/agents/`       | Create `<name>.rs` descriptor |
+| Agent models/types | `crates/agents/src/models.rs`     | `AgentConfig`, `AgentType`    |
+| Agent registry     | `crates/core/src/registry/mod.rs` | `ALL_AGENTS` array            |
+| Config management  | `crates/core/src/manager/mod.rs`  | `ConfigManager` struct        |
+| Adapter trait      | `crates/core/src/adapters/mod.rs` | `AgentAdapter` trait          |
+| Batch install/copy | `crates/core/src/transfer.rs`     | `OperationBatchResult`        |
+| CLI commands       | `crates/cli/src/commands/`        | Clap-based subcommands        |
+| API routes         | `crates/api/src/routes/`          | Rocket route handlers         |
+| Desktop UI         | `crates/desktop/src/`             | React + HeroUI v3             |
 
 ## CONVENTIONS
 
@@ -55,7 +58,7 @@ Aghub manages AGENTS.md, MCP configs, and skills for 25+ AI assistants through a
 
 ### Code Organization
 
-- One agent = one file in `crates/core/src/agents/<name>.rs`
+- One agent = one file in `crates/agents/src/agents/<name>.rs`
 - Each agent descriptor defines: config paths, file format, capabilities
 - No hand-wired adapters — behavior driven by descriptor function pointers
 
@@ -97,10 +100,11 @@ just install            # Copy aghub-cli to ~/.cargo/bin
 
 Must touch ALL of these:
 
-1. `crates/core/src/agents/<name>.rs` — create/delete descriptor
-2. `crates/core/src/agents/mod.rs` — add/remove `pub mod`
-3. `crates/core/src/registry/mod.rs` — add/remove from `ALL_AGENTS`
-4. `crates/core/src/models.rs` — add/remove enum variant + `ALL` array + `as_str()` + `from_str()`
+1. `crates/agents/src/agents/<name>.rs` — create/delete descriptor constant
+2. `crates/agents/src/agents/mod.rs` — add/remove `pub mod`
+3. `crates/agents/src/agents/factory.rs` — add/remove dispatch arm
+4. `crates/agents/src/models.rs` — add/remove enum variant + `ALL` array + `as_str()` + `from_str()`
+5. `crates/core/src/registry/mod.rs` — add/remove from `ALL_AGENTS`
 
 ### Agent-Specific Gotchas
 
@@ -115,4 +119,5 @@ Must touch ALL of these:
 - `.git` alone is NOT sufficient for project root — needs agent marker (`.claude/`, `.opencode/`, etc.)
 - `skills-lock.json` tracks skill dependencies with content hashes
 - Desktop HeroUI docs: Search `./.heroui-docs/react/` before implementing UI
-  </content>
+- `.impeccable.md` — project code style guide (read before writing Rust)
+- `cliff.toml` — changelog generation config (git-cliff, used in release workflow)</content>

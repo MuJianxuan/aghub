@@ -18,7 +18,8 @@ src/
 │   ├── update.rs     # Update existing resources
 │   ├── delete.rs     # Delete resources
 │   ├── enable.rs     # Enable disabled resources
-│   └── disable.rs    # Disable resources
+│   ├── disable.rs    # Disable resources
+│   └── describe.rs   # JSON output for a single resource
 └── ui/               # (reserved for UI utilities)
 ```
 

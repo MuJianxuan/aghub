@@ -27,15 +27,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useAgentAvailability } from "../hooks/use-agent-availability";
-import { useServer } from "../hooks/use-server";
-import { createApi } from "../lib/api";
 import type {
 	GitInstallResultEntry,
 	GitScanSkillEntry,
-} from "../lib/api-types";
+} from "../generated/dto";
+import { useAgentAvailability } from "../hooks/use-agent-availability";
+import { useApi } from "../hooks/use-api";
 import { cn } from "../lib/utils";
 import { CreateCredentialDialog } from "../pages/settings/components/create-credential-dialog";
+import { credentialsListQueryOptions } from "../requests/credentials";
+import { gitInstallSkillsMutationOptions } from "../requests/skills";
 import { AgentSelector } from "./agent-selector";
 
 interface ImportGithubSkillPanelProps {
@@ -69,8 +70,7 @@ export function ImportGithubSkillPanel({
 	projectPath,
 }: ImportGithubSkillPanelProps) {
 	const { t } = useTranslation();
-	const { baseUrl } = useServer();
-	const api = createApi(baseUrl);
+	const api = useApi();
 	const queryClient = useQueryClient();
 	const { availableAgents } = useAgentAvailability();
 
@@ -103,8 +103,7 @@ export function ImportGithubSkillPanel({
 	);
 
 	const { data: credentials = [] } = useQuery({
-		queryKey: ["credentials"],
-		queryFn: () => api.credentials.list(),
+		...credentialsListQueryOptions({ api }),
 	});
 
 	const {
@@ -129,7 +128,7 @@ export function ImportGithubSkillPanel({
 		mutationFn: (values: InputFormValues) =>
 			api.skills.gitScan({
 				url: values.url.trim(),
-				credential_id: values.credentialId || undefined,
+				credential_id: values.credentialId || null,
 			}),
 		onSuccess: (data) => {
 			setScanError(null);
@@ -150,32 +149,19 @@ export function ImportGithubSkillPanel({
 		},
 	});
 
-	const installMutation = useMutation({
-		mutationFn: ({ agents }: { agents: string[] }) =>
-			api.skills.gitInstall({
-				session_id: sessionId,
-				skill_paths: Array.from(selectedPaths),
-				agents,
-				scope: projectPath ? "project" : "global",
-				project_root: projectPath,
-			}),
-		onSuccess: (data) => {
-			setInstallError(null);
-			setInstallResults(data.results);
-			queryClient.invalidateQueries({ queryKey: ["skills"] });
-			queryClient.invalidateQueries({ queryKey: ["project-skills"] });
-			queryClient.invalidateQueries({ queryKey: ["skill-locks"] });
-			setCard2Open(false);
-			setCard3Open(true);
-			setPhase("done");
-		},
-		onError: (error) => {
-			setInstallError(
-				error instanceof Error ? error.message : String(error),
-			);
-			setPhase("selecting");
-		},
-	});
+	const installMutation = useMutation(
+		gitInstallSkillsMutationOptions({
+			api,
+			queryClient,
+			onSuccess: async (data) => {
+				setInstallError(null);
+				setInstallResults(data.results);
+				setCard2Open(false);
+				setCard3Open(true);
+				setPhase("done");
+			},
+		}),
+	);
 
 	const handleScan = (values: InputFormValues) => {
 		setScanError(null);
@@ -187,7 +173,23 @@ export function ImportGithubSkillPanel({
 		setCard2Open(false);
 		setCard3Open(true);
 		setPhase("installing");
-		installMutation.mutate({ agents });
+		installMutation.mutate(
+			{
+				session_id: sessionId,
+				skill_paths: Array.from(selectedPaths),
+				agents,
+				scope: projectPath ? "project" : "global",
+				project_root: projectPath ?? null,
+			},
+			{
+				onError: (error) => {
+					setInstallError(
+						error instanceof Error ? error.message : String(error),
+					);
+					setPhase("selecting");
+				},
+			},
+		);
 	};
 
 	const handleImportAnother = () => {
@@ -993,9 +995,6 @@ export function ImportGithubSkillPanel({
 				isOpen={isAddTokenOpen}
 				onClose={() => setIsAddTokenOpen(false)}
 				onSuccess={(newId) => {
-					queryClient.invalidateQueries({
-						queryKey: ["credentials"],
-					});
 					if (newId) setValue("credentialId", newId);
 				}}
 			/>

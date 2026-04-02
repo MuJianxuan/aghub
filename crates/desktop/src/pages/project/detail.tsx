@@ -14,20 +14,19 @@ import { ImportSkillPanel } from "../../components/import-skill-panel";
 import { McpDetail } from "../../components/mcp-detail";
 import { SkillDetail } from "../../components/skill-detail";
 import { UnifiedResourceList } from "../../components/unified-resource-list";
+import type { McpResponse, SkillResponse } from "../../generated/dto";
+import { useApi } from "../../hooks/use-api";
 import { useProjects } from "../../hooks/use-projects";
-import { useServer } from "../../hooks/use-server";
-import { createApi } from "../../lib/api";
-import type { McpResponse, SkillResponse } from "../../lib/api-types";
-import { ConfigSource } from "../../lib/api-types";
 import { getMcpMergeKey } from "../../lib/utils";
+import { mcpListQueryOptions } from "../../requests/mcps";
+import { skillListQueryOptions } from "../../requests/skills";
 
 export default function ProjectDetailPage() {
 	const { t } = useTranslation();
 	const { id } = useParams();
 	const { data: projects = [] } = useProjects();
 	const project = projects.find((p) => p.id === id);
-	const { baseUrl } = useServer();
-	const api = createApi(baseUrl);
+	const api = useApi();
 
 	const [panelMode, setPanelMode] = useState<
 		| "create-mcp"
@@ -59,9 +58,12 @@ export default function ProjectDetailPage() {
 		isFetching: isFetchingMcps,
 		isLoading: isLoadingMcps,
 	} = useQuery({
-		queryKey: ["project-mcps", project?.path],
-		queryFn: () => api.mcps.listAll("all", project?.path),
-		enabled: !!project?.path,
+		...mcpListQueryOptions({
+			api,
+			scope: "all",
+			projectRoot: project?.path,
+			enabled: !!project?.path,
+		}),
 	});
 
 	const {
@@ -70,20 +72,23 @@ export default function ProjectDetailPage() {
 		isFetching: isFetchingSkills,
 		isLoading: isLoadingSkills,
 	} = useQuery({
-		queryKey: ["project-skills", project?.path],
-		queryFn: () => api.skills.listAll("all", project?.path),
-		enabled: !!project?.path,
+		...skillListQueryOptions({
+			api,
+			scope: "all",
+			projectRoot: project?.path,
+			enabled: !!project?.path,
+		}),
 	});
 
 	const isLoading = isLoadingMcps || isLoadingSkills;
 
 	// Filter to project-scoped only
 	const projectMcps = useMemo(
-		() => mcps.filter((m) => m.source === ConfigSource.Project),
+		() => mcps.filter((m) => m.source === "project"),
 		[mcps],
 	);
 	const projectSkills = useMemo(
-		() => skills.filter((s) => s.source === ConfigSource.Project),
+		() => skills.filter((s) => s.source === "project"),
 		[skills],
 	);
 

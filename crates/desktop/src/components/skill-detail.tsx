@@ -19,17 +19,18 @@ import { useTranslation } from "react-i18next";
 import { siGithub } from "simple-icons";
 import { useLocation } from "wouter";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
+import { useApi } from "../hooks/use-api";
 import { useFavorites } from "../hooks/use-favorites";
 import { useCurrentCodeEditor } from "../hooks/use-integrations";
-import { useServer } from "../hooks/use-server";
-import { createApi } from "../lib/api";
-import type {
-	GlobalSkillLockResponse,
-	ProjectSkillLockResponse,
-	SkillTreeNodeResponse,
-} from "../lib/api-types";
-import { ConfigSource } from "../lib/api-types";
 import { cn } from "../lib/utils";
+import { openWithEditorMutationOptions } from "../requests/integrations";
+import {
+	globalSkillLockQueryOptions,
+	openSkillFolderMutationOptions,
+	projectSkillLockQueryOptions,
+	skillContentQueryOptions,
+	skillTreeQueryOptions,
+} from "../requests/skills";
 import { ManageSkillAgentsDialog } from "./manage-skill-agents-dialog";
 import {
 	DeleteSkillDialog,
@@ -56,8 +57,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const { t } = useTranslation();
 	const [, setLocation] = useLocation();
 	const { allAgents } = useAgentAvailability();
-	const { baseUrl } = useServer();
-	const api = useMemo(() => createApi(baseUrl), [baseUrl]);
+	const api = useApi();
 
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [locationToDelete, setLocationToDelete] =
@@ -71,8 +71,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const { selectedEditor } = useCurrentCodeEditor();
 
 	const skill = group.items[0];
-	const primaryScope =
-		skill.source === ConfigSource.Project ? "project" : "global";
+	const primaryScope = skill.source ?? "global";
 	const trimmedSkillName = skill.name.trim();
 	const canSearchSkillsSh = trimmedSkillName.length >= 2;
 
@@ -86,49 +85,39 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 		);
 	};
 
-	const openFolderMutation = useMutation({
-		mutationFn: (skillPath: string) => api.skills.openFolder(skillPath),
+	const openFolderMutation = useMutation(
+		openSkillFolderMutationOptions({ api }),
+	);
+
+	const openInEditorMutation = useMutation(
+		openWithEditorMutationOptions({ api }),
+	);
+
+	const { data: globalLock } = useQuery({
+		...globalSkillLockQueryOptions({ api }),
 	});
 
-	const openInEditorMutation = useMutation({
-		mutationFn: async (path: string) => {
-			if (!selectedEditor) {
-				throw new Error("No configured code editor");
-			}
-
-			return api.integrations.openWithEditor(path, selectedEditor);
-		},
+	const { data: projectLock } = useQuery({
+		...projectSkillLockQueryOptions({ api, projectPath }),
 	});
 
-	const { data: globalLock } = useQuery<GlobalSkillLockResponse>({
-		queryKey: ["skill-locks", "global"],
-		queryFn: () => api.skills.getGlobalLock(),
-		staleTime: 30_000,
+	const { data: skillContent } = useQuery({
+		...skillContentQueryOptions({
+			api,
+			path: skill.source_path ?? undefined,
+		}),
 	});
 
-	const { data: projectLock } = useQuery<ProjectSkillLockResponse>({
-		queryKey: ["skill-locks", "project", projectPath],
-		queryFn: () => api.skills.getProjectLock(projectPath),
-		staleTime: 30_000,
-	});
-
-	const { data: skillContent } = useQuery<string>({
-		queryKey: ["skill-content", skill.source_path],
-		queryFn: () => api.skills.getContent(skill.source_path!),
-		enabled: !!skill.source_path,
-		staleTime: 60_000,
-	});
-
-	const { data: skillTree } = useQuery<SkillTreeNodeResponse>({
-		queryKey: ["skill-tree", skill.source_path],
-		queryFn: () => api.skills.getTree(skill.source_path!),
-		enabled: !!skill.source_path,
-		staleTime: 60_000,
+	const { data: skillTree } = useQuery({
+		...skillTreeQueryOptions({
+			api,
+			path: skill.source_path ?? undefined,
+		}),
 	});
 
 	const currentSkillSource = useMemo(() => {
 		const skillItem = group.items[0];
-		if (skillItem.source === ConfigSource.Global) {
+		if (skillItem.source === "global") {
 			const entry = globalLock?.skills.find((s) => s.name === skill.name);
 			if (entry) {
 				return {
@@ -138,7 +127,7 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 					sourceUrl: entry.sourceUrl,
 				};
 			}
-		} else if (skillItem.source === ConfigSource.Project) {
+		} else if (skillItem.source === "project") {
 			const entry = projectLock?.skills.find(
 				(s) => s.name === skill.name,
 			);
@@ -319,7 +308,10 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 													}
 													onEditFolder={() =>
 														openInEditorMutation.mutate(
-															locationGroup.sourcePath,
+															{
+																path: locationGroup.sourcePath,
+																editor: selectedEditor!,
+															},
 														)
 													}
 													onOpenFolder={() =>
@@ -501,7 +493,10 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 														size="sm"
 														onPress={() =>
 															openInEditorMutation.mutate(
-																skillTree.path,
+																{
+																	path: skillTree.path,
+																	editor: selectedEditor!,
+																},
 															)
 														}
 													>

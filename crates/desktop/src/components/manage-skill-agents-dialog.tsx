@@ -1,13 +1,12 @@
 import { Button, Modal, toast } from "@heroui/react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
-import { useServer } from "../hooks/use-server";
-import { createApi } from "../lib/api";
-import { ConfigSource } from "../lib/api-types";
+import { useApi } from "../hooks/use-api";
 import type { Scope } from "../lib/skills-path-group";
 import { cn } from "../lib/utils";
+import { reconcileSkillsMutationOptions } from "../requests/skills";
 import type { AgentDiffLabel, AgentState } from "./agent-list";
 import type { SkillGroup } from "./skill-detail-helpers";
 import { SkillsAgentList } from "./skills-agent-list";
@@ -26,10 +25,15 @@ export function ManageSkillAgentsDialog({
 	projectPath,
 }: ManageSkillAgentsDialogProps) {
 	const { t } = useTranslation();
-	const { baseUrl } = useServer();
-	const api = useMemo(() => createApi(baseUrl), [baseUrl]);
+	const api = useApi();
 	const queryClient = useQueryClient();
 	const { availableAgents } = useAgentAvailability();
+	const reconcileMutation = useMutation(
+		reconcileSkillsMutationOptions({
+			api,
+			queryClient,
+		}),
+	);
 
 	const hasValidGroup = group?.items && Array.isArray(group.items);
 
@@ -53,7 +57,7 @@ export function ManageSkillAgentsDialog({
 	const scope: Scope = useMemo(() => {
 		if (!hasValidGroup || group.items.length === 0) return "global";
 		const primary = group.items[0];
-		return primary?.source === ConfigSource.Project ? "project" : "global";
+		return primary?.source ?? "global";
 	}, [hasValidGroup, group]);
 
 	const prevIsOpenRef = useRef(false);
@@ -126,33 +130,28 @@ export function ManageSkillAgentsDialog({
 		setAgentStates(pendingStates);
 
 		try {
-			const result = await api.skills.reconcile({
+			const result = await reconcileMutation.mutateAsync({
 				source: {
 					agent: sourceAgentItem.agent ?? "claude",
 					scope:
-						sourceAgentItem.source === ConfigSource.Project
+						sourceAgentItem.source === "project"
 							? "project"
 							: "global",
-					project_root: projectPath,
+					project_root: projectPath ?? null,
 					name: primary.name,
 				},
-				added: toInstall.length > 0 ? toInstall : undefined,
+				added: toInstall.length > 0 ? toInstall : null,
+				removed: null,
 			});
 
 			const newAgentStates: Record<string, AgentState> = {};
 			for (const item of result.results) {
 				newAgentStates[item.agent] = {
 					status: item.success ? "success" : "error",
-					error: item.error,
+					error: item.error ?? undefined,
 				};
 			}
 			setAgentStates(newAgentStates);
-
-			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: ["skills"] }),
-				queryClient.invalidateQueries({ queryKey: ["project-skills"] }),
-				queryClient.invalidateQueries({ queryKey: ["skill-locks"] }),
-			]);
 
 			if (result.failed_count === 0) {
 				toast.success(

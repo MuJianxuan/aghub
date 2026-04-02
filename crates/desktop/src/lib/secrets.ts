@@ -1,2 +1,2 @@
-export type { CredentialResponse as GitHubCredential } from "./api";
+export type { CredentialResponse as GitHubCredential } from "../generated/dto";
 export { createApi } from "./api";

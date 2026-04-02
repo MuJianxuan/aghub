@@ -1,7 +1,12 @@
 import ky from "ky";
 import type {
+	AgentAvailabilityDto,
+	AgentInfo,
 	CodeEditorType,
+	CreateCredentialRequest,
+	CreateMcpRequest,
 	CreateSkillRequest,
+	CredentialResponse,
 	DeleteSkillByPathRequest,
 	DeleteSkillByPathResponse,
 	GitInstallRequest,
@@ -12,7 +17,6 @@ import type {
 	ImportSkillRequest,
 	InstallSkillRequest,
 	InstallSkillResponse,
-	InstallTarget,
 	MarketSkill,
 	McpResponse,
 	OperationBatchResponse,
@@ -20,39 +24,10 @@ import type {
 	ReconcileRequest,
 	SkillResponse,
 	SkillTreeNodeResponse,
-	ToolInfo,
-	TransportDto,
-} from "./api-types";
-
-export interface UpdateMcpRequest {
-	name?: string;
-	transport?: TransportDto;
-	enabled?: boolean;
-	timeout?: number;
-}
-
-export interface AgentInfo {
-	id: string;
-	display_name: string;
-	capabilities: {
-		mcp_stdio: boolean;
-		mcp_remote: boolean;
-		mcp_enable_disable: boolean;
-		skills: boolean;
-		skills_mutable: boolean;
-	};
-	skills_paths: {
-		project: string[];
-		global: string[];
-	};
-}
-
-export interface AgentAvailability {
-	id: string;
-	has_global_directory: boolean;
-	has_cli: boolean;
-	is_available: boolean;
-}
+	ToolInfoDto,
+	TransferRequest,
+	UpdateMcpRequest,
+} from "../generated/dto";
 
 export function createApi(baseUrl: string) {
 	const client = ky.create({ prefixUrl: baseUrl });
@@ -62,7 +37,7 @@ export function createApi(baseUrl: string) {
 			list(): Promise<AgentInfo[]> {
 				return client.get("agents").json();
 			},
-			availability(): Promise<AgentAvailability[]> {
+			availability(): Promise<AgentAvailabilityDto[]> {
 				return client.get("agents/availability").json();
 			},
 		},
@@ -178,10 +153,7 @@ export function createApi(baseUrl: string) {
 					})
 					.json();
 			},
-			transfer(body: {
-				source: InstallTarget & { name: string };
-				destinations: InstallTarget[];
-			}): Promise<OperationBatchResponse> {
+			transfer(body: TransferRequest): Promise<OperationBatchResponse> {
 				return client.post("skills/transfer", { json: body }).json();
 			},
 			reconcile(body: ReconcileRequest): Promise<OperationBatchResponse> {
@@ -231,11 +203,7 @@ export function createApi(baseUrl: string) {
 			create(
 				agent: string,
 				scope: "global" | "project",
-				body: {
-					name: string;
-					transport: TransportDto;
-					timeout?: number;
-				},
+				body: CreateMcpRequest,
 				projectRoot?: string,
 			): Promise<McpResponse> {
 				return client
@@ -286,10 +254,7 @@ export function createApi(baseUrl: string) {
 					})
 					.then(() => undefined);
 			},
-			transfer(body: {
-				source: InstallTarget & { name: string };
-				destinations: InstallTarget[];
-			}): Promise<OperationBatchResponse> {
+			transfer(body: TransferRequest): Promise<OperationBatchResponse> {
 				return client.post("mcps/transfer", { json: body }).json();
 			},
 			reconcile(body: ReconcileRequest): Promise<OperationBatchResponse> {
@@ -306,7 +271,7 @@ export function createApi(baseUrl: string) {
 			},
 		},
 		integrations: {
-			listCodeEditors(): Promise<ToolInfo[]> {
+			listCodeEditors(): Promise<ToolInfoDto[]> {
 				return client.get("integrations/code-editors").json();
 			},
 			openWithEditor(
@@ -324,10 +289,7 @@ export function createApi(baseUrl: string) {
 			list(): Promise<CredentialResponse[]> {
 				return client.get("credentials").json();
 			},
-			create(body: {
-				name: string;
-				token: string;
-			}): Promise<CredentialResponse> {
+			create(body: CreateCredentialRequest): Promise<CredentialResponse> {
 				return client.post("credentials", { json: body }).json();
 			},
 			delete(id: string): Promise<void> {
@@ -335,9 +297,4 @@ export function createApi(baseUrl: string) {
 			},
 		},
 	};
-}
-
-export interface CredentialResponse {
-	id: string;
-	name: string;
 }

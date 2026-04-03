@@ -1,5 +1,7 @@
 use crate::errors::{ConfigError, Result};
-use crate::models::{AgentConfig, McpServer, McpTransport, ResourceScope};
+use crate::models::{
+	AgentConfig, McpServer, McpTransport, ResourceScope, SubAgent,
+};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -16,6 +18,16 @@ pub type LoadMcpsFn =
 /// Save function type for agent MCP configuration
 pub type SaveMcpsFn =
 	fn(Option<&Path>, ResourceScope, &[McpServer]) -> Result<()>;
+
+/// Load function type for agent sub-agent configuration.
+/// The implementation fully owns all I/O; no path is exposed.
+pub type LoadSubAgentsFn =
+	fn(Option<&Path>, ResourceScope) -> Result<Vec<SubAgent>>;
+
+/// Save function type for agent sub-agent configuration.
+/// The implementation fully owns all I/O; no path is exposed.
+pub type SaveSubAgentsFn =
+	fn(Option<&Path>, ResourceScope, &[SubAgent]) -> Result<()>;
 
 pub type OptionalPathFn = fn() -> Option<PathBuf>;
 pub type OptionalProjectPathFn = fn(&Path) -> Option<PathBuf>;
@@ -41,9 +53,15 @@ pub struct McpCapabilities {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub struct SubAgentCapabilities {
+	pub scopes: ScopeSupport,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct Capabilities {
 	pub skills: SkillCapabilities,
 	pub mcp: McpCapabilities,
+	pub sub_agents: SubAgentCapabilities,
 }
 
 #[derive(Clone, Copy)]
@@ -79,6 +97,12 @@ pub struct AgentDescriptor {
 	pub capabilities: Capabilities,
 	pub global_skill_paths: Option<GlobalSkillPaths>,
 	pub project_skill_paths: Option<ProjectSkillPaths>,
+	/// Load sub-agents for the requested scope.
+	/// Implementation is fully internal — no path information is exposed.
+	pub load_sub_agents: LoadSubAgentsFn,
+	/// Persist sub-agents for the requested scope.
+	/// Implementation is fully internal — no path information is exposed.
+	pub save_sub_agents: SaveSubAgentsFn,
 	pub cli_name: &'static str,
 	pub validate_args: &'static [&'static str],
 	/// Directory/file markers that indicate this agent's project root
@@ -109,6 +133,21 @@ impl AgentDescriptor {
 			ResourceScope::Both => {
 				self.capabilities.mcp.scopes.global
 					|| self.capabilities.mcp.scopes.project
+			}
+		}
+	}
+
+	pub fn supports_sub_agent_scope(&self, scope: ResourceScope) -> bool {
+		match scope {
+			ResourceScope::GlobalOnly => {
+				self.capabilities.sub_agents.scopes.global
+			}
+			ResourceScope::ProjectOnly => {
+				self.capabilities.sub_agents.scopes.project
+			}
+			ResourceScope::Both => {
+				self.capabilities.sub_agents.scopes.global
+					|| self.capabilities.sub_agents.scopes.project
 			}
 		}
 	}
@@ -327,6 +366,25 @@ pub fn supports_mcp_transport(
 
 pub fn home_dir() -> Option<PathBuf> {
 	dirs::home_dir()
+}
+
+// ── Sub-agent no-ops (used by agents that do not support sub-agents) ─────────
+
+/// No-op sub-agent loader for agents that do not support sub-agents.
+pub fn load_sub_agents_noop(
+	_: Option<&Path>,
+	_: ResourceScope,
+) -> Result<Vec<SubAgent>> {
+	Ok(Vec::new())
+}
+
+/// No-op sub-agent saver for agents that do not support sub-agents.
+pub fn save_sub_agents_noop(
+	_: Option<&Path>,
+	_: ResourceScope,
+	_: &[SubAgent],
+) -> Result<()> {
+	Ok(())
 }
 
 /// MCP config strategy functions for common config formats

@@ -1,4 +1,5 @@
 use crate::descriptor::*;
+use crate::sub_agents::{load_scoped_sub_agents, save_scoped_sub_agents};
 use std::path::{Path, PathBuf};
 
 fn mcp_global_path() -> Option<PathBuf> {
@@ -77,6 +78,40 @@ fn project_skill_write_path(root: &Path) -> Option<PathBuf> {
 	Some(root.join(".claude/skills"))
 }
 
+fn sub_agent_global_dir() -> Option<PathBuf> {
+	home_dir().map(|home| home.join(".claude/agents"))
+}
+
+fn sub_agent_project_dir(root: &Path) -> Option<PathBuf> {
+	Some(root.join(".claude/agents"))
+}
+
+fn load_sub_agents(
+	project_root: Option<&Path>,
+	scope: crate::ResourceScope,
+) -> crate::Result<Vec<crate::SubAgent>> {
+	load_scoped_sub_agents(
+		project_root,
+		scope,
+		Some(sub_agent_global_dir),
+		Some(sub_agent_project_dir),
+	)
+}
+
+fn save_sub_agents(
+	project_root: Option<&Path>,
+	scope: crate::ResourceScope,
+	agents: &[crate::SubAgent],
+) -> crate::Result<()> {
+	save_scoped_sub_agents(
+		project_root,
+		scope,
+		agents,
+		Some(sub_agent_global_dir),
+		Some(sub_agent_project_dir),
+	)
+}
+
 pub const DESCRIPTOR: AgentDescriptor = AgentDescriptor {
 	id: "claude",
 	display_name: "Claude Code",
@@ -104,6 +139,12 @@ pub const DESCRIPTOR: AgentDescriptor = AgentDescriptor {
 			remote: true,
 			enable_disable: false,
 		},
+		sub_agents: SubAgentCapabilities {
+			scopes: ScopeSupport {
+				global: true,
+				project: true,
+			},
+		},
 	},
 	global_skill_paths: Some(GlobalSkillPaths {
 		read: global_skills_paths,
@@ -113,6 +154,8 @@ pub const DESCRIPTOR: AgentDescriptor = AgentDescriptor {
 		read: project_skills_paths,
 		write: project_skill_write_path,
 	}),
+	load_sub_agents,
+	save_sub_agents,
 	cli_name: "claude",
 	validate_args: &["--version"],
 	project_markers: &[".claude", ".mcp.json"],

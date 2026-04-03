@@ -258,7 +258,6 @@ pub fn list_all_agents_mcps(scope: ScopeParams) -> ApiResult<Vec<McpResponse>> {
 mod tests {
 	use super::*;
 	use aghub_core::models::AgentType;
-	use rocket::serde::json::Json;
 
 	use crate::{
 		dto::mcp::{CreateMcpRequest, TransportDto},

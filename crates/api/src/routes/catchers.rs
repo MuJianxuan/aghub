@@ -34,7 +34,11 @@ pub fn default_catcher(
 	_: &Request,
 ) -> Json<ErrorBody> {
 	Json(ErrorBody {
-		error: format!("HTTP {}", status.code),
+		error: format!(
+			"{} {}",
+			status.code,
+			status.reason().unwrap_or("Unknown Error")
+		),
 		code: "UNKNOWN_ERROR",
 	})
 }

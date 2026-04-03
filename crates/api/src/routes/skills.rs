@@ -19,8 +19,9 @@ use crate::{
 		CreateSkillRequest, DeleteSkillByPathRequest,
 		DeleteSkillByPathResponse, GitInstallRequest, GitInstallResponse,
 		GitInstallResultEntry, GitScanRequest, GitScanResponse,
-		GitScanSkillEntry, GlobalSkillLockResponse, InstallSkillRequest,
-		InstallSkillResponse, LocalSkillLockEntryResponse, ProjectLockQuery,
+		GitScanSkillEntry, GitSyncRequest, GitSyncResponse,
+		GlobalSkillLockResponse, InstallSkillRequest, InstallSkillResponse,
+		LocalSkillLockEntryResponse, ProjectLockQuery,
 		ProjectSkillLockResponse, SkillContentQuery, SkillLockEntryResponse,
 		SkillResponse, SkillTreeNodeKind, SkillTreeNodeResponse,
 		SkillTreeQuery, UpdateSkillRequest, ValidationError,
@@ -1149,6 +1150,79 @@ pub async fn git_install_skills(
 	Ok(Json(GitInstallResponse { results }))
 }
 
+/// Replace existing skill installations in-place from a previously-scanned
+/// git session.  Unlike `git_install_skills`, this endpoint accepts a list
+/// of absolute (tilde-prefixed) `source_path` values and replaces the
+/// directory at each one rather than deriving target directories from
+/// agent identifiers.
+#[post("/skills/git/sync", data = "<body>")]
+pub async fn git_sync_skill(
+	body: Json<GitSyncRequest>,
+	sessions: &rocket::State<GitCloneSessions>,
+) -> ApiResult<GitSyncResponse> {
+	let req = body.into_inner();
+
+	// Retrieve temp dir from session (keep session alive until end)
+	let temp_path = {
+		let map = sessions.sessions.lock().unwrap();
+		let session = map.get(&req.session_id).ok_or_else(|| {
+			ApiError::new(
+				Status::NotFound,
+				"Session not found or expired",
+				"SESSION_NOT_FOUND",
+			)
+		})?;
+		session.temp_dir.path().to_path_buf()
+	};
+
+	// Full path of the SKILL.md (or skill dir) inside the clone
+	let cloned_skill_path = temp_path.join(&req.skill_path);
+	let cloned_skill_dir = get_skill_root(cloned_skill_path.clone());
+
+	if !cloned_skill_dir.exists() {
+		return Err(ApiError::new(
+			Status::NotFound,
+			format!(
+				"Skill path '{}' not found in cloned repository",
+				req.skill_path
+			),
+			"SKILL_PATH_NOT_FOUND",
+		));
+	}
+
+	// Parse skill name from the cloned copy
+	let skill_name: Option<String> = skill::parser::parse(&cloned_skill_path)
+		.ok()
+		.map(|p| p.name);
+
+	// Replace each installation path
+	for source_path in &req.source_paths {
+		let target_skill_md = expand_tilde_path(source_path);
+		let target_dir = get_skill_root(target_skill_md);
+
+		// Remove old content
+		if target_dir.exists() {
+			std::fs::remove_dir_all(&target_dir)
+				.map_err(|e| ApiError::from(ConfigError::Io(e)))?;
+		}
+
+		// Copy new content
+		copy_dir_recursive(&cloned_skill_dir, &target_dir)?;
+	}
+
+	// Remove session (drops TempDir, cleans up disk)
+	{
+		let mut map = sessions.sessions.lock().unwrap();
+		map.remove(&req.session_id);
+	}
+
+	Ok(Json(GitSyncResponse {
+		success: true,
+		name: skill_name,
+		error: None,
+	}))
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -1167,7 +1241,7 @@ mod tests {
 	fn git_install_groups_agents_by_primary_target_dir() {
 		let project_root = std::path::PathBuf::from("/tmp/demo");
 		let (groups, invalid) = build_git_install_groups(
-			&vec!["claude".into(), "opencode".into(), "codex".into()],
+			&["claude".into(), "opencode".into(), "codex".into()],
 			ResourceScope::ProjectOnly,
 			Some(&project_root),
 		);

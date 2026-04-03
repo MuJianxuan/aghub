@@ -5,6 +5,7 @@ use crate::{
 	models::{AgentType, McpServer, Skill},
 	registry,
 };
+use log::{info, warn};
 use skill::sanitize::sanitize_name;
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -35,6 +36,15 @@ pub struct ResourceLocator {
 pub enum OperationAction {
 	Copy,
 	Delete,
+}
+
+impl std::fmt::Display for OperationAction {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			Self::Copy => write!(f, "copy"),
+			Self::Delete => write!(f, "delete"),
+		}
+	}
 }
 
 #[derive(Debug, Clone)]
@@ -289,14 +299,44 @@ fn unique_targets(targets: Vec<InstallTarget>) -> Vec<InstallTarget> {
 	unique
 }
 
+fn log_operation_outcome(
+	resource: &str,
+	name: &str,
+	action: OperationAction,
+	target: &InstallTarget,
+	outcome: &Result<()>,
+) {
+	let target_agent = registry::get(target.agent).id;
+	let target_scope = match target.scope {
+		InstallScope::Global => "global",
+		InstallScope::Project => "project",
+	};
+	match outcome {
+		Ok(()) => info!(
+			"{} {} '{}' for agent '{}' in {} scope succeeded",
+			action, resource, name, target_agent, target_scope
+		),
+		Err(error) => warn!(
+			"{} {} '{}' for agent '{}' in {} scope failed: {}",
+			action, resource, name, target_agent, target_scope, error
+		),
+	}
+}
+
 pub fn transfer_mcp(
 	source: ResourceLocator,
 	destinations: Vec<InstallTarget>,
 ) -> Result<OperationBatchResult> {
 	let mcp = load_source_mcp(&source)?;
+	let destinations = unique_targets(destinations);
+	info!(
+		"transferring MCP '{}' to {} destination(s)",
+		mcp.name,
+		destinations.len()
+	);
 	let mut results = Vec::new();
 
-	for target in unique_targets(destinations) {
+	for target in destinations {
 		let outcome = (|| -> Result<()> {
 			validate_target(&target)?;
 			mcp_supported_for_target(&target, &mcp)?;
@@ -304,6 +344,13 @@ pub fn transfer_mcp(
 			ensure_loaded(&mut manager)?;
 			manager.add_mcp(mcp.clone())
 		})();
+		log_operation_outcome(
+			"MCP",
+			&mcp.name,
+			OperationAction::Copy,
+			&target,
+			&outcome,
+		);
 
 		results.push(OperationResult {
 			target,
@@ -322,6 +369,12 @@ pub fn reconcile_mcp(
 	removed: Vec<AgentType>,
 ) -> Result<OperationBatchResult> {
 	let mcp = load_source_mcp(&source)?;
+	info!(
+		"reconciling MCP '{}' with {} added and {} removed agent(s)",
+		mcp.name,
+		added.len(),
+		removed.len()
+	);
 	let mut results = Vec::new();
 
 	let target_scope = source.scope;
@@ -340,6 +393,13 @@ pub fn reconcile_mcp(
 			ensure_loaded(&mut manager)?;
 			manager.add_mcp(mcp.clone())
 		})();
+		log_operation_outcome(
+			"MCP",
+			&mcp.name,
+			OperationAction::Copy,
+			&target,
+			&outcome,
+		);
 
 		results.push(OperationResult {
 			target,
@@ -361,6 +421,13 @@ pub fn reconcile_mcp(
 			ensure_loaded(&mut manager)?;
 			manager.remove_mcp(&source.name)
 		})();
+		log_operation_outcome(
+			"MCP",
+			&source.name,
+			OperationAction::Delete,
+			&target,
+			&outcome,
+		);
 
 		results.push(OperationResult {
 			target,
@@ -380,9 +447,16 @@ pub fn transfer_skill(
 	let skill = load_source_skill(&source)?;
 	let source_root = resolve_skill_root(&skill)?;
 	let safe_name = sanitize_name(&skill.name);
+	let destinations = unique_targets(destinations);
+	info!(
+		"transferring skill '{}' from '{}' to {} destination(s)",
+		skill.name,
+		source_root.display(),
+		destinations.len()
+	);
 	let mut results = Vec::new();
 
-	for target in unique_targets(destinations) {
+	for target in destinations {
 		let outcome = (|| -> Result<()> {
 			validate_target(&target)?;
 			let target_dir = skill_target_dir(&target)?;
@@ -399,6 +473,13 @@ pub fn transfer_skill(
 
 			copy_dir_recursive(&source_root, &dest_root)
 		})();
+		log_operation_outcome(
+			"skill",
+			&skill.name,
+			OperationAction::Copy,
+			&target,
+			&outcome,
+		);
 
 		results.push(OperationResult {
 			target,
@@ -419,6 +500,12 @@ pub fn reconcile_skill(
 	let skill = load_source_skill(&source)?;
 	let source_root = resolve_skill_root(&skill)?;
 	let safe_name = sanitize_name(&skill.name);
+	info!(
+		"reconciling skill '{}' with {} added and {} removed agent(s)",
+		skill.name,
+		added.len(),
+		removed.len()
+	);
 	let mut results = Vec::new();
 
 	let target_scope = source.scope;

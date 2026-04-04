@@ -1,54 +1,16 @@
-import {
-	BookOpenIcon,
-	Cog6ToothIcon,
-	CpuChipIcon,
-	ServerIcon,
-	SquaresPlusIcon,
-} from "@heroicons/react/24/solid";
+import { Cog6ToothIcon } from "@heroicons/react/24/solid";
 import { Surface } from "@heroui/react";
-import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "wouter";
+import { useSidebarNavigation } from "../hooks/use-sidebar-navigation";
+import { isSidebarHrefActive } from "../lib/sidebar-navigation";
 import { cn } from "../lib/utils";
 import { ProjectList } from "./project-list";
-
-interface MenuItem {
-	type: "link";
-	labelKey: string;
-	href: string;
-	icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-}
-
-const menuItems: MenuItem[] = [
-	{
-		type: "link",
-		labelKey: "mcpServers",
-		href: "/mcp",
-		icon: ServerIcon,
-	},
-	{
-		type: "link",
-		labelKey: "skills",
-		href: "/skills",
-		icon: BookOpenIcon,
-	},
-	{
-		type: "link",
-		labelKey: "skillsSh",
-		href: "/skills-sh",
-		icon: SquaresPlusIcon,
-	},
-	{
-		type: "link",
-		labelKey: "subAgents",
-		href: "/sub-agents",
-		icon: CpuChipIcon,
-	},
-];
 
 export function AppSidebar() {
 	const { t } = useTranslation();
 	const [pathname] = useLocation();
+	const { visibleSidebarItems } = useSidebarNavigation();
 
 	return (
 		<Surface
@@ -58,21 +20,18 @@ export function AppSidebar() {
 		>
 			<aside className="flex h-full flex-col">
 				<nav className="flex flex-col gap-0.5">
-					{menuItems.map((item) => {
+					{visibleSidebarItems.map((item) => {
 						const Icon = item.icon;
-						const isActive = pathname === item.href;
+						const isActive = isSidebarHrefActive(
+							pathname,
+							item.href,
+						);
 
 						return (
 							<Link
-								key={item.href}
+								key={item.id}
 								href={item.href}
-								data-tour={
-									item.href === "/mcp"
-										? "nav-mcp"
-										: item.href === "/skills"
-											? "nav-skills"
-											: "nav-market"
-								}
+								data-tour={item.tour}
 								className={cn(
 									`
            flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm
@@ -105,7 +64,7 @@ export function AppSidebar() {
          flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm
          transition-colors
        `,
-							pathname === "/settings"
+							isSidebarHrefActive(pathname, "/settings")
 								? "bg-surface font-medium text-foreground"
 								: `
           text-muted

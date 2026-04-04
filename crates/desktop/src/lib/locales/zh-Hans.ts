@@ -90,6 +90,17 @@ export default {
 
 	// Application
 	application: "关于",
+	sidebar: "侧边栏",
+	sidebarDescription: "选择哪些主页面显示在侧边栏中，并调整它们的顺序。",
+	resetSidebar: "重置侧边栏",
+	sidebarMinimumVisibleHint:
+		"请至少保留一个主页面可见，这样 aghub 才始终有可用的默认落点。",
+	sidebarSaveError: "更新侧边栏设置失败",
+	sidebarResetError: "重置侧边栏设置失败",
+	moveUp: "上移",
+	moveDown: "下移",
+	moveSidebarItemUp: "将 {{name}} 上移",
+	moveSidebarItemDown: "将 {{name}} 下移",
 	appName: "应用名称",
 	updates: "更新",
 	checkForUpdates: "检查更新",

@@ -90,6 +90,17 @@ export default {
 
 	// Application
 	application: "關於",
+	sidebar: "側邊欄",
+	sidebarDescription: "選擇哪些主頁面要顯示在側邊欄中，並調整它們的順序。",
+	resetSidebar: "重設側邊欄",
+	sidebarMinimumVisibleHint:
+		"請至少保留一個主頁面可見，這樣 aghub 才始終有可用的預設落點。",
+	sidebarSaveError: "更新側邊欄設定失敗",
+	sidebarResetError: "重設側邊欄設定失敗",
+	moveUp: "上移",
+	moveDown: "下移",
+	moveSidebarItemUp: "將 {{name}} 上移",
+	moveSidebarItemDown: "將 {{name}} 下移",
 	appName: "應用程式名稱",
 	updates: "更新",
 	checkForUpdates: "檢查更新",

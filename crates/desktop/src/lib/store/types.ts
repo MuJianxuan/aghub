@@ -18,7 +18,21 @@ export interface IntegrationPreferences {
 	codeEditor?: CodeEditorType;
 }
 
-export const CURRENT_VERSION = 5;
+export const SIDEBAR_ITEM_IDS = [
+	"mcp",
+	"skills",
+	"skillsSh",
+	"subAgents",
+] as const;
+
+export type SidebarItemId = (typeof SIDEBAR_ITEM_IDS)[number];
+
+export interface SidebarItemPreference {
+	id: SidebarItemId;
+	visible: boolean;
+}
+
+export const CURRENT_VERSION = 6;
 
 export const DEFAULT_ONBOARDING_PROGRESS: OnboardingProgress = {
 	hasSeenWelcome: false,
@@ -27,3 +41,9 @@ export const DEFAULT_ONBOARDING_PROGRESS: OnboardingProgress = {
 		projectWorkflow: false,
 	},
 };
+
+export const DEFAULT_SIDEBAR_ITEMS: SidebarItemPreference[] =
+	SIDEBAR_ITEM_IDS.map((id) => ({
+		id,
+		visible: true,
+	}));

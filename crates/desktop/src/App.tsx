@@ -14,6 +14,7 @@ import { DeepLinkImportModal } from "./components/deep-link-import-modal";
 import { OnboardingController } from "./components/onboarding-controller";
 import { Redirect } from "./components/redirect";
 import { ErrorBoundary } from "./components/ui/error-boundary";
+import { useSidebarNavigation } from "./hooks/use-sidebar-navigation";
 import { MainLayout } from "./layouts/main-layout";
 import type { DeepLinkImportIntent } from "./lib/deep-link";
 import { parseDeepLink } from "./lib/deep-link";
@@ -54,6 +55,16 @@ function SkillsPageSkeleton() {
 			<div className="flex-1" />
 		</div>
 	);
+}
+
+function DefaultSidebarRoute() {
+	const { defaultHref, isLoading } = useSidebarNavigation();
+
+	if (isLoading) {
+		return null;
+	}
+
+	return <Redirect to={defaultHref} />;
 }
 
 function App() {
@@ -165,7 +176,7 @@ function App() {
 								<OnboardingController />
 								<Switch>
 									<Route path="/">
-										<Redirect to="/mcp" />
+										<DefaultSidebarRoute />
 									</Route>
 									<Route path="/skills">
 										<MainLayout>
@@ -248,7 +259,7 @@ function App() {
 										</MainLayout>
 									</Route>
 									<Route>
-										<Redirect to="/mcp" />
+										<DefaultSidebarRoute />
 									</Route>
 								</Switch>
 								<DeepLinkImportModal

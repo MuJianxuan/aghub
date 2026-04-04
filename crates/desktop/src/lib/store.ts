@@ -10,6 +10,7 @@ export {
 	updateOnboardingProgress,
 } from "./store/onboarding";
 export { addProject, getProjects, removeProject } from "./store/projects";
+export { getSidebarItems, saveSidebarItems } from "./store/sidebar";
 export {
 	getStarredMcps,
 	getStarredSkills,
@@ -20,5 +21,11 @@ export type {
 	IntegrationPreferences,
 	OnboardingProgress,
 	Project,
+	SidebarItemId,
+	SidebarItemPreference,
 } from "./store/types";
-export { CURRENT_VERSION, DEFAULT_ONBOARDING_PROGRESS } from "./store/types";
+export {
+	CURRENT_VERSION,
+	DEFAULT_ONBOARDING_PROGRESS,
+	DEFAULT_SIDEBAR_ITEMS,
+} from "./store/types";

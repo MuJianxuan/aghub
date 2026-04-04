@@ -342,6 +342,13 @@ export function OnboardingController() {
 				},
 			},
 		];
+		const availableSteps = steps.filter((step) => {
+			if (typeof step.element !== "string") {
+				return true;
+			}
+
+			return document.querySelector(step.element) !== null;
+		});
 
 		const driverObj = driver({
 			animate: true,
@@ -364,7 +371,7 @@ export function OnboardingController() {
 			onCloseClick: (_element: any, _step: any, opts: any) => {
 				opts.driver.destroy();
 			},
-			steps,
+			steps: availableSteps,
 		});
 
 		activeDriverRef.current = driverObj;

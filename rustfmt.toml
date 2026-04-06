@@ -5,3 +5,4 @@ hard_tabs = true
 tab_spaces = 4
 max_width = 80
 newline_style = "Unix"
+edition = "2021"

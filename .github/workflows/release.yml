@@ -50,6 +50,9 @@ jobs:
         needs: changelog
         name: Build Desktop (${{ matrix.target }})
         runs-on: ${{ matrix.os }}
+        env:
+            SCCACHE_GHA_ENABLED: "true"
+            RUSTC_WRAPPER: "sccache"
         permissions:
             contents: write
         strategy:
@@ -87,9 +90,6 @@ jobs:
 
             - name: Setup sccache
               uses: mozilla-actions/sccache-action@v0.0.9
-              env:
-                  SCCACHE_GHA_ENABLED: "true"
-                  RUSTC_WRAPPER: "sccache"
 
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
@@ -165,6 +165,9 @@ jobs:
     build-cli:
         name: Build CLI (${{ matrix.target }})
         runs-on: ${{ matrix.os }}
+        env:
+            SCCACHE_GHA_ENABLED: "true"
+            RUSTC_WRAPPER: "sccache"
         permissions:
             contents: write
         strategy:
@@ -196,9 +199,6 @@ jobs:
 
             - name: Setup sccache
               uses: mozilla-actions/sccache-action@v0.0.9
-              env:
-                  SCCACHE_GHA_ENABLED: "true"
-                  RUSTC_WRAPPER: "sccache"
 
             - name: Sync Version
               shell: bash

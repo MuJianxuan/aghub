@@ -50,6 +50,12 @@ jobs:
             - name: Rust Cache
               uses: Swatinem/rust-cache@v2
 
+            - name: Setup sccache
+              uses: mozilla-actions/sccache-action@v0.0.9
+              env:
+                  SCCACHE_GHA_ENABLED: "true"
+                  RUSTC_WRAPPER: "sccache"
+
             - name: Install frontend dependencies
               run: cd crates/desktop && bun install
 

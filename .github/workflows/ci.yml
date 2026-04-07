@@ -47,14 +47,14 @@ jobs:
               with:
                   tool: just
 
-            - name: Cargo Fetch
-              run: cargo fetch
+            - name: Setup sccache
+              uses: mozilla-actions/sccache-action@v0.0.9
 
             - name: Rust Cache
               uses: Swatinem/rust-cache@v2
 
-            - name: Setup sccache
-              uses: mozilla-actions/sccache-action@v0.0.9
+            - name: Cargo Fetch
+              run: cargo fetch
 
             - name: Install frontend dependencies
               run: cd crates/desktop && bun install

@@ -12,11 +12,11 @@ fn global_skills_paths() -> Vec<PathBuf> {
 	let Some(home) = home_dir() else {
 		return Vec::new();
 	};
-	vec![
-		home.join(".codex/skills"),
-		home.join(".agents/skills"),
-		PathBuf::from("/etc/codex/skills"),
-	]
+	let mut paths =
+		vec![home.join(".codex/skills"), home.join(".agents/skills")];
+	#[cfg(not(target_os = "windows"))]
+	paths.push(PathBuf::from("/etc/codex/skills"));
+	paths
 }
 
 fn project_skills_paths(root: &Path) -> Vec<PathBuf> {

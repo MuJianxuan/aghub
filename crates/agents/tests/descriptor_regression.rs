@@ -865,6 +865,19 @@ fn test_global_skill_paths() {
 							"global_skill_read_paths first path mismatch for {:?}",
 							agent_type
 						);
+					} else if agent_type == AgentType::Codex {
+						// /etc/codex/skills is a Unix-only system path
+						let mut expected_paths = vec![
+							home().join(".codex/skills"),
+							home().join(".agents/skills"),
+						];
+						#[cfg(not(target_os = "windows"))]
+						expected_paths.push(PathBuf::from("/etc/codex/skills"));
+						assert_eq!(
+							actual, expected_paths,
+							"global_skill_read_paths mismatch for {:?}",
+							agent_type
+						);
 					} else {
 						let expected_paths: Vec<PathBuf> =
 							path_strs.iter().map(|p| home().join(*p)).collect();

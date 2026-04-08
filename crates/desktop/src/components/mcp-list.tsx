@@ -5,7 +5,8 @@ import {
 } from "@heroicons/react/24/solid";
 import { Label, ListBox } from "@heroui/react";
 import Fuse from "fuse.js";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
+import { useMultiSelect } from "../hooks/use-multi-select";
 import { useTranslation } from "react-i18next";
 import type { McpResponse } from "../generated/dto";
 import { AgentIcons } from "./agent-icons";
@@ -100,64 +101,15 @@ export function McpList({
 		});
 	}, [filteredGroups, isMcpStarred]);
 
-	const modifiersRef = useRef({
-		shift: false,
-		meta: false,
+	const { createSelectionHandler } = useMultiSelect({
+		selectedKeys,
+		onSelectionChange,
+		isMultiSelectMode,
 	});
-	const lastClickedRef = useRef<string | null>(null);
 
-	useEffect(() => {
-		const handler = (e: PointerEvent) => {
-			modifiersRef.current = {
-				shift: e.shiftKey,
-				meta: e.metaKey || e.ctrlKey,
-			};
-		};
-		window.addEventListener("pointerdown", handler, true);
-		return () => window.removeEventListener("pointerdown", handler, true);
-	}, []);
-
-	const handleSelectionChange = (keys: "all" | Set<React.Key>) => {
-		if (keys === "all") return;
-		const newKeys = new Set(Array.from(keys).map(String));
-		const added = [...newKeys].find((k) => !selectedKeys.has(k));
-		const removed = [...selectedKeys].find((k) => !newKeys.has(k));
-		const clicked = added ?? removed;
-
-		if (!clicked) {
-			onSelectionChange(newKeys);
-			return;
-		}
-
-		let finalKeys: Set<string>;
-
-		if (modifiersRef.current.shift && lastClickedRef.current) {
-			const allKeys = sortedGroups.map((g) => g.mergeKey);
-			const start = allKeys.indexOf(lastClickedRef.current);
-			const end = allKeys.indexOf(clicked);
-			if (start !== -1 && end !== -1) {
-				const [from, to] = [Math.min(start, end), Math.max(start, end)];
-				finalKeys = new Set(allKeys.slice(from, to + 1));
-			} else {
-				finalKeys = new Set([...selectedKeys, clicked]);
-			}
-		} else if (!isMultiSelectMode && !modifiersRef.current.meta) {
-			finalKeys = new Set([clicked]);
-		} else {
-			finalKeys = new Set(selectedKeys);
-			if (finalKeys.has(clicked)) {
-				finalKeys.delete(clicked);
-			} else {
-				finalKeys.add(clicked);
-			}
-		}
-
-		if (!modifiersRef.current.shift) {
-			lastClickedRef.current = clicked;
-		}
-
-		onSelectionChange(finalKeys, clicked);
-	};
+	const handleSelectionChange = createSelectionHandler(
+		sortedGroups.map((g) => g.mergeKey),
+	);
 
 	const getTransportIcon = (
 		transport: McpGroup["transport"],

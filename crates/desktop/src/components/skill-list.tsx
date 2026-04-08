@@ -7,7 +7,8 @@ import {
 import { Chip, Label, ListBox, Spinner } from "@heroui/react";
 import { useQuery } from "@tanstack/react-query";
 import Fuse from "fuse.js";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { useMultiSelect } from "../hooks/use-multi-select";
 import { useTranslation } from "react-i18next";
 import type { SkillResponse } from "../generated/dto";
 import { AgentIcons } from "./agent-icons";
@@ -265,67 +266,11 @@ export function SkillList({
 		});
 	};
 
-	const modifiersRef = useRef({
-		shift: false,
-		meta: false,
+	const { createSelectionHandler } = useMultiSelect({
+		selectedKeys,
+		onSelectionChange,
+		isMultiSelectMode,
 	});
-	const lastClickedRef = useRef<string | null>(null);
-
-	useEffect(() => {
-		const handler = (e: PointerEvent) => {
-			modifiersRef.current = {
-				shift: e.shiftKey,
-				meta: e.metaKey || e.ctrlKey,
-			};
-		};
-		window.addEventListener("pointerdown", handler, true);
-		return () => window.removeEventListener("pointerdown", handler, true);
-	}, []);
-
-	const createSelectionHandler =
-		(orderedKeys: string[]) => (keys: "all" | Set<React.Key>) => {
-			if (keys === "all") return;
-			const newKeys = new Set(Array.from(keys).map(String));
-			const added = [...newKeys].find((k) => !selectedKeys.has(k));
-			const removed = [...selectedKeys].find((k) => !newKeys.has(k));
-			const clicked = added ?? removed;
-
-			if (!clicked) {
-				onSelectionChange(newKeys);
-				return;
-			}
-
-			let finalKeys: Set<string>;
-
-			if (modifiersRef.current.shift && lastClickedRef.current) {
-				const start = orderedKeys.indexOf(lastClickedRef.current);
-				const end = orderedKeys.indexOf(clicked);
-				if (start !== -1 && end !== -1) {
-					const [from, to] = [
-						Math.min(start, end),
-						Math.max(start, end),
-					];
-					finalKeys = new Set(orderedKeys.slice(from, to + 1));
-				} else {
-					finalKeys = new Set([...selectedKeys, clicked]);
-				}
-			} else if (!isMultiSelectMode && !modifiersRef.current.meta) {
-				finalKeys = new Set([clicked]);
-			} else {
-				finalKeys = new Set(selectedKeys);
-				if (finalKeys.has(clicked)) {
-					finalKeys.delete(clicked);
-				} else {
-					finalKeys.add(clicked);
-				}
-			}
-
-			if (!modifiersRef.current.shift) {
-				lastClickedRef.current = clicked;
-			}
-
-			onSelectionChange(finalKeys, clicked);
-		};
 
 	// Helper to render a skill item
 	const renderSkillItem = (skillGroup: SkillGroup) => (

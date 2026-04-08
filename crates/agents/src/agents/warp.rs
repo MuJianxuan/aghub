@@ -4,8 +4,8 @@ use crate::descriptor::*;
 
 define_mcp_paths! {
 	symmetric: ".warp/mcp.json",
-	strategy: mcp_strategy::PARSE_JSON_LIST,
-			  mcp_strategy::SERIALIZE_JSON_LIST,
+	strategy: mcp_strategy::parse_json_map_mcp_servers,
+			  mcp_strategy::serialize_json_map_mcp_servers,
 }
 
 define_skill_paths! {
@@ -15,8 +15,8 @@ define_skill_paths! {
 pub const DESCRIPTOR: AgentDescriptor = AgentDescriptor {
 	id: "warp",
 	display_name: "Warp",
-	mcp_parse_config: Some(mcp_strategy::PARSE_JSON_LIST),
-	mcp_serialize_config: Some(mcp_strategy::SERIALIZE_JSON_LIST),
+	mcp_parse_config: Some(mcp_strategy::parse_json_map_mcp_servers),
+	mcp_serialize_config: Some(mcp_strategy::serialize_json_map_mcp_servers),
 	load_mcps,
 	save_mcps,
 	mcp_global_path: Some(mcp_global_path),

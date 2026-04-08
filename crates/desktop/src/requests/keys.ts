@@ -6,6 +6,7 @@ export const queryKeys = {
 	},
 	skills: {
 		all: () => ["skills"] as const,
+		lists: () => ["skills", "list"] as const,
 		list: (
 			scope: "global" | "project" | "all" = "global",
 			projectRoot?: string,
@@ -21,6 +22,7 @@ export const queryKeys = {
 	},
 	mcps: {
 		all: () => ["mcps"] as const,
+		lists: () => ["mcps", "list"] as const,
 		list: (
 			scope: "global" | "project" | "all" = "global",
 			projectRoot?: string,

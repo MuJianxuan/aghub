@@ -12,32 +12,24 @@ import {
 	TextField,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useReducer, useState } from "react";
+import { useMemo, useReducer } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import type { TransportDto } from "../generated/dto";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useApi } from "../hooks/use-api";
 import { supportsMcp } from "../lib/agent-capabilities";
+import {
+	getImportedMcpTransportType,
+	type McpImportJson,
+	type McpImportServerConfig,
+} from "../lib/mcp-utils";
 import { createMcpMutationOptions } from "../requests/mcps";
 import { AgentSelector } from "./agent-selector";
 
 interface ImportMcpPanelProps {
 	onDone: () => void;
 	projectPath?: string;
-}
-
-interface McpServerConfig {
-	command?: string;
-	args?: string[];
-	env?: Record<string, string>;
-	url?: string;
-	headers?: Record<string, string>;
-	timeout?: number;
-}
-
-interface McpConfigJson {
-	mcpServers?: Record<string, McpServerConfig>;
 }
 
 interface ImportMcpFormValues {
@@ -48,7 +40,7 @@ interface ImportMcpUiState {
 	parseError: string;
 	parsedConfig: {
 		name: string;
-		config: McpServerConfig;
+		config: McpImportServerConfig;
 		transportType: "stdio" | "sse" | "streamable_http";
 	} | null;
 	showConfirmDialog: boolean;
@@ -132,7 +124,6 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 		[usableAgents],
 	);
 
-	const [error, setError] = useState<string | null>(null);
 	const [uiState, dispatch] = useReducer(
 		importUiReducer,
 		defaultAgentIds,
@@ -157,19 +148,13 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 			api,
 			queryClient,
 		}),
-		onError: (error) => {
-			const errorMessage =
-				error instanceof Error ? error.message : String(error);
-			setError(errorMessage);
-		},
 	});
 
 	const handleParseJson = ({ jsonText }: ImportMcpFormValues) => {
 		dispatch({ type: "reset_parse" });
-		setError(null);
 
 		try {
-			const parsed: McpConfigJson = JSON.parse(jsonText);
+			const parsed: McpImportJson = JSON.parse(jsonText);
 
 			if (!parsed.mcpServers || typeof parsed.mcpServers !== "object") {
 				dispatch({
@@ -191,13 +176,8 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 			const serverName = serverNames[0];
 			const config = parsed.mcpServers[serverName];
 
-			// Determine transport type
-			let transportType: "stdio" | "sse" | "streamable_http";
-			if (config.command) {
-				transportType = "stdio";
-			} else if (config.url) {
-				transportType = "sse";
-			} else {
+			const transportType = getImportedMcpTransportType(config);
+			if (!transportType) {
 				dispatch({
 					type: "set_parse_error",
 					value: t("parseError"),
@@ -269,24 +249,16 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 			dispatch({ type: "set_confirm_open", value: false });
 			reset();
 			onDone();
-		} catch {
-			// Error is handled by onError callback
+		} catch (error) {
+			dispatch({
+				type: "set_confirm_error",
+				value: error instanceof Error ? error.message : String(error),
+			});
 		}
 	};
 
 	return (
 		<div className="h-full w-full overflow-y-auto p-4 sm:p-6">
-			{error && (
-				<Alert className="mb-4" status="danger">
-					<Alert.Indicator />
-					<Alert.Content>
-						<Alert.Description>
-							{t("createError", { error })}
-						</Alert.Description>
-					</Alert.Content>
-				</Alert>
-			)}
-
 			<Card>
 				<Card.Header>
 					<h2 className="text-xl font-semibold text-foreground">
@@ -397,6 +369,18 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 						<Modal.Body className="p-4">
 							{uiState.parsedConfig && (
 								<div className="space-y-4">
+									{uiState.confirmError &&
+										uiState.selectedAgents.size > 0 && (
+											<Alert status="danger">
+												<Alert.Indicator />
+												<Alert.Content>
+													<Alert.Description>
+														{uiState.confirmError}
+													</Alert.Description>
+												</Alert.Content>
+											</Alert>
+										)}
+
 									<div>
 										<p className="mb-1 text-xs tracking-wide text-muted uppercase">
 											{t("serverName")}
@@ -448,8 +432,11 @@ export function ImportMcpPanel({ onDone, projectPath }: ImportMcpPanelProps) {
 											emptyMessage={t("noTargetAgents")}
 											variant="secondary"
 											errorMessage={
-												uiState.confirmError ||
-												undefined
+												uiState.selectedAgents.size ===
+												0
+													? uiState.confirmError ||
+														undefined
+													: undefined
 											}
 										/>
 									</div>

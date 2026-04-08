@@ -124,6 +124,16 @@ export async function invalidateSkillQueries(queryClient: QueryClient) {
 	await queryClient.invalidateQueries({
 		queryKey: queryKeys.skills.all(),
 	});
+	await Promise.all([
+		queryClient.refetchQueries({
+			queryKey: queryKeys.skills.lists(),
+			type: "active",
+		}),
+		queryClient.refetchQueries({
+			queryKey: queryKeys.skills.lock.all(),
+			type: "active",
+		}),
+	]);
 }
 
 interface CreateSkillVariables {

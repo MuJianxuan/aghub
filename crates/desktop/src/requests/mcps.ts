@@ -41,6 +41,10 @@ export async function invalidateMcpQueries(queryClient: QueryClient) {
 	await queryClient.invalidateQueries({
 		queryKey: queryKeys.mcps.all(),
 	});
+	await queryClient.refetchQueries({
+		queryKey: queryKeys.mcps.lists(),
+		type: "active",
+	});
 }
 
 interface CreateMcpVariables {

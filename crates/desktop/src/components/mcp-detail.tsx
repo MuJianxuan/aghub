@@ -27,6 +27,7 @@ import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useApi } from "../hooks/use-api";
 import { useFavorites } from "../hooks/use-favorites";
 import { AgentIcon } from "../lib/agent-icons";
+import { serializeMcpImportJson } from "../lib/mcp-utils";
 import { cn, sortAgentObjects } from "../lib/utils";
 import { invalidateMcpQueries } from "../requests/mcps";
 import { ManageAgentsDialog } from "./manage-agents-dialog";
@@ -249,12 +250,10 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 	const handleCopyConfig = async () => {
 		const primary = group.items[0];
-		const config = {
-			name: primary.name,
-			transport: primary.transport,
-			timeout: primary.timeout,
-		};
-		const configJson = JSON.stringify(config, null, 2);
+		const configJson = serializeMcpImportJson(
+			primary.name,
+			primary.transport,
+		);
 
 		try {
 			await navigator.clipboard.writeText(configJson);

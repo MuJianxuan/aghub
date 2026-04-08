@@ -6,6 +6,22 @@ import { keyPairToObject } from "./key-pair-utils";
 // Static regex to avoid re-compilation on every call
 const WHITESPACE_REGEX = /\s+/;
 
+export type McpImportTransportType = "stdio" | "sse" | "streamable_http";
+
+export interface McpImportServerConfig {
+	type?: McpImportTransportType;
+	command?: string;
+	args?: string[];
+	env?: Record<string, string>;
+	url?: string;
+	headers?: Record<string, string>;
+	timeout?: number;
+}
+
+export interface McpImportJson {
+	mcpServers?: Record<string, McpImportServerConfig>;
+}
+
 export function buildTransportFromForm(
 	transportType: "stdio" | "sse" | "streamable_http",
 	data: {
@@ -52,4 +68,57 @@ export function buildTransportFromForm(
 
 export function capitalize(str: string): string {
 	return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+export function getImportedMcpTransportType(
+	config: McpImportServerConfig,
+): McpImportTransportType | null {
+	if (config.command) {
+		return "stdio";
+	}
+
+	if (config.url) {
+		return config.type === "streamable_http" ? "streamable_http" : "sse";
+	}
+
+	return null;
+}
+
+export function toMcpImportServerConfig(
+	transport: TransportDto,
+): McpImportServerConfig {
+	if (transport.type === "stdio") {
+		return {
+			command: transport.command,
+			...(transport.args.length > 0 ? { args: transport.args } : {}),
+			...(transport.env ? { env: transport.env } : {}),
+			...(transport.timeout !== null
+				? { timeout: transport.timeout }
+				: {}),
+		};
+	}
+
+	return {
+		url: transport.url,
+		...(transport.type === "streamable_http"
+			? { type: transport.type }
+			: {}),
+		...(transport.headers ? { headers: transport.headers } : {}),
+		...(transport.timeout !== null ? { timeout: transport.timeout } : {}),
+	};
+}
+
+export function serializeMcpImportJson(
+	name: string,
+	transport: TransportDto,
+): string {
+	return JSON.stringify(
+		{
+			mcpServers: {
+				[name]: toMcpImportServerConfig(transport),
+			},
+		},
+		null,
+		2,
+	);
 }

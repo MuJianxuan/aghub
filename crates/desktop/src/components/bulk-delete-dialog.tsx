@@ -100,20 +100,18 @@ export function BulkDeleteDialog({
 			}
 			return { deleted: promises.length };
 		},
-		onSuccess: () => {
+		onSuccess: async () => {
 			if (resourceType === "mcp" || resourceType === "mixed") {
-				void invalidateMcpQueries(queryClient);
+				await invalidateMcpQueries(queryClient);
 			}
 			if (resourceType === "skill" || resourceType === "mixed") {
-				void invalidateSkillQueries(queryClient);
+				await invalidateSkillQueries(queryClient);
 			}
+			onSuccess();
+			onClose();
 		},
 		onError: (error) => {
 			console.error("Bulk delete mutation error:", error);
-		},
-		onSettled: () => {
-			onClose();
-			onSuccess();
 		},
 	});
 

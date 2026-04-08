@@ -1,6 +1,7 @@
 import {
 	Alert,
 	Button,
+	Card,
 	Disclosure,
 	FieldError,
 	Fieldset,
@@ -192,12 +193,6 @@ export function EditMcpPanel({
 
 	return (
 		<div className="h-full w-full overflow-y-auto p-4 sm:p-6">
-			<div className="mb-6 flex items-center justify-between gap-3">
-				<h2 className="text-xl font-semibold text-foreground">
-					{t("editMcpServer")}
-				</h2>
-			</div>
-
 			{group.items.length > 1 && (
 				<Alert className="mb-4" status="warning">
 					<Alert.Indicator />
@@ -229,266 +224,42 @@ export function EditMcpPanel({
 				</Alert>
 			)}
 
-			<Form validationBehavior="aria" onSubmit={handleSubmit(onSubmit)}>
-				<Fieldset>
-					<Fieldset.Group>
-						<Controller
-							name="name"
-							control={control}
-							rules={{
-								required: t("validationNameRequired"),
-								validate: (value) =>
-									value.trim()
-										? true
-										: t("validationNameRequired"),
-							}}
-							render={({ field, fieldState }) => (
-								<TextField
-									className="w-full"
-									isRequired
-									validationBehavior="aria"
-									isInvalid={Boolean(fieldState.error)}
-								>
-									<Label>{t("name")}</Label>
-									<Input
-										value={field.value}
-										onChange={(e) =>
-											field.onChange(e.target.value)
-										}
-										onBlur={field.onBlur}
-										placeholder={t("serverName")}
-									/>
-									{fieldState.error && (
-										<FieldError>
-											{fieldState.error.message}
-										</FieldError>
-									)}
-								</TextField>
-							)}
-						/>
-					</Fieldset.Group>
-				</Fieldset>
+			<Card>
+				<Card.Header>
+					<h2 className="text-xl font-semibold text-foreground">
+						{t("editMcpServer")}
+					</h2>
+				</Card.Header>
 
-				<Fieldset>
-					<Fieldset.Group>
-						<Controller
-							name="transportType"
-							control={control}
-							render={({ field }) => (
-								<Select
-									className="w-full"
-									selectedKey={field.value}
-									onSelectionChange={(key) =>
-										field.onChange(
-											key as
-												| "stdio"
-												| "sse"
-												| "streamable_http",
-										)
-									}
-								>
-									<Label>{t("transportType")}</Label>
-									<Select.Trigger>
-										<Select.Value />
-										<Select.Indicator />
-									</Select.Trigger>
-									<Select.Popover>
-										<ListBox>
-											<ListBox.Item
-												id="stdio"
-												textValue="stdio"
-											>
-												stdio
-											</ListBox.Item>
-											<ListBox.Item
-												id="sse"
-												textValue="sse"
-											>
-												sse
-											</ListBox.Item>
-											<ListBox.Item
-												id="streamable_http"
-												textValue="streamable_http"
-											>
-												streamable_http
-											</ListBox.Item>
-										</ListBox>
-									</Select.Popover>
-								</Select>
-							)}
-						/>
-					</Fieldset.Group>
-				</Fieldset>
-
-				{transportType === "stdio" && (
-					<Fieldset>
-						<Fieldset.Group>
-							<Controller
-								name="command"
-								control={control}
-								rules={{
-									validate: (value) =>
-										transportType !== "stdio" ||
-										value.trim()
-											? true
-											: t("validationCommandRequired"),
-								}}
-								render={({ field, fieldState }) => (
-									<TextField
-										className="w-full"
-										isRequired
-										validationBehavior="aria"
-										isInvalid={Boolean(fieldState.error)}
-									>
-										<Label>{t("command")}</Label>
-										<Input
-											value={field.value}
-											onChange={(e) =>
-												field.onChange(e.target.value)
-											}
-											onBlur={field.onBlur}
-											placeholder="npx"
-										/>
-										{fieldState.error && (
-											<FieldError>
-												{fieldState.error.message}
-											</FieldError>
-										)}
-									</TextField>
-								)}
-							/>
-							<Controller
-								name="args"
-								control={control}
-								render={({ field }) => (
-									<TextField className="w-full">
-										<Label>{t("args")}</Label>
-										<Input
-											value={field.value}
-											onChange={(e) =>
-												field.onChange(e.target.value)
-											}
-											onBlur={field.onBlur}
-											placeholder="-y @modelcontextprotocol/server-filesystem"
-										/>
-									</TextField>
-								)}
-							/>
-							<Controller
-								name="envVars"
-								control={control}
-								render={({ field }) => (
-									<div className="flex flex-col gap-2">
-										<Label>{t("env")}</Label>
-										<EnvEditor
-											value={field.value}
-											onChange={field.onChange}
-											errors={
-												submitCount > 0
-													? envErrors
-													: undefined
-											}
-											errorMessage={
-												submitCount > 0
-													? envErrorMessage
-													: undefined
-											}
-										/>
-									</div>
-								)}
-							/>
-						</Fieldset.Group>
-					</Fieldset>
-				)}
-
-				{(transportType === "sse" ||
-					transportType === "streamable_http") && (
-					<Fieldset>
-						<Fieldset.Group>
-							<Controller
-								name="url"
-								control={control}
-								rules={{
-									validate: (value) =>
-										validateHttpUrl(value, t),
-								}}
-								render={({ field, fieldState }) => (
-									<TextField
-										className="w-full"
-										isRequired
-										validationBehavior="aria"
-										isInvalid={Boolean(fieldState.error)}
-									>
-										<Label>URL</Label>
-										<Input
-											value={field.value}
-											onChange={(e) =>
-												field.onChange(e.target.value)
-											}
-											onBlur={field.onBlur}
-											placeholder={urlPlaceholder}
-										/>
-										{fieldState.error && (
-											<FieldError>
-												{fieldState.error.message}
-											</FieldError>
-										)}
-									</TextField>
-								)}
-							/>
-							<Controller
-								name="httpHeaders"
-								control={control}
-								render={({ field }) => (
-									<div className="flex flex-col gap-2">
-										<Label>{t("headers")}</Label>
-										<HttpHeaderEditor
-											value={field.value}
-											onChange={field.onChange}
-											errors={
-												submitCount > 0
-													? headerErrors
-													: undefined
-											}
-											errorMessage={
-												submitCount > 0
-													? headerErrorMessage
-													: undefined
-											}
-										/>
-									</div>
-								)}
-							/>
-						</Fieldset.Group>
-					</Fieldset>
-				)}
-
-				<Disclosure className="mb-6 pt-4">
-					<Disclosure.Trigger className="flex w-full items-center justify-between">
-						{t("advanced")}
-						<Disclosure.Indicator />
-					</Disclosure.Trigger>
-					<Disclosure.Content>
+				<Card.Content>
+					<Form
+						validationBehavior="aria"
+						onSubmit={handleSubmit(onSubmit)}
+					>
 						<Fieldset>
 							<Fieldset.Group>
 								<Controller
-									name="timeoutValue"
+									name="name"
 									control={control}
 									rules={{
+										required: t("validationNameRequired"),
 										validate: (value) =>
-											validatePositiveInteger(value, t),
+											value.trim()
+												? true
+												: t("validationNameRequired"),
 									}}
 									render={({ field, fieldState }) => (
 										<TextField
 											className="w-full"
+											variant="secondary"
+											isRequired
 											validationBehavior="aria"
 											isInvalid={Boolean(
 												fieldState.error,
 											)}
 										>
-											<Label>{t("timeout")}</Label>
+											<Label>{t("name")}</Label>
 											<Input
-												type="number"
 												value={field.value}
 												onChange={(e) =>
 													field.onChange(
@@ -496,7 +267,8 @@ export function EditMcpPanel({
 													)
 												}
 												onBlur={field.onBlur}
-												placeholder="60"
+												placeholder={t("serverName")}
+												variant="secondary"
 											/>
 											{fieldState.error && (
 												<FieldError>
@@ -508,25 +280,310 @@ export function EditMcpPanel({
 								/>
 							</Fieldset.Group>
 						</Fieldset>
-					</Disclosure.Content>
-				</Disclosure>
 
-				<div className="flex justify-end gap-2 pt-2">
-					<Button
-						type="button"
-						variant="secondary"
-						onPress={() => onDone(group.mergeKey)}
-					>
-						{t("cancel")}
-					</Button>
-					<Button
-						type="submit"
-						isDisabled={updateMutation.isPending || isSubmitting}
-					>
-						{updateMutation.isPending ? t("saving") : t("save")}
-					</Button>
-				</div>
-			</Form>
+						<Fieldset>
+							<Fieldset.Group>
+								<Controller
+									name="transportType"
+									control={control}
+									render={({ field }) => (
+										<Select
+											className="w-full"
+											selectedKey={field.value}
+											onSelectionChange={(key) =>
+												field.onChange(
+													key as
+														| "stdio"
+														| "sse"
+														| "streamable_http",
+												)
+											}
+											variant="secondary"
+										>
+											<Label>{t("transportType")}</Label>
+											<Select.Trigger>
+												<Select.Value />
+												<Select.Indicator />
+											</Select.Trigger>
+											<Select.Popover>
+												<ListBox>
+													<ListBox.Item
+														id="stdio"
+														textValue="stdio"
+													>
+														stdio
+													</ListBox.Item>
+													<ListBox.Item
+														id="sse"
+														textValue="sse"
+													>
+														sse
+													</ListBox.Item>
+													<ListBox.Item
+														id="streamable_http"
+														textValue="streamable_http"
+													>
+														streamable_http
+													</ListBox.Item>
+												</ListBox>
+											</Select.Popover>
+										</Select>
+									)}
+								/>
+							</Fieldset.Group>
+						</Fieldset>
+
+						{transportType === "stdio" && (
+							<Fieldset>
+								<Fieldset.Group>
+									<Controller
+										name="command"
+										control={control}
+										rules={{
+											validate: (value) =>
+												transportType !== "stdio" ||
+												value.trim()
+													? true
+													: t(
+															"validationCommandRequired",
+														),
+										}}
+										render={({ field, fieldState }) => (
+											<TextField
+												className="w-full"
+												variant="secondary"
+												isRequired
+												validationBehavior="aria"
+												isInvalid={Boolean(
+													fieldState.error,
+												)}
+											>
+												<Label>{t("command")}</Label>
+												<Input
+													value={field.value}
+													onChange={(e) =>
+														field.onChange(
+															e.target.value,
+														)
+													}
+													onBlur={field.onBlur}
+													placeholder="npx"
+													variant="secondary"
+												/>
+												{fieldState.error && (
+													<FieldError>
+														{
+															fieldState.error
+																.message
+														}
+													</FieldError>
+												)}
+											</TextField>
+										)}
+									/>
+									<Controller
+										name="args"
+										control={control}
+										render={({ field }) => (
+											<TextField
+												className="w-full"
+												variant="secondary"
+											>
+												<Label>{t("args")}</Label>
+												<Input
+													value={field.value}
+													onChange={(e) =>
+														field.onChange(
+															e.target.value,
+														)
+													}
+													onBlur={field.onBlur}
+													placeholder="-y @modelcontextprotocol/server-filesystem"
+													variant="secondary"
+												/>
+											</TextField>
+										)}
+									/>
+									<Controller
+										name="envVars"
+										control={control}
+										render={({ field }) => (
+											<div className="flex flex-col gap-2">
+												<Label>{t("env")}</Label>
+												<EnvEditor
+													value={field.value}
+													onChange={field.onChange}
+													variant="secondary"
+													errors={
+														submitCount > 0
+															? envErrors
+															: undefined
+													}
+													errorMessage={
+														submitCount > 0
+															? envErrorMessage
+															: undefined
+													}
+												/>
+											</div>
+										)}
+									/>
+								</Fieldset.Group>
+							</Fieldset>
+						)}
+
+						{(transportType === "sse" ||
+							transportType === "streamable_http") && (
+							<Fieldset>
+								<Fieldset.Group>
+									<Controller
+										name="url"
+										control={control}
+										rules={{
+											validate: (value) =>
+												validateHttpUrl(value, t),
+										}}
+										render={({ field, fieldState }) => (
+											<TextField
+												className="w-full"
+												variant="secondary"
+												isRequired
+												validationBehavior="aria"
+												isInvalid={Boolean(
+													fieldState.error,
+												)}
+											>
+												<Label>URL</Label>
+												<Input
+													value={field.value}
+													onChange={(e) =>
+														field.onChange(
+															e.target.value,
+														)
+													}
+													onBlur={field.onBlur}
+													placeholder={urlPlaceholder}
+													variant="secondary"
+												/>
+												{fieldState.error && (
+													<FieldError>
+														{
+															fieldState.error
+																.message
+														}
+													</FieldError>
+												)}
+											</TextField>
+										)}
+									/>
+									<Controller
+										name="httpHeaders"
+										control={control}
+										render={({ field }) => (
+											<div className="flex flex-col gap-2">
+												<Label>{t("headers")}</Label>
+												<HttpHeaderEditor
+													value={field.value}
+													onChange={field.onChange}
+													variant="secondary"
+													errors={
+														submitCount > 0
+															? headerErrors
+															: undefined
+													}
+													errorMessage={
+														submitCount > 0
+															? headerErrorMessage
+															: undefined
+													}
+												/>
+											</div>
+										)}
+									/>
+								</Fieldset.Group>
+							</Fieldset>
+						)}
+
+						<Disclosure className="pt-4">
+							<Disclosure.Trigger className="flex w-full items-center justify-between">
+								{t("advanced")}
+								<Disclosure.Indicator />
+							</Disclosure.Trigger>
+							<Disclosure.Content>
+								<Fieldset>
+									<Fieldset.Group>
+										<Controller
+											name="timeoutValue"
+											control={control}
+											rules={{
+												validate: (value) =>
+													validatePositiveInteger(
+														value,
+														t,
+													),
+											}}
+											render={({ field, fieldState }) => (
+												<TextField
+													className="w-full"
+													variant="secondary"
+													validationBehavior="aria"
+													isInvalid={Boolean(
+														fieldState.error,
+													)}
+												>
+													<Label>
+														{t("timeout")}
+													</Label>
+													<Input
+														type="number"
+														value={field.value}
+														onChange={(e) =>
+															field.onChange(
+																e.target.value,
+															)
+														}
+														onBlur={field.onBlur}
+														placeholder="60"
+														variant="secondary"
+													/>
+													{fieldState.error && (
+														<FieldError>
+															{
+																fieldState.error
+																	.message
+															}
+														</FieldError>
+													)}
+												</TextField>
+											)}
+										/>
+									</Fieldset.Group>
+								</Fieldset>
+							</Disclosure.Content>
+						</Disclosure>
+
+						<div className="flex justify-end gap-2 pt-2">
+							<Button
+								type="button"
+								variant="secondary"
+								onPress={() => onDone(group.mergeKey)}
+							>
+								{t("cancel")}
+							</Button>
+							<Button
+								type="submit"
+								isDisabled={
+									updateMutation.isPending || isSubmitting
+								}
+							>
+								{updateMutation.isPending
+									? t("saving")
+									: t("save")}
+							</Button>
+						</div>
+					</Form>
+				</Card.Content>
+			</Card>
 		</div>
 	);
 }

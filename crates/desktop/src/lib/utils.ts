@@ -80,6 +80,19 @@ export function sortAgentObjects<T extends { agent?: string | null }>(
 	});
 }
 
+export function filterItemsByAgentIds<T extends { agent?: string | null }>(
+	items: T[],
+	agentIds: ReadonlySet<string>,
+): T[] {
+	return items.filter((item) => {
+		if (!item.agent) {
+			return true;
+		}
+
+		return agentIds.has(item.agent);
+	});
+}
+
 export function getSubAgentMergeKey(agent: SubAgentResponse): string {
 	return stableHash({
 		name: agent.name,

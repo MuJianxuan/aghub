@@ -32,7 +32,11 @@ import type {
 import { useAgentAvailability } from "../../hooks/use-agent-availability";
 import { useApi } from "../../hooks/use-api";
 import { AgentIcon } from "../../lib/agent-icons";
-import { getSubAgentMergeKey, sortAgents } from "../../lib/utils";
+import {
+	filterItemsByAgentIds,
+	getSubAgentMergeKey,
+	sortAgents,
+} from "../../lib/utils";
 import {
 	invalidateSubAgentQueries,
 	subAgentListQueryOptions,
@@ -49,14 +53,23 @@ function formatAgentName(agent: string): string {
 }
 
 function SubAgentAgentIcons({ items }: { items: SubAgentResponse[] }) {
-	const { allAgents } = useAgentAvailability();
+	const { allAgents, availableAgents } = useAgentAvailability();
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
 	const agents = useMemo(() => {
 		const set = new Set<string>();
-		for (const item of items) {
+		for (const item of filterItemsByAgentIds(items, enabledAgentIds)) {
 			if (item.agent) set.add(item.agent);
 		}
 		return sortAgents(Array.from(set), allAgents);
-	}, [items, allAgents]);
+	}, [items, enabledAgentIds, allAgents]);
 
 	if (agents.length === 0) return null;
 
@@ -93,6 +106,7 @@ export default function SubAgentsPage() {
 	const { t } = useTranslation();
 	const api = useApi();
 	const queryClient = useQueryClient();
+	const { availableAgents } = useAgentAvailability();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [panel, setPanel] = useState<PanelState>({ type: "empty" });
 
@@ -114,6 +128,26 @@ export default function SubAgentsPage() {
 		return Array.from(map.values());
 	}, [subAgents]);
 
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
+
+	const displayableGroups = useMemo(
+		() =>
+			groupedSubAgents.filter(
+				(group) =>
+					filterItemsByAgentIds(group.items, enabledAgentIds).length >
+					0,
+			),
+		[groupedSubAgents, enabledAgentIds],
+	);
+
 	const activeGroup = useMemo(() => {
 		if (panel.type === "detail" || panel.type === "edit") {
 			return (
@@ -125,12 +159,12 @@ export default function SubAgentsPage() {
 	}, [panel, groupedSubAgents]);
 
 	const filteredGroups = useMemo(() => {
-		if (!searchQuery) return groupedSubAgents;
+		if (!searchQuery) return displayableGroups;
 		const q = searchQuery.toLowerCase();
-		return groupedSubAgents.filter((g) =>
+		return displayableGroups.filter((g) =>
 			g.items[0].name.toLowerCase().includes(q),
 		);
-	}, [groupedSubAgents, searchQuery]);
+	}, [displayableGroups, searchQuery]);
 
 	const selectedListKey = useMemo(() => {
 		if (panel.type === "detail" || panel.type === "edit") {

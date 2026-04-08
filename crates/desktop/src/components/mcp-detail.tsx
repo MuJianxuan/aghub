@@ -20,7 +20,7 @@ import {
 	toast,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useReducer } from "react";
+import { useCallback, useMemo, useReducer } from "react";
 import { useTranslation } from "react-i18next";
 import type { McpResponse, TransportDto } from "../generated/dto";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
@@ -28,7 +28,7 @@ import { useApi } from "../hooks/use-api";
 import { useFavorites } from "../hooks/use-favorites";
 import { AgentIcon } from "../lib/agent-icons";
 import { serializeMcpImportJson } from "../lib/mcp-utils";
-import { cn, sortAgentObjects } from "../lib/utils";
+import { cn, filterItemsByAgentIds, sortAgentObjects } from "../lib/utils";
 import { invalidateMcpQueries } from "../requests/mcps";
 import { ManageAgentsDialog } from "./manage-agents-dialog";
 import { TransferDialog } from "./transfer-dialog";
@@ -206,7 +206,7 @@ function mcpDetailUiReducer(
 
 export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 	const { t } = useTranslation();
-	const { allAgents } = useAgentAvailability();
+	const { allAgents, availableAgents } = useAgentAvailability();
 	const [uiState, dispatch] = useReducer(mcpDetailUiReducer, {
 		deleteDialogOpen: false,
 		manageDialogOpen: false,
@@ -247,6 +247,19 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 	const { isMcpStarred, toggleMcpStar } = useFavorites();
 	const isStarred = isMcpStarred(group.mergeKey);
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
+	const visibleItems = useMemo(
+		() => filterItemsByAgentIds(group.items, enabledAgentIds),
+		[group.items, enabledAgentIds],
+	);
 
 	const handleCopyConfig = async () => {
 		const primary = group.items[0];
@@ -381,46 +394,53 @@ export function McpDetail({ group, onEdit, projectPath }: McpDetailProps) {
 
 						<Card.Content className="flex flex-col gap-6">
 							{/* Agents Section */}
-							<div className="space-y-3">
-								<h3 className="text-xs font-medium tracking-wider text-muted uppercase">
-									{t("agents")}
-								</h3>
-								<div className="flex flex-wrap gap-2">
-									{sortAgentObjects(
-										group.items,
-										allAgents,
-									).map((item) => (
-										<Chip
-											key={item.agent ?? "default"}
-											size="sm"
-											variant={
-												item.enabled
-													? "soft"
-													: "tertiary"
-											}
-											color="default"
-											className="pr-3 max-w-full"
-										>
-											<span className="flex items-center gap-1.5 truncate">
-												<AgentIcon
-													id={item.agent ?? "default"}
-													name={getAgentName(item)}
-													size="sm"
-													variant="ghost"
-												/>
-												<span className="truncate">
-													{getAgentName(item)}
-												</span>
-												{!item.enabled && (
-													<span className="shrink-0 text-xs text-warning">
-														({t("disabled")})
+							{visibleItems.length > 0 && (
+								<div className="space-y-3">
+									<h3 className="text-xs font-medium tracking-wider text-muted uppercase">
+										{t("agents")}
+									</h3>
+									<div className="flex flex-wrap gap-2">
+										{sortAgentObjects(
+											visibleItems,
+											allAgents,
+										).map((item) => (
+											<Chip
+												key={item.agent ?? "default"}
+												size="sm"
+												variant={
+													item.enabled
+														? "soft"
+														: "tertiary"
+												}
+												color="default"
+												className="pr-3 max-w-full"
+											>
+												<span className="flex items-center gap-1.5 truncate">
+													<AgentIcon
+														id={
+															item.agent ??
+															"default"
+														}
+														name={getAgentName(
+															item,
+														)}
+														size="sm"
+														variant="ghost"
+													/>
+													<span className="truncate">
+														{getAgentName(item)}
 													</span>
-												)}
-											</span>
-										</Chip>
-									))}
+													{!item.enabled && (
+														<span className="shrink-0 text-xs text-warning">
+															({t("disabled")})
+														</span>
+													)}
+												</span>
+											</Chip>
+										))}
+									</div>
 								</div>
-							</div>
+							)}
 
 							{/* Transport Details */}
 							<div className="space-y-4">

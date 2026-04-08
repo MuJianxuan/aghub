@@ -26,7 +26,13 @@ import type {
 	SkillResponse,
 	SubAgentResponse,
 } from "../generated/dto";
-import { cn, getMcpMergeKey, getSubAgentMergeKey } from "../lib/utils";
+import { useAgentAvailability } from "../hooks/use-agent-availability";
+import {
+	cn,
+	filterItemsByAgentIds,
+	getMcpMergeKey,
+	getSubAgentMergeKey,
+} from "../lib/utils";
 import { ListSearchHeader } from "./list-search-header";
 import { McpList } from "./mcp-list";
 import { MultiSelectFloatingBar } from "./multi-select-floating-bar";
@@ -79,30 +85,40 @@ export function UnifiedResourceList({
 	onDeleteSelected,
 }: UnifiedResourceListProps) {
 	const { t } = useTranslation();
+	const { availableAgents } = useAgentAvailability();
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
+	const visibleMcps = useMemo(
+		() => filterItemsByAgentIds(mcps, enabledAgentIds),
+		[mcps, enabledAgentIds],
+	);
+	const visibleSkills = useMemo(
+		() => filterItemsByAgentIds(skills, enabledAgentIds),
+		[skills, enabledAgentIds],
+	);
 
 	const mergedMcpCount = useMemo(() => {
 		const keys = new Set<string>();
-		for (const mcp of mcps) {
+		for (const mcp of visibleMcps) {
 			keys.add(getMcpMergeKey(mcp.transport));
 		}
 		return keys.size;
-	}, [mcps]);
+	}, [visibleMcps]);
 
 	const mergedSkillCount = useMemo(() => {
 		const names = new Set<string>();
-		for (const skill of skills) {
+		for (const skill of visibleSkills) {
 			names.add(skill.name);
 		}
 		return names.size;
-	}, [skills]);
-
-	const mergedSubAgentCount = useMemo(() => {
-		const keys = new Set<string>();
-		for (const agent of subAgents) {
-			keys.add(getSubAgentMergeKey(agent));
-		}
-		return keys.size;
-	}, [subAgents]);
+	}, [visibleSkills]);
 
 	const groupedSubAgents = useMemo(() => {
 		const map = new Map<string, SubAgentResponse[]>();
@@ -117,17 +133,29 @@ export function UnifiedResourceList({
 		}));
 	}, [subAgents]);
 
+	const visibleSubAgentGroups = useMemo(
+		() =>
+			groupedSubAgents.filter(
+				(group) =>
+					filterItemsByAgentIds(group.items, enabledAgentIds).length >
+					0,
+			),
+		[groupedSubAgents, enabledAgentIds],
+	);
+
+	const mergedSubAgentCount = visibleSubAgentGroups.length;
+
 	const filteredSubAgentGroups = useMemo(() => {
-		if (!searchQuery) return groupedSubAgents;
+		if (!searchQuery) return visibleSubAgentGroups;
 		const q = searchQuery.toLowerCase();
-		return groupedSubAgents.filter((g) =>
+		return visibleSubAgentGroups.filter((g) =>
 			g.items[0].name.toLowerCase().includes(q),
 		);
-	}, [groupedSubAgents, searchQuery]);
+	}, [visibleSubAgentGroups, searchQuery]);
 
-	const hasMcps = mcps.length > 0;
-	const hasSkills = skills.length > 0;
-	const hasSubAgents = subAgents.length > 0;
+	const hasMcps = visibleMcps.length > 0;
+	const hasSkills = visibleSkills.length > 0;
+	const hasSubAgents = visibleSubAgentGroups.length > 0;
 	const hasAny = hasMcps || hasSkills || hasSubAgents;
 	const totalCount = mergedMcpCount + mergedSkillCount;
 	const selectedCount = selectedMcpKeys.size + selectedSkillKeys.size;
@@ -372,7 +400,7 @@ export function UnifiedResourceList({
 									icon={<ServerIcon className="size-3.5" />}
 								/>
 								<McpList
-									mcps={mcps}
+									mcps={visibleMcps}
 									selectedKeys={selectedMcpKeys}
 									searchQuery={searchQuery}
 									onSelectionChange={handleMcpSelectionChange}
@@ -390,7 +418,7 @@ export function UnifiedResourceList({
 									icon={<BookOpenIcon className="size-3.5" />}
 								/>
 								<SkillList
-									skills={skills}
+									skills={visibleSkills}
 									selectedKeys={selectedSkillKeys}
 									searchQuery={searchQuery}
 									onSelectionChange={

@@ -14,7 +14,7 @@ import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useApi } from "../hooks/use-api";
 import { useFavorites } from "../hooks/use-favorites";
 import { AgentIcon } from "../lib/agent-icons";
-import { sortAgents } from "../lib/utils";
+import { filterItemsByAgentIds, sortAgents } from "../lib/utils";
 import {
 	globalSkillLockQueryOptions,
 	projectSkillLockQueryOptions,
@@ -25,14 +25,23 @@ function formatAgentName(agent: string): string {
 }
 
 function SkillAgentIcons({ items }: { items: SkillResponse[] }) {
-	const { allAgents } = useAgentAvailability();
+	const { allAgents, availableAgents } = useAgentAvailability();
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
 	const agents = useMemo(() => {
 		const set = new Set<string>();
-		for (const item of items) {
+		for (const item of filterItemsByAgentIds(items, enabledAgentIds)) {
 			if (item.agent) set.add(item.agent);
 		}
 		return sortAgents(Array.from(set), allAgents);
-	}, [items, allAgents]);
+	}, [items, enabledAgentIds, allAgents]);
 
 	if (agents.length === 0) {
 		return null;
@@ -104,11 +113,25 @@ export function SkillList({
 }: SkillListProps) {
 	const { t } = useTranslation();
 	const api = useApi();
+	const { availableAgents } = useAgentAvailability();
 	const effectiveScope = groupBySource
 		? projectPath
 			? "project"
 			: "global"
 		: null;
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
+	const visibleSkills = useMemo(
+		() => filterItemsByAgentIds(skills, enabledAgentIds),
+		[skills, enabledAgentIds],
+	);
 
 	const { data: globalLock, isLoading: isLoadingGlobalLock } = useQuery({
 		...globalSkillLockQueryOptions({
@@ -132,7 +155,7 @@ export function SkillList({
 
 	const groupedByName = useMemo(() => {
 		const map = new Map<string, SkillResponse[]>();
-		for (const skill of skills) {
+		for (const skill of visibleSkills) {
 			const existing = map.get(skill.name) ?? [];
 			map.set(skill.name, [...existing, skill]);
 		}
@@ -141,7 +164,7 @@ export function SkillList({
 			items,
 			description: items.find((s) => s.description)?.description ?? "",
 		}));
-	}, [skills]);
+	}, [visibleSkills]);
 
 	const fuse = useMemo(
 		() =>

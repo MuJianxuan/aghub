@@ -11,21 +11,34 @@ import type { McpResponse } from "../generated/dto";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useFavorites } from "../hooks/use-favorites";
 import { AgentIcon } from "../lib/agent-icons";
-import { getMcpMergeKey, sortAgents } from "../lib/utils";
+import {
+	filterItemsByAgentIds,
+	getMcpMergeKey,
+	sortAgents,
+} from "../lib/utils";
 
 function formatAgentName(agent: string): string {
 	return agent.charAt(0).toUpperCase() + agent.slice(1).toLowerCase();
 }
 
 function McpAgentIcons({ items }: { items: McpResponse[] }) {
-	const { allAgents } = useAgentAvailability();
+	const { allAgents, availableAgents } = useAgentAvailability();
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
 	const agents = useMemo(() => {
 		const set = new Set<string>();
-		for (const item of items) {
+		for (const item of filterItemsByAgentIds(items, enabledAgentIds)) {
 			if (item.agent) set.add(item.agent);
 		}
 		return sortAgents(Array.from(set), allAgents);
-	}, [items, allAgents]);
+	}, [items, enabledAgentIds, allAgents]);
 
 	if (agents.length === 0) {
 		return null;
@@ -86,10 +99,24 @@ export function McpList({
 	isMultiSelectMode = false,
 }: McpListProps) {
 	const { t } = useTranslation();
+	const { availableAgents } = useAgentAvailability();
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
+	const visibleMcps = useMemo(
+		() => filterItemsByAgentIds(mcps, enabledAgentIds),
+		[mcps, enabledAgentIds],
+	);
 
 	const groupedMcps = useMemo(() => {
 		const map = new Map<string, McpResponse[]>();
-		for (const mcp of mcps) {
+		for (const mcp of visibleMcps) {
 			const key = getMcpMergeKey(mcp.transport);
 			const existing = map.get(key) ?? [];
 			map.set(key, [...existing, mcp]);
@@ -99,7 +126,7 @@ export function McpList({
 			transport: items[0].transport,
 			items,
 		}));
-	}, [mcps]);
+	}, [visibleMcps]);
 
 	const fuse = useMemo(
 		() =>

@@ -15,11 +15,11 @@ import {
 	Spinner,
 	Tooltip,
 } from "@heroui/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { AgentIcon } from "../lib/agent-icons";
-import { sortAgentObjects } from "../lib/utils";
+import { filterItemsByAgentIds, sortAgentObjects } from "../lib/utils";
 import type { SubAgentGroup } from "./manage-sub-agent-agents-dialog";
 import { ManageSubAgentAgentsDialog } from "./manage-sub-agent-agents-dialog";
 import { formatAgentName } from "./skill-detail-helpers";
@@ -43,12 +43,25 @@ export function SubAgentDetail({
 	projectPath,
 }: SubAgentDetailProps) {
 	const { t } = useTranslation();
-	const { allAgents } = useAgentAvailability();
+	const { allAgents, availableAgents } = useAgentAvailability();
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [transferDialogOpen, setTransferDialogOpen] = useState(false);
 	const [manageDialogOpen, setManageDialogOpen] = useState(false);
 
 	const primary = group.items[0];
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
+	const visibleItems = useMemo(
+		() => filterItemsByAgentIds(group.items, enabledAgentIds),
+		[group.items, enabledAgentIds],
+	);
 
 	return (
 		<>
@@ -103,41 +116,48 @@ export function SubAgentDetail({
 						</Card.Header>
 
 						<Card.Content className="flex flex-col gap-6">
-							<div className="space-y-3">
-								<h3 className="text-xs font-medium uppercase tracking-wider text-muted">
-									{t("agents")}
-								</h3>
-								<div className="flex flex-wrap gap-2">
-									{sortAgentObjects(
-										group.items,
-										allAgents,
-									).map((item) => (
-										<Chip
-											key={item.agent ?? "default"}
-											size="sm"
-											variant="soft"
-											color="default"
-											className="max-w-full pr-3"
-										>
-											<span className="flex items-center gap-1.5 truncate">
-												<AgentIcon
-													id={item.agent ?? "default"}
-													name={formatAgentName(
-														item.agent ?? "default",
-													)}
-													size="sm"
-													variant="ghost"
-												/>
-												<span className="truncate">
-													{formatAgentName(
-														item.agent ?? "default",
-													)}
+							{visibleItems.length > 0 && (
+								<div className="space-y-3">
+									<h3 className="text-xs font-medium uppercase tracking-wider text-muted">
+										{t("agents")}
+									</h3>
+									<div className="flex flex-wrap gap-2">
+										{sortAgentObjects(
+											visibleItems,
+											allAgents,
+										).map((item) => (
+											<Chip
+												key={item.agent ?? "default"}
+												size="sm"
+												variant="soft"
+												color="default"
+												className="max-w-full pr-3"
+											>
+												<span className="flex items-center gap-1.5 truncate">
+													<AgentIcon
+														id={
+															item.agent ??
+															"default"
+														}
+														name={formatAgentName(
+															item.agent ??
+																"default",
+														)}
+														size="sm"
+														variant="ghost"
+													/>
+													<span className="truncate">
+														{formatAgentName(
+															item.agent ??
+																"default",
+														)}
+													</span>
 												</span>
-											</span>
-										</Chip>
-									))}
+											</Chip>
+										))}
+									</div>
 								</div>
-							</div>
+							)}
 						</Card.Content>
 
 						<Card.Footer className="pt-4 border-t border-separator flex flex-wrap gap-3">

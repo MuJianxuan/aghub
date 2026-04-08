@@ -23,7 +23,7 @@ import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useApi } from "../hooks/use-api";
 import { useFavorites } from "../hooks/use-favorites";
 import { useCurrentCodeEditor } from "../hooks/use-integrations";
-import { cn } from "../lib/utils";
+import { cn, filterItemsByAgentIds } from "../lib/utils";
 import { openWithEditorMutationOptions } from "../requests/integrations";
 import {
 	globalSkillLockQueryOptions,
@@ -58,7 +58,7 @@ const GITHUB_PREFIX_REGEX = /^github\//;
 export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 	const { t } = useTranslation();
 	const [, setLocation] = useLocation();
-	const { allAgents } = useAgentAvailability();
+	const { allAgents, availableAgents } = useAgentAvailability();
 	const api = useApi();
 
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -170,9 +170,23 @@ export function SkillDetail({ group, projectPath }: SkillDetailProps) {
 		return null;
 	}, [currentSkillSource]);
 
+	const enabledAgentIds = useMemo(
+		() =>
+			new Set(
+				availableAgents
+					.filter((agent) => !agent.isDisabled)
+					.map((agent) => agent.id),
+			),
+		[availableAgents],
+	);
+	const visibleGroupItems = useMemo(
+		() => filterItemsByAgentIds(group.items, enabledAgentIds),
+		[group.items, enabledAgentIds],
+	);
+
 	const allLocationGroups = useMemo(
-		() => buildLocationGroups(group.items, allAgents),
-		[group.items, allAgents],
+		() => buildLocationGroups(visibleGroupItems, allAgents),
+		[visibleGroupItems, allAgents],
 	);
 
 	const displayedLocations =

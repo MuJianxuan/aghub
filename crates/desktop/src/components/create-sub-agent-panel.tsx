@@ -1,4 +1,5 @@
 import {
+	Alert,
 	Button,
 	Card,
 	FieldError,
@@ -6,15 +7,14 @@ import {
 	Form,
 	Input,
 	Label,
-	ListBox,
-	Select,
 	TextArea,
 	TextField,
 } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import type { SubAgentResponse } from "../generated/dto";
 import { useAgentAvailability } from "../hooks/use-agent-availability";
 import { useApi } from "../hooks/use-api";
 import {
@@ -22,14 +22,15 @@ import {
 	supportsSubAgentScope,
 } from "../lib/agent-capabilities";
 import { createSubAgentMutationOptions } from "../requests/sub-agents";
+import { AgentSelector } from "./agent-selector";
 
 interface CreateSubAgentPanelProps {
-	onDone: () => void;
+	onDone: (created?: SubAgentResponse) => void;
 	projectPath?: string;
 }
 
 interface FormValues {
-	agentId: string;
+	selectedAgents: string[];
 	name: string;
 	description: string;
 	instruction: string;
@@ -56,15 +57,19 @@ export function CreateSubAgentPanel({
 		[availableAgents, scope],
 	);
 
-	const createMutation = useMutation(
-		createSubAgentMutationOptions({
+	const [error, setError] = useState<string | null>(null);
+
+	const createMutation = useMutation({
+		...createSubAgentMutationOptions({
 			api,
 			queryClient,
-			onSuccess: () => {
-				onDone();
-			},
 		}),
-	);
+		onError: (error) => {
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			setError(errorMessage);
+		},
+	});
 
 	const {
 		control,
@@ -74,28 +79,50 @@ export function CreateSubAgentPanel({
 		mode: "onSubmit",
 		reValidateMode: "onChange",
 		defaultValues: {
-			agentId: capableAgents[0]?.id ?? "",
+			selectedAgents: capableAgents[0] ? [capableAgents[0].id] : [],
 			name: "",
 			description: "",
 			instruction: "",
 		},
 	});
 
-	const onSubmit = (values: FormValues) => {
-		createMutation.mutate({
-			agent: values.agentId,
-			scope,
-			projectRoot: projectPath,
-			body: {
-				name: values.name.trim(),
-				description: values.description.trim(),
-				instruction: values.instruction.trim(),
-			},
-		});
+	const onSubmit = async (values: FormValues) => {
+		setError(null);
+
+		try {
+			const results = await Promise.all(
+				values.selectedAgents.map((agent) =>
+					createMutation.mutateAsync({
+						agent,
+						scope,
+						projectRoot: projectPath,
+						body: {
+							name: values.name.trim(),
+							description: values.description.trim(),
+							instruction: values.instruction.trim(),
+						},
+					}),
+				),
+			);
+			onDone(results[0]);
+		} catch {
+			// Error is handled by onError callback
+		}
 	};
 
 	return (
 		<div className="h-full w-full overflow-y-auto p-4 sm:p-6">
+			{error && (
+				<Alert className="mb-4" status="danger">
+					<Alert.Indicator />
+					<Alert.Content>
+						<Alert.Description>
+							{t("createError", { error })}
+						</Alert.Description>
+					</Alert.Content>
+				</Alert>
+			)}
+
 			<Card>
 				<Card.Header>
 					<h2 className="text-xl font-semibold text-foreground">
@@ -110,43 +137,33 @@ export function CreateSubAgentPanel({
 						<Fieldset>
 							<Fieldset.Group>
 								<Controller
-									name="agentId"
+									name="selectedAgents"
 									control={control}
-									render={({ field }) => (
-										<Select
-											className="w-full"
-											selectedKey={field.value}
-											onSelectionChange={(key) =>
-												field.onChange(key)
+									rules={{
+										validate: (value) =>
+											value.length > 0
+												? true
+												: t("validationAgentsRequired"),
+									}}
+									render={({ field, fieldState }) => (
+										<AgentSelector
+											agents={capableAgents}
+											selectedKeys={new Set(field.value)}
+											onSelectionChange={(keys) =>
+												field.onChange([...keys])
 											}
+											label={t("agents")}
+											emptyMessage={t(
+												"noAgentsAvailable",
+											)}
+											emptyHelpText={t(
+												"noAgentsAvailableHelp",
+											)}
 											variant="secondary"
-											isDisabled={
-												capableAgents.length === 0
+											errorMessage={
+												fieldState.error?.message
 											}
-										>
-											<Label>
-												{t("agentManagement")}
-											</Label>
-											<Select.Trigger>
-												<Select.Value />
-												<Select.Indicator />
-											</Select.Trigger>
-											<Select.Popover>
-												<ListBox>
-													{capableAgents.map((a) => (
-														<ListBox.Item
-															key={a.id}
-															id={a.id}
-															textValue={
-																a.display_name
-															}
-														>
-															{a.display_name}
-														</ListBox.Item>
-													))}
-												</ListBox>
-											</Select.Popover>
-										</Select>
+										/>
 									)}
 								/>
 							</Fieldset.Group>
@@ -305,7 +322,7 @@ export function CreateSubAgentPanel({
 							<Button
 								type="button"
 								variant="secondary"
-								onPress={onDone}
+								onPress={() => onDone()}
 							>
 								{t("cancel")}
 							</Button>

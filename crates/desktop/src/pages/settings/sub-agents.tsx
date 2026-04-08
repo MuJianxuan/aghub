@@ -8,20 +8,20 @@ import {
 	Input,
 	Label,
 	ListBox,
-	Select,
 	TextArea,
 	TextField,
 	Tooltip,
 	toast,
 } from "@heroui/react";
 import {
-	useMutation,
 	useQueryClient,
 	useSuspenseQuery,
+	useMutation,
 } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { CreateSubAgentPanel } from "../../components/create-sub-agent-panel";
 import { ListSearchHeader } from "../../components/list-search-header";
 import type { SubAgentGroup } from "../../components/sub-agent-detail";
 import { SubAgentDetail } from "../../components/sub-agent-detail";
@@ -31,11 +31,9 @@ import type {
 } from "../../generated/dto";
 import { useAgentAvailability } from "../../hooks/use-agent-availability";
 import { useApi } from "../../hooks/use-api";
-import { supportsSubAgent } from "../../lib/agent-capabilities";
 import { AgentIcon } from "../../lib/agent-icons";
 import { getSubAgentMergeKey, sortAgents } from "../../lib/utils";
 import {
-	createSubAgentMutationOptions,
 	invalidateSubAgentQueries,
 	subAgentListQueryOptions,
 } from "../../requests/sub-agents";
@@ -95,14 +93,8 @@ export default function SubAgentsPage() {
 	const { t } = useTranslation();
 	const api = useApi();
 	const queryClient = useQueryClient();
-	const { availableAgents } = useAgentAvailability();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [panel, setPanel] = useState<PanelState>({ type: "empty" });
-
-	const subAgentCapableAgents = useMemo(
-		() => availableAgents.filter((a) => a.isUsable && supportsSubAgent(a)),
-		[availableAgents],
-	);
 
 	const { data: subAgents = [] } = useSuspenseQuery({
 		...subAgentListQueryOptions({ api, scope: "global" }),
@@ -146,27 +138,6 @@ export default function SubAgentsPage() {
 		}
 		return new Set<string>();
 	}, [panel]);
-
-	const createMutation = useMutation({
-		...createSubAgentMutationOptions({
-			api,
-			queryClient,
-			onSuccess: (data) => {
-				toast.success(t("subAgentCreated"));
-				setPanel({
-					type: "detail",
-					mergeKey: getSubAgentMergeKey(data),
-				});
-			},
-		}),
-		onError: (error) => {
-			toast.danger(
-				error instanceof Error
-					? error.message
-					: t("createSubAgentError"),
-			);
-		},
-	});
 
 	const updateMutation = useMutation({
 		mutationFn: async ({
@@ -325,29 +296,18 @@ export default function SubAgentsPage() {
 				)}
 
 				{panel.type === "create" && (
-					<SubAgentCreateForm
-						agents={subAgentCapableAgents.map((a) => ({
-							id: a.id,
-							name: a.display_name,
-						}))}
-						onCreate={({
-							agentId,
-							name,
-							description,
-							instruction,
-						}) =>
-							createMutation.mutate({
-								agent: agentId,
-								scope: "global",
-								body: {
-									name,
-									description,
-									instruction,
-								},
-							})
-						}
-						isLoading={createMutation.isPending}
-						onCancel={() => setPanel({ type: "empty" })}
+					<CreateSubAgentPanel
+						onDone={(created) => {
+							if (created) {
+								toast.success(t("subAgentCreated"));
+								setPanel({
+									type: "detail",
+									mergeKey: getSubAgentMergeKey(created),
+								});
+								return;
+							}
+							setPanel({ type: "empty" });
+						}}
 					/>
 				)}
 
@@ -384,291 +344,6 @@ export default function SubAgentsPage() {
 					/>
 				)}
 			</div>
-		</div>
-	);
-}
-
-interface AgentOption {
-	id: string;
-	name: string;
-}
-
-interface CreateFormValues {
-	agentId: string;
-	name: string;
-	description: string;
-	instruction: string;
-}
-
-function SubAgentCreateForm({
-	agents,
-	onCreate,
-	isLoading,
-	onCancel,
-}: {
-	agents: AgentOption[];
-	onCreate: (v: {
-		agentId: string;
-		name: string;
-		description: string;
-		instruction: string;
-	}) => void;
-	isLoading: boolean;
-	onCancel: () => void;
-}) {
-	const { t } = useTranslation();
-
-	const {
-		control,
-		handleSubmit,
-		formState: { isSubmitting },
-	} = useForm<CreateFormValues>({
-		mode: "onSubmit",
-		reValidateMode: "onChange",
-		defaultValues: {
-			agentId: agents[0]?.id ?? "",
-			name: "",
-			description: "",
-			instruction: "",
-		},
-	});
-
-	const onSubmit = (values: CreateFormValues) => {
-		onCreate({
-			agentId: values.agentId,
-			name: values.name.trim(),
-			description: values.description.trim(),
-			instruction: values.instruction.trim(),
-		});
-	};
-
-	return (
-		<div className="h-full w-full overflow-y-auto p-4 sm:p-6">
-			<Card>
-				<Card.Header>
-					<h2 className="text-xl font-semibold text-foreground">
-						{t("createSubAgent")}
-					</h2>
-				</Card.Header>
-				<Card.Content>
-					<Form
-						validationBehavior="aria"
-						onSubmit={handleSubmit(onSubmit)}
-					>
-						<Fieldset>
-							<Fieldset.Group>
-								<Controller
-									name="agentId"
-									control={control}
-									render={({ field }) => (
-										<Select
-											className="w-full"
-											selectedKey={field.value}
-											onSelectionChange={(key) =>
-												field.onChange(key)
-											}
-											variant="secondary"
-											isDisabled={agents.length === 0}
-										>
-											<Label>
-												{t("agentManagement")}
-											</Label>
-											<Select.Trigger>
-												<Select.Value />
-												<Select.Indicator />
-											</Select.Trigger>
-											<Select.Popover>
-												<ListBox>
-													{agents.map((a) => (
-														<ListBox.Item
-															key={a.id}
-															id={a.id}
-															textValue={a.name}
-														>
-															{a.name}
-														</ListBox.Item>
-													))}
-												</ListBox>
-											</Select.Popover>
-										</Select>
-									)}
-								/>
-							</Fieldset.Group>
-						</Fieldset>
-
-						<Fieldset>
-							<Fieldset.Group>
-								<Controller
-									name="name"
-									control={control}
-									rules={{
-										required: t("validationNameRequired"),
-										validate: (v) =>
-											v.trim()
-												? true
-												: t("validationNameRequired"),
-									}}
-									render={({ field, fieldState }) => (
-										<TextField
-											className="w-full"
-											variant="secondary"
-											isRequired
-											validationBehavior="aria"
-											isInvalid={Boolean(
-												fieldState.error,
-											)}
-										>
-											<Label>{t("subAgentName")}</Label>
-											<Input
-												value={field.value}
-												onChange={(e) =>
-													field.onChange(
-														e.target.value,
-													)
-												}
-												onBlur={field.onBlur}
-												placeholder={t(
-													"subAgentNamePlaceholder",
-												)}
-												variant="secondary"
-											/>
-											{fieldState.error && (
-												<FieldError>
-													{fieldState.error.message}
-												</FieldError>
-											)}
-										</TextField>
-									)}
-								/>
-								<Controller
-									name="description"
-									control={control}
-									rules={{
-										required: t(
-											"validationDescriptionRequired",
-										),
-										validate: (v) =>
-											v.trim()
-												? true
-												: t(
-														"validationDescriptionRequired",
-													),
-									}}
-									render={({ field, fieldState }) => (
-										<TextField
-											className="w-full"
-											variant="secondary"
-											isRequired
-											validationBehavior="aria"
-											isInvalid={Boolean(
-												fieldState.error,
-											)}
-										>
-											<Label>
-												{t("subAgentDescription")}
-											</Label>
-											<Input
-												value={field.value}
-												onChange={(e) =>
-													field.onChange(
-														e.target.value,
-													)
-												}
-												onBlur={field.onBlur}
-												placeholder={t(
-													"subAgentDescriptionPlaceholder",
-												)}
-												variant="secondary"
-											/>
-											{fieldState.error && (
-												<FieldError>
-													{fieldState.error.message}
-												</FieldError>
-											)}
-										</TextField>
-									)}
-								/>
-							</Fieldset.Group>
-						</Fieldset>
-
-						<Fieldset>
-							<Fieldset.Group>
-								<Controller
-									name="instruction"
-									control={control}
-									rules={{
-										required: t(
-											"validationInstructionRequired",
-										),
-										validate: (v) =>
-											v.trim()
-												? true
-												: t(
-														"validationInstructionRequired",
-													),
-									}}
-									render={({ field, fieldState }) => (
-										<TextField
-											className="w-full"
-											variant="secondary"
-											isRequired
-											validationBehavior="aria"
-											isInvalid={Boolean(
-												fieldState.error,
-											)}
-										>
-											<Label>
-												{t("subAgentInstruction")}
-											</Label>
-											<TextArea
-												value={field.value}
-												onChange={(e) =>
-													field.onChange(
-														e.target.value,
-													)
-												}
-												onBlur={field.onBlur}
-												placeholder={t(
-													"subAgentInstructionPlaceholder",
-												)}
-												variant="secondary"
-												className="min-h-48"
-											/>
-											{fieldState.error && (
-												<FieldError>
-													{fieldState.error.message}
-												</FieldError>
-											)}
-										</TextField>
-									)}
-								/>
-							</Fieldset.Group>
-						</Fieldset>
-
-						<div className="flex justify-end gap-2 pt-2">
-							<Button
-								type="button"
-								variant="secondary"
-								onPress={onCancel}
-							>
-								{t("cancel")}
-							</Button>
-							<Button
-								type="submit"
-								isDisabled={
-									isLoading ||
-									isSubmitting ||
-									agents.length === 0
-								}
-							>
-								{isLoading
-									? t("creating")
-									: t("createSubAgent")}
-							</Button>
-						</div>
-					</Form>
-				</Card.Content>
-			</Card>
 		</div>
 	);
 }
